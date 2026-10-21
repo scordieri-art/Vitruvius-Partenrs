@@ -30,7 +30,8 @@ Il CV allegato è limitato a 5 MB (PDF, DOC, DOCX); il limite del corpo delle Se
 Aktiv Grotesk arriva dal web kit Adobe Fonts **`zgd5zbh`** (Light 300, Regular 400, Bold 700), caricato in `app/[lang]/layout.tsx`.
 
 - Il kit è abilitato per `localhost`, `127.0.0.1`, `vitruviusandpartners.com`, `www.vitruviusandpartners.com`, `*.vercel.app`. Se il sito va su un altro dominio (staging), va aggiunto nelle impostazioni del kit su fonts.adobe.com.
-- Nelle impostazioni del kit, imposta **font-display: swap**.
+- **Non** impostare `font-display: swap` nel kit: i titoli animati si dividono in righe quando entrano in scena, e con swap la divisione avverrebbe con il font di riserva, tagliando le righe dopo il cambio.
+- Il kit importa un foglio di conteggio di Adobe (`p.typekit.net/p.css…`): `components/layout/PreloadFonts.tsx` lo precarica, così i due file partono insieme invece che uno dopo l'altro. Se il kit cambia, aggiorna l'indirizzo (è l'`@import` in testa al CSS del kit).
 - Nessun font di sistema è previsto nel design: i fallback nello stack CSS servono solo durante il caricamento.
 
 ## Lingue e URL
@@ -110,10 +111,10 @@ Le operazioni sono in `content/projects.ts`. Ne servono almeno cinque perché la
 Una cosa per schermata, niente nascosto dietro un passaggio del mouse:
 
 1. **Apertura** — “Governare la complessità.” Su desktop una massa navy tagliata con l'inclinazione del simbolo copre la foto e si ritira lungo la stessa inclinazione scorrendo. Su telefono e tablet la foto sta sopra e la massa sotto, con un gradino tagliato sull'inclinazione che entra nella foto.
-2. **Il gruppo: come lavora** — Sviluppare → Costruire → Valorizzare, ognuna con chi la fa, una frase e **una prova pubblicata**: 15,87 M€ del Palazzo ex INPS (con link al caso), l'attestazione SOA OG1 classe III (con link alle qualifiche), 200+ immobili l'anno dichiarati da Vitruvius Living. Su desktop tre colonne allineate riga per riga (subgrid); su telefono una fila da sfogliare.
+2. **Il gruppo: come lavora** — Sviluppare → Costruire → Valorizzare, ognuna con chi la fa, una frase e **una prova pubblicata**: 15,87 M€ del Palazzo ex INPS (con link al caso), l'attestazione SOA OG1 classe III (con link alle qualifiche), 200+ immobili l'anno dichiarati da Vitruvius Living. Su desktop tre colonne allineate riga per riga (subgrid); su telefono una lista verticale (la home ha una sola fila da sfogliare: i progetti).
 3. **In numeri e in stampa** — 300+ cantieri, 30+ città, 73,8 M€ (2023), 83° nella Top 200; sotto, le testate che hanno scritto delle operazioni (Il Secolo XIX, La Stampa, Agi, Affaritaliani.it, Il Corriere Nazionale), solo come testo, ognuna col link all'articolo.
-4. **Progetti** — griglia di tre su desktop, fila da sfogliare su telefono.
-5. **Contatti** — una frase, un bottone, l'email. Le sedi sono nel footer, che è chiaro e compatto.
+4. **Progetti** — griglia di tre su desktop, fila da sfogliare su telefono con indicatore «1 / 3».
+5. **Contatti** — una frase, un bottone che apre il modulo con l'argomento «Proporre un immobile» già scelto (`?topic=property`), l'email. Le sedi sono nel footer, che è chiaro e compatto.
 
 Su telefono la home è circa un quarto più corta della versione precedente, pur con due blocchi in più (le prove e la stampa).
 
@@ -123,8 +124,16 @@ Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in nume
 
 ## Contatti e News
 
-- **Contatti**: email e telefoni subito, poi le due sedi (con “Apri in Mappe”), il modulo (con il rimando a Lavora con noi per le candidature), i dati societari.
-- **News**: le tre più recenti con la loro immagine, poi l'archivio per anno con un filtro (Tutte, Dal gruppo, Rassegna stampa). Le voci di rassegna si riconoscono dalla testata a inizio titolo (`pressOutlet` in `lib/content.ts`), che il sito mostra a parte. Ogni articolo ha a lato data, sezione e, se c'è, il progetto di cui parla.
+- **Contatti**: email e telefoni subito, poi le due sedi (con “Apri in Mappe”), il modulo, i dati societari. Il modulo chiede prima l'argomento (immobile, investimento, fornitore, stampa, altro); per un immobile aggiunge città, tipologia, superficie, stato, telefono e fino a 5 foto (JPG, PNG, WEBP, 5 MB in tutto), e l'email arriva con oggetto «[Proposta immobile] dal sito — Città — Nome». Accanto, quattro dati di solidità già documentati in Chi siamo.
+- **Moduli**: React 19 svuota un modulo dopo ogni invio, anche con errori. Contatti e Candidatura inviano con `useSubmitKeepingValues` (`components/forms/Fields.tsx`): i campi restano finché l'invio non riesce. L'attributo `action` resta, quindi i moduli funzionano anche prima dell'idratazione.
+- **News**: le tre più recenti con la loro immagine, poi l'archivio per anno con un filtro (Tutte, Dal gruppo, Rassegna stampa) e una ricerca su titolo e testata (senza distinzione di maiuscole e accenti). Le voci di rassegna si riconoscono dalla testata a inizio titolo (`pressOutlet` in `lib/content.ts`), che il sito mostra a parte. Ogni articolo ha a lato data, sezione e, se c'è, il progetto di cui parla.
+
+## Progetti: mappa e scheda
+
+- **Mappa «Dove operiamo»** (`components/map/`): l'Italia come lastra navy, inclinata in profondità dallo scorrimento, con un segno del marchio in piedi per ogni sede e operazione. Il contorno è Natural Earth 1:50m (dominio pubblico) in `content/geo/italy.json`, già proiettato e semplificato; il tracciato SVG si calcola sul server, la profondità sono sei strati in CSS 3D. Nessun WebGL.
+- Le coordinate stanno in `coords` (sedi in `content/site.ts`, operazioni in `content/projects.ts`). Per l'archivio dei cantieri basta aggiungere altri luoghi a `mapPlaces()`.
+- **Pagina progetto**: apertura a tutto schermo, frase e cifre, poi una sezione unica con la scheda che resta in vista (luogo, indirizzo, anno, stato, ruolo, mini mappa, «Apri in Mappe») e accanto contesto, intervento, avanzamento, esito e fonti.
+- **Dalla scheda al caso**: i link delle schede progetto hanno `morph` (`TLink`): la foto della scheda cresce fino a riempire lo schermo e sfuma nell'apertura della pagina progetto. Gli altri link usano il piano blu diagonale.
 
 ## Sistema visivo
 
@@ -135,7 +144,7 @@ Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in nume
 
 Tre gesti, tutti disattivati con “riduci movimento”:
 
-1. **Il taglio obliquo del simbolo** (99,655 / 170): massa dell'hero, rivelazione delle immagini, transizioni di pagina, banda navy al passaggio del mouse su schede e righe, riempimento del bottone primario.
+1. **Il taglio obliquo del simbolo** (99,655 / 170): massa dell'hero (su desktop resta ferma nel primo 12% dello scorrimento mentre il titolo esce, così la diagonale non taglia le parole), rivelazione delle immagini, transizioni di pagina, apertura del menu su telefono, banda navy al passaggio del mouse su schede e righe, riempimento del bottone primario.
 2. **Foto più lente della pagina** (`ParallaxImage`, `ScrollProgress`).
 3. **Righe di testo che salgono dalla loro maschera** (`data-reveal="lines"`).
 
