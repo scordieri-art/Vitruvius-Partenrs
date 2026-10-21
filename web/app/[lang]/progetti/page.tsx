@@ -4,6 +4,8 @@ import { TLink } from "@/components/layout/PageTransition";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
 import { PageHero } from "@/components/ui/PageHero";
+import { ItalyMap } from "@/components/map/ItalyMap";
+import { mapPlaces } from "@/components/map/mapPlaces";
 import { projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
@@ -59,6 +61,19 @@ export default async function ProjectsIndex() {
             );
           })}
         </ul>
+      </section>
+
+      {/* Where the group works: offices and operations on the map, tilted into depth by the scroll */}
+      <section data-theme="paper" aria-labelledby="map-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
+        <div className="container-x">
+          <p className="t-label mb-5" data-reveal="fade">
+            {pp.map.label}
+          </p>
+          <h2 id="map-title" className="t-l mb-[clamp(2.5rem,6vw,5rem)] max-w-[18ch]" data-reveal="lines">
+            {pp.map.title}
+          </h2>
+          <ItalyMap places={mapPlaces(lang, t)} caption={pp.map.caption} label={pp.map.aria} />
+        </div>
       </section>
     </RevealScope>
   );

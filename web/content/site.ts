@@ -18,6 +18,7 @@ export const company = {
       phoneHref: "tel:+393806483004",
       region: "MI",
       zip: "20125",
+      coords: { lat: 45.4977, lon: 9.2033 },
     },
     {
       key: "asti",
@@ -28,6 +29,7 @@ export const company = {
       phoneHref: "tel:+393279884910",
       region: "AT",
       zip: "14100",
+      coords: { lat: 44.9056, lon: 8.1868 },
     },
   ],
   social: {

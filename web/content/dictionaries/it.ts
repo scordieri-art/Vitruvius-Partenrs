@@ -227,6 +227,14 @@ const it = {
     count: (n: number) => `${n} operazioni`,
     next: "Progetto successivo",
     all: "Tutti i progetti",
+    map: {
+      label: "Dove operiamo",
+      title: "Due sedi, cantieri in oltre trenta città.",
+      office: "Sede",
+      caption: "Le sedi e le operazioni pubblicate dal gruppo. Contorno: Natural Earth.",
+      aria: "Mappa dell’Italia con le sedi e le operazioni di Vitruvius & Partners",
+      here: "Questa operazione",
+    },
   },
   newsPage: {
     label: "News & Press",

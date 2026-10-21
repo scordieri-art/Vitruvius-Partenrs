@@ -27,6 +27,8 @@ export type Project = {
   name: string;
   place: L;
   address: L;
+  /** WGS84, approximate, at the published address (city level where none is published): for the map */
+  coords: { lat: number; lon: number };
   year: string;
   composition: "landscape" | "quote" | "data";
   role: L;
@@ -55,6 +57,7 @@ export const projects: Project[] = [
     name: "Palazzo ex INPS",
     place: { it: "Genova", en: "Genoa" },
     address: { it: "Corso Italia 30, Genova", en: "Corso Italia 30, Genoa" },
+    coords: { lat: 44.3946, lon: 8.9536 },
     year: "2026",
     composition: "landscape",
     role: { it: "Acquisizione e sviluppo", en: "Acquisition and development" },
@@ -115,6 +118,7 @@ export const projects: Project[] = [
     name: "Via Asinari",
     place: { it: "Asti", en: "Asti" },
     address: { it: "Complesso residenziale, Asti", en: "Residential complex, Asti" },
+    coords: { lat: 44.8995, lon: 8.2066 },
     year: "2025",
     composition: "quote",
     role: { it: "Investimento e rinascita del complesso", en: "Investment and revival of the complex" },
@@ -180,6 +184,7 @@ export const projects: Project[] = [
     name: "Civitas 5",
     place: { it: "Airuno (LC)", en: "Airuno (LC)" },
     address: { it: "Airuno, provincia di Lecco", en: "Airuno, province of Lecco" },
+    coords: { lat: 45.7531, lon: 9.4244 },
     year: "2023",
     composition: "data",
     role: { it: "Progettazione, coordinamento ed esecuzione", en: "Design, coordination and delivery" },

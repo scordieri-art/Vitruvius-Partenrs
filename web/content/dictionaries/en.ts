@@ -234,6 +234,14 @@ const en: Dictionary = {
     count: (n: number) => `${n} operations`,
     next: "Next project",
     all: "All projects",
+    map: {
+      label: "Where we work",
+      title: "Two offices, sites in more than thirty cities.",
+      office: "Office",
+      caption: "The group’s offices and published operations. Outline: Natural Earth.",
+      aria: "Map of Italy with the offices and operations of Vitruvius & Partners",
+      here: "This operation",
+    },
   },
   newsPage: {
     label: "News & Press",
