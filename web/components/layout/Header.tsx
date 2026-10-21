@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
+import { Mark } from "@/components/marks/Mark";
 import { ButtonBody } from "@/components/ui/Button";
 import { TLink, useTransitionNavigate } from "./PageTransition";
 import { useLenis } from "./SmoothScroll";
@@ -15,12 +17,14 @@ export function Header({
   nav,
   labels,
   contacts,
+  latest,
 }: {
   lang: "it" | "en";
   homeHref: string;
   nav: NavItem[];
   labels: { menu: string; close: string; switchTo: string; switchToShort: string; skip: string; language: string; home: string; mainNav: string };
   contacts: { email: string; phones: { city: string; phone: string; href: string }[] };
+  latest: { href: string; name: string; place: string; image: string; label: string };
 }) {
   const pathname = usePathname();
   const lenis = useLenis();
@@ -189,16 +193,31 @@ export function Header({
                     href={item.href}
                     transitionLabel={item.label}
                     aria-current={isActive(item.href) ? "page" : undefined}
-                    className="vp-menu-item t-l block py-1"
+                    className="vp-menu-item t-l flex items-center gap-4 py-1"
                     style={{ animationDelay: `${80 + i * 50}ms` }}
                   >
                     {item.label}
+                    {isActive(item.href) ? <Mark className="vp-menu-mark" /> : null}
                   </TLink>
                 </li>
               ))}
             </ul>
           </nav>
-          <div className="container-x grid gap-6 t-small">
+          <div className="container-x grid gap-8 t-small">
+            {pathname.startsWith(latest.href) ? null : (
+              <TLink href={latest.href} transitionLabel={latest.name} className="vp-menu-latest group flex items-center gap-4">
+                <span className="relative block aspect-[4/3] w-24 shrink-0 overflow-hidden bg-[var(--line)]">
+                  <Image src={latest.image} alt="" fill sizes="96px" className="object-cover" />
+                </span>
+                <span className="grid gap-1">
+                  <span className="t-label text-[var(--fg-2)]">{latest.label}</span>
+                  <span className="t-body leading-tight">
+                    <span className="vp-ulink">{latest.name}</span> →
+                  </span>
+                  <span className="text-[var(--fg-2)]">{latest.place}</span>
+                </span>
+              </TLink>
+            )}
             <a href={altHref} hrefLang={lang === "it" ? "en" : "it"} className="underline decoration-1 underline-offset-4">
               {labels.switchTo}
             </a>
@@ -214,6 +233,8 @@ export function Header({
         </div>
       </header>
       <style>{`
+        /* the header changes colour with the section beneath it: focus follows the text, not the page theme */
+        .vp-header :focus-visible { outline-color: currentColor; }
         .vp-navlink { position: relative; padding-block: 0.4rem; }
         .vp-navlink::after {
           content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: currentColor;
@@ -223,6 +244,20 @@ export function Header({
         .vp-bar { transition: transform 300ms var(--ease-move); }
         .vp-menu-item { animation: vp-rise 700ms var(--ease-enter) both; }
         @keyframes vp-rise { from { transform: translateY(150%); } to { transform: none; } }
+        .vp-menu-mark { height: 0.42em; }
+        .vp-menu-latest { animation: vp-fade 600ms var(--ease-enter) 320ms both; }
+        @keyframes vp-fade { from { opacity: 0; transform: translateY(0.75rem); } to { opacity: 1; transform: none; } }
+        /* the panel opens like the page transition: a plane whose leading edge follows the slope */
+        @media (prefers-reduced-motion: no-preference) {
+          #vp-menu:not([hidden]) {
+            --ms: calc(100lvh * var(--slope));
+            animation: vp-menu-open 520ms var(--ease-move) both;
+          }
+        }
+        @keyframes vp-menu-open {
+          from { clip-path: polygon(0 0, calc(0px - var(--ms)) 0, 0 100%, 0 100%); }
+          to { clip-path: polygon(0 0, 100% 0, calc(100% + var(--ms)) 100%, 0 100%); }
+        }
       `}</style>
     </>
   );

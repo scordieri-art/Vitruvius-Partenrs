@@ -13,7 +13,7 @@ export function Footer({ lang, t }: { lang: Locale; t: Dictionary }) {
   const ext = <span className="sr-only"> ({t.ui.externalNew})</span>;
 
   return (
-    <footer data-theme="paper" className="border-t border-[var(--line)] pt-[clamp(3rem,7vw,6rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+    <footer data-theme="paper" className="vp-foot border-t border-[var(--line)] pt-[clamp(3rem,7vw,6rem)] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <div className="container-x">
         <div className="grid-12 gap-y-9">
           <div className="col-span-4 lg:col-span-4">

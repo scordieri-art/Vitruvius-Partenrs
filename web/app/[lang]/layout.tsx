@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import { company } from "@/content/site";
+import { projects } from "@/content/projects";
 import { dictionaryFor } from "@/lib/content";
 import { hasLocale, href, locales, type RouteKey } from "@/lib/i18n";
 import { organizationJsonLd } from "@/lib/seo";
@@ -45,6 +46,15 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
   if (!hasLocale(lang)) notFound();
   const t = dictionaryFor(lang);
   const nav = t.nav.map((n) => ({ href: href(lang, n.key as RouteKey), label: n.label }));
+  // the most recent operation, offered as a shortcut in the phone menu
+  const lead = projects[0];
+  const latest = {
+    href: href(lang, "projects", lead.slug[lang]),
+    name: lead.name,
+    place: lead.place[lang],
+    image: lead.image?.src ?? lead.placeholder,
+    label: t.ui.latest,
+  };
 
   return (
     <html lang={lang} suppressHydrationWarning>
@@ -82,6 +92,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
                 email: company.email,
                 phones: company.offices.map((o) => ({ city: o.city, phone: o.phone, href: o.phoneHref })),
               }}
+              latest={latest}
             />
             <main id="main" tabIndex={-1} className="outline-none">
               {children}

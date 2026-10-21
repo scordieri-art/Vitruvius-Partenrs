@@ -19,17 +19,18 @@ export type Step = {
 /**
  * The group as a sequence: develop → build → add value. Each step names who does it,
  * says it in one sentence and backs it with one published fact. Everything is readable
- * at rest: no hover is needed. Phones and tablets swipe the row; wide screens see all three.
+ * at rest: no hover is needed. Phones and tablets read the three steps down the page
+ * (the projects below are the only row that swipes); wide screens see all three side by side.
  */
 export function GroupChain({ steps, externalNote, label }: { steps: Step[]; externalNote: string; label: string }) {
   return (
-    <ol className="vp-row vp-chain container-x" data-hscroll aria-label={label}>
+    <ol className="vp-chain container-x" aria-label={label}>
       {steps.map((s, i) => (
         <li key={s.key} className="vp-chain__step">
           <p className="vp-chain__head t-label t-num" aria-hidden="true">
             <span className="text-[var(--fg)]">{String(i + 1).padStart(2, "0")}</span>
             <span className="vp-chain__rule" />
-            <span>{i < steps.length - 1 ? "→" : ""}</span>
+            <span className="vp-chain__arrow">{i < steps.length - 1 ? "→" : ""}</span>
           </p>
           <div className="vp-chain__img" data-reveal="image">
             <ParallaxImage src={s.image} alt="" sizes="(min-width: 1024px) 31vw, 78vw" strength={6} className="absolute inset-0" />

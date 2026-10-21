@@ -81,11 +81,8 @@ export default async function HomePage() {
       {/* How the group works */}
       <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)] pb-[clamp(4.5rem,9vw,8rem)]">
         <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)]">
-          <p className="t-label mb-5 flex justify-between gap-6" data-reveal="fade">
-            <span>{h.lines.label}</span>
-            <span className="lg:hidden" aria-hidden="true">
-              {h.lines.swipe} →
-            </span>
+          <p className="t-label mb-5" data-reveal="fade">
+            {h.lines.label}
           </p>
           <h2 id="lines-title" className="t-l max-w-[16ch]" data-reveal="lines">
             {h.lines.title}

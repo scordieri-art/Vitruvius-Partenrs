@@ -43,6 +43,7 @@ const en: Dictionary = {
     sources: "Press coverage",
     download: "Download",
     externalNew: "opens in a new tab",
+    latest: "Latest operation",
   },
   nav: [
     { key: "about", label: "About us" },

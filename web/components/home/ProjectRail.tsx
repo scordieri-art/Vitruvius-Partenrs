@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { Children, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { gsap, setupGsap } from "@/lib/motion";
 import { useMediaQuery, useReducedMotion } from "@/lib/hooks";
 
@@ -20,6 +20,28 @@ export function ProjectRail({ intro, hint, children }: { intro: ReactNode; hint?
   const wide = useMediaQuery("(min-width: 64rem)");
   const count = Children.count(children);
   const pinned = wide && !reduced && count >= PIN_FROM;
+  const [current, setCurrent] = useState(1);
+
+  // swipeable row: which card is in view, for the "1 / 3" counter under it
+  useEffect(() => {
+    const t = track.current;
+    if (!t || pinned || wide) return;
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const first = t.firstElementChild as HTMLElement | null;
+        const step = first ? first.offsetWidth + parseFloat(getComputedStyle(t).columnGap || "0") : 1;
+        const atEnd = t.scrollLeft + t.clientWidth >= t.scrollWidth - 2;
+        setCurrent(atEnd ? count : Math.min(count, Math.round(t.scrollLeft / step) + 1));
+      });
+    };
+    t.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      t.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [pinned, wide, count]);
 
   useEffect(() => {
     const s = section.current;
@@ -71,10 +93,19 @@ export function ProjectRail({ intro, hint, children }: { intro: ReactNode; hint?
       <div ref={track} className="vp-row container-x" data-hscroll="" style={{ "--cols": Math.min(count, 4) } as CSSProperties}>
         {children}
       </div>
-      {hint ? (
-        <p className="container-x t-label mt-5 lg:hidden" aria-hidden="true">
-          {hint} →
-        </p>
+      {count > 1 ? (
+        <div className="container-x mt-6 flex items-center gap-4 lg:hidden" aria-hidden="true">
+          <span className="t-label t-num shrink-0">
+            {current} / {count}
+          </span>
+          <span className="relative block h-px flex-1 bg-[var(--line)]">
+            <span
+              className="absolute inset-y-0 left-0 bg-[var(--fg)] transition-[width] duration-300 ease-[var(--ease-move)]"
+              style={{ width: `${(current / count) * 100}%` }}
+            />
+          </span>
+          {hint ? <span className="t-label shrink-0">{hint} →</span> : null}
+        </div>
       ) : null}
     </div>
   );

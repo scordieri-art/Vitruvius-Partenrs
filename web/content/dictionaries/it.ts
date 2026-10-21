@@ -36,6 +36,7 @@ const it = {
     sources: "Rassegna stampa",
     download: "Scarica",
     externalNew: "si apre in una nuova scheda",
+    latest: "Ultima operazione",
   },
   nav: [
     { key: "about", label: "Chi siamo" },

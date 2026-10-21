@@ -147,7 +147,7 @@
   }
 
   :focus-visible {
-    outline: 1px solid var(--focus);
+    outline: 2px solid var(--focus);
     outline-offset: 4px;
     border-radius: 2px;
   }
@@ -263,6 +263,17 @@
   .vp-ulink:focus-visible {
     background-size: 100% 1px;
     background-position: 0 100%;
+  }
+  /* footer on touch screens: 44px tap height around 21px links, same look and spacing */
+  @media (max-width: 63.99rem) {
+    .vp-foot a {
+      position: relative;
+    }
+    .vp-foot a::before {
+      content: "";
+      position: absolute;
+      inset: -0.7rem -0.25rem;
+    }
   }
 
   /* ---------------------------------------------------------------
@@ -671,9 +682,19 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   /* the group as a sequence: develop → build → add value, each with one proof.
      Each step spans the seven rows of the list (subgrid), so verbs, sentences and
      proofs line up across the three columns whatever their length. */
+  .vp-chain {
+    display: grid;
+    row-gap: clamp(3.5rem, 2.5rem + 4vw, 5rem);
+  }
   .vp-chain__step {
     display: flex;
     flex-direction: column;
+    max-width: 40rem;
+  }
+  /* down the page on phones and tablets: the sequence arrow points down */
+  .vp-chain__arrow {
+    display: inline-block;
+    transform: rotate(90deg);
   }
   .vp-chain__step > :nth-last-child(2) {
     margin-top: auto;
@@ -709,11 +730,20 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     letter-spacing: -0.015em;
   }
   @media (min-width: 64rem) {
+    .vp-chain {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      row-gap: 0;
+    }
+    .vp-chain__arrow {
+      transform: none;
+    }
     .vp-chain__step {
       display: grid;
       grid-row: span 7;
       grid-template-rows: subgrid;
       align-content: start;
+      max-width: none;
     }
     .vp-chain__step > :nth-last-child(2) {
       margin-top: 0;
@@ -811,8 +841,11 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       transform: translate3d(0, calc(var(--p) * 14%), 0) scale(calc(1.06 - var(--p) * 0.04));
     }
     .vp-hero__mass {
-      /* --k: 1 → 0 on load (the photo opens along the slope), --p: 0 → 1 with the scroll */
-      --x: calc(var(--c) + var(--k) * (100% - var(--c)) - var(--p) * (var(--c) + var(--s) + 10%));
+      /* --k: 1 → 0 on load (the photo opens along the slope), --p: 0 → 1 with the scroll.
+         --q holds the mass still for the first 12% of the scroll, while the text leaves,
+         so the slope never cuts through a word. */
+      --q: max(0, calc((var(--p) - 0.12) / 0.88));
+      --x: calc(var(--c) + var(--k) * (100% - var(--c)) - var(--q) * (var(--c) + var(--s) + 10%));
       position: absolute;
       inset: 0;
       margin-top: 0;
@@ -824,6 +857,9 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       height: 100%;
       padding-top: 0;
       padding-bottom: max(3rem, 9vh);
+      /* rises and fades within the first 12% of the scroll, before the mass moves */
+      opacity: clamp(0, calc(1 - var(--p) * 8.5), 1);
+      transform: translate3d(0, calc(var(--p) * -18vh), 0);
     }
   }
 
