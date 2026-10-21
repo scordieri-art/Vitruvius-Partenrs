@@ -206,7 +206,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
         {/* Next project */}
         <section data-theme="paper" aria-label={t.projectsPage.next} className="pb-[var(--section-y)]">
           <div className="container-x">
-            <TLink href={href(lang, "projects", next.slug[lang])} transitionLabel={next.name} className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10">
+            <TLink href={href(lang, "projects", next.slug[lang])} transitionLabel={next.name} className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10" morph>
               <div className="col-span-4 lg:col-span-5">
                 <p className="t-label">{t.projectsPage.next}</p>
                 <p className="t-l mt-3">{next.name}</p>

@@ -30,7 +30,7 @@ export default async function ProjectsIndex() {
             const first = i === 0;
             return (
               <li key={p.slug.it} id={`p-${p.slug[lang]}`} className={first ? "col-span-4 lg:col-span-12" : i === 1 ? "col-span-4 lg:col-span-6" : "col-span-4 lg:col-span-5 lg:col-start-8 lg:mt-[clamp(6rem,14vw,14rem)]"}>
-                <TLink href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="group block">
+                <TLink href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="group block" morph>
                   <div data-reveal="image">
                     <ProjectImage
                       p={p}

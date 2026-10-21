@@ -38,7 +38,8 @@ export function RevealScope({ children }: { children: ReactNode }) {
     const when = (el: HTMLElement, start: string, play: () => void) => {
       if (el.getBoundingClientRect().top < window.innerHeight) {
         // during a page transition, start as the plane uncovers the page
-        if (document.documentElement.dataset.vpTransition) gsap.delayedCall(0.5, play);
+        // (after a shared-image transition, once the picture has dissolved into the page)
+        if (document.documentElement.dataset.vpTransition) gsap.delayedCall(document.documentElement.dataset.vpMorph ? 1.05 : 0.5, play);
         else play();
         return;
       }
@@ -67,6 +68,8 @@ export function RevealScope({ children }: { children: ReactNode }) {
 
       if (kind === "image") {
         const inner = el.querySelector<HTMLElement>("img, video, canvas");
+        // the picture has just grown into this frame: show it as it is
+        if (document.documentElement.dataset.vpMorph && el.getBoundingClientRect().top < window.innerHeight) return;
         const st = { p: 0 };
         const set = () => {
           const w = el.clientWidth || 1;

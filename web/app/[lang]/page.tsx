@@ -153,7 +153,7 @@ export default async function HomePage() {
           }
         >
           {projects.map((p) => (
-            <TLink key={p.slug.it} href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="vp-card group block">
+            <TLink key={p.slug.it} href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="vp-card group block" morph>
               <ProjectImage
                 p={p}
                 lang={lang}

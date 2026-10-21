@@ -15,7 +15,9 @@ import {
 } from "react";
 import { gsap, prefersReducedMotion, setupGsap, ScrollTrigger } from "@/lib/motion";
 
-type Navigate = (href: string, label?: string) => void;
+/** Where a project picture starts from, for the shared-image transition. */
+type Morph = { rect: DOMRect; src: string };
+type Navigate = (href: string, label?: string, morph?: Morph) => void;
 const TransitionContext = createContext<Navigate | null>(null);
 
 // slope of the symbol's primary mass: 99.655 / 170
@@ -25,6 +27,10 @@ const SLOPE = 99.655 / 170;
  * Page transition with the brand gesture: a navy plane whose leading edge
  * follows the slope of the primary mass of the symbol (≈ 59.6°) covers the
  * page, the route changes underneath, then the plane leaves.
+ *
+ * Project cards use a second gesture: their picture lifts off the card and grows to fill
+ * the screen, darkening at the foot like the case opening; the case loads underneath and
+ * the picture dissolves into its own. Both need the route and the growth to be done.
  */
 export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -38,6 +44,8 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const tween = useRef<gsap.core.Tween | null>(null);
   const clip = useRef({ lead: 0, trail: 0 });
   const here = useRef(pathname);
+  const morphEl = useRef<HTMLDivElement>(null);
+  const morphState = useRef<{ routeReady: boolean; expanded: boolean } | null>(null);
 
   const setClip = useCallback((lead: number, trail: number) => {
     const el = plane.current;
@@ -92,8 +100,77 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     [setClip],
   );
 
+  /** Shared image: once the case is rendered and the picture fills the screen, dissolve it. */
+  const finishMorph = useCallback(() => {
+    const m = morphState.current;
+    const el = morphEl.current;
+    if (!m || !m.routeReady || !m.expanded || !el) return;
+    morphState.current = null;
+    phase.current = "revealing";
+    const lenis = (window as unknown as { __lenis?: { scrollTo: (t: number, o: object) => void } }).__lenis;
+    const top = () => {
+      window.scrollTo(0, 0);
+      lenis?.scrollTo(0, { immediate: true, force: true });
+    };
+    top();
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+      top();
+      tween.current = gsap.to(el, {
+        opacity: 0,
+        duration: 0.65,
+        delay: 0.1,
+        ease: "move",
+        onComplete: () => {
+          el.style.visibility = "hidden";
+          phase.current = "idle";
+          delete document.documentElement.dataset.vpTransition;
+          delete document.documentElement.dataset.vpMorph;
+        },
+      });
+    });
+  }, []);
+
+  const startMorph = useCallback(
+    (href: string, from: Morph) => {
+      const el = morphEl.current;
+      const img = el?.querySelector("img");
+      if (!el || !img) return false;
+      setupGsap();
+      tween.current?.kill();
+      img.src = from.src;
+      phase.current = "covering";
+      document.documentElement.dataset.vpTransition = "1";
+      document.documentElement.dataset.vpMorph = "1";
+      pending.current = href;
+      awaiting.current = true;
+      morphState.current = { routeReady: false, expanded: false };
+      const r = from.rect;
+      gsap.set(el, { visibility: "visible", opacity: 1, top: r.top, left: r.left, width: r.width, height: r.height });
+      gsap.fromTo(el.querySelector(".vp-morph__shade"), { opacity: 0 }, { opacity: 1, duration: 0.85, ease: "move" });
+      tween.current = gsap.to(el, {
+        top: 0,
+        left: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        duration: 0.85,
+        ease: "move",
+        onComplete: () => {
+          if (!morphState.current) return;
+          morphState.current.expanded = true;
+          finishMorph();
+        },
+      });
+      router.push(href, { scroll: false });
+      return true;
+    },
+    [router, finishMorph],
+  );
+
   const navigate = useCallback<Navigate>(
-    (href, text) => {
+    (href, text, morph) => {
+      // a shared-image transition is under way: let it land
+      if (morphState.current) return;
       const [pathOnly] = href.split("#");
       // a click while the plane is still entering: the latest destination wins
       if (phase.current === "covering") {
@@ -109,6 +186,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
         router.push(href);
         return;
       }
+      if (morph && startMorph(href, morph)) return;
       setupGsap();
       tween.current?.kill();
       const wasRevealing = phase.current === "revealing";
@@ -135,7 +213,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
         : gsap.to(c, { lead: 1, duration: 0.7, ease: "move", onUpdate: () => setClip(c.lead, c.trail), onComplete: done });
       if (label.current) gsap.fromTo(label.current, { yPercent: 150, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.6, delay: 0.25, ease: "enter" });
     },
-    [router, setClip, reveal],
+    [router, setClip, reveal, startMorph],
   );
 
   // reveal once the new route is rendered
@@ -143,10 +221,16 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     here.current = pathname;
     if (!awaiting.current) return;
     awaiting.current = false;
+    if (morphState.current) {
+      pending.current = null;
+      morphState.current.routeReady = true;
+      finishMorph();
+      return;
+    }
     const hash = (pending.current ?? "").split("#")[1] ?? "";
     pending.current = null;
     reveal(hash);
-  }, [pathname, reveal]);
+  }, [pathname, reveal, finishMorph]);
 
   return (
     <TransitionContext.Provider value={navigate}>
@@ -163,6 +247,11 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
           </span>
         </div>
       </div>
+      <div ref={morphEl} aria-hidden="true" className="pointer-events-none fixed z-[90] overflow-hidden bg-ink" style={{ visibility: "hidden" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element -- a copy of the card picture already in the browser cache */}
+        <img alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <span className="vp-morph__shade absolute inset-0 bg-[linear-gradient(to_top,rgb(15_23_42/0.88),rgb(15_23_42/0.4)_55%,transparent)]" />
+      </div>
     </TransitionContext.Provider>
   );
 }
@@ -174,11 +263,13 @@ type TLinkProps = LinkProps &
     children: ReactNode;
     /** Short label shown on the transition plane (e.g. destination page name). */
     transitionLabel?: string;
+    /** Project cards: the picture inside the link grows into the case opening. */
+    morph?: boolean;
     ref?: Ref<HTMLAnchorElement>;
   };
 
 /** Internal link that plays the brand page transition. */
-export function TLink({ href, onClick, transitionLabel, children, ref, ...rest }: TLinkProps) {
+export function TLink({ href, onClick, transitionLabel, morph, children, ref, ...rest }: TLinkProps) {
   const navigate = useTransitionNavigate();
   const target = typeof href === "string" ? href : href.pathname ?? "/";
   const handle = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -186,7 +277,15 @@ export function TLink({ href, onClick, transitionLabel, children, ref, ...rest }
     if (e.defaultPrevented || !navigate) return;
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
-    navigate(target, transitionLabel);
+    let from: Morph | undefined;
+    if (morph) {
+      // the top-most loaded picture (a published photo sits over its stock placeholder)
+      const imgs = [...e.currentTarget.querySelectorAll("img")].filter((i) => i.complete && i.naturalWidth > 0);
+      const img = imgs[imgs.length - 1];
+      const box = img?.parentElement?.getBoundingClientRect();
+      if (img && box && box.width > 0) from = { rect: box, src: img.currentSrc || img.src };
+    }
+    navigate(target, transitionLabel, from);
   };
   return (
     <Link ref={ref} href={href} onClick={handle} {...rest}>
