@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { sendApplication, type FormState } from "@/lib/actions";
-import { Consent, Field, Honeypot, Submit } from "./Fields";
+import { Consent, Field, Honeypot, Submit, useSubmitKeepingValues } from "./Fields";
 
 type Labels = {
   failed: string;
@@ -30,6 +30,7 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
   const [fileName, setFileName] = useState("");
   const form = useRef<HTMLFormElement>(null);
   const status = useRef<HTMLParagraphElement>(null);
+  const onSubmit = useSubmitKeepingValues(action);
   const msg = (k?: string) =>
     k === "email" ? labels.invalidEmail : k === "phone" ? labels.invalidPhone : k === "file" ? labels.invalidFile : k ? labels.required : undefined;
 
@@ -46,7 +47,7 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
   }, [state]);
 
   return (
-    <form ref={form} action={action} noValidate className="relative grid gap-10" aria-labelledby="apply-title">
+    <form ref={form} action={action} onSubmit={onSubmit} noValidate className="relative grid gap-10" aria-labelledby="apply-title">
       <Honeypot />
       <input type="hidden" name="job" value={job} />
       <h2 id="apply-title" className="t-m">{labels.title}</h2>
@@ -62,7 +63,7 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
         <span className="t-label block" id="a-cv-label">
           {labels.cv} <span aria-hidden="true">*</span>
         </span>
-        <label htmlFor="a-cv" className="mt-3 flex cursor-pointer items-center justify-between gap-6 border-b border-[var(--line)] pb-3 pt-2">
+        <label htmlFor="a-cv" className="vp-filerow mt-3 flex cursor-pointer items-center justify-between gap-6 border-b border-[var(--line)] pb-3 pt-2">
           <span className="t-body-l truncate">{fileName || "—"}</span>
           <span className="vp-ulink t-small shrink-0">{labels.cv}</span>
         </label>

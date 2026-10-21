@@ -181,7 +181,7 @@ export default async function HomePage() {
         </ProjectRail>
       </section>
 
-      <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={href(lang, "contact", undefined, "write")} image={IMG.contact} />
+      <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={`${href(lang, "contact")}?topic=property#write`} image={IMG.contact} />
     </RevealScope>
   );
 }

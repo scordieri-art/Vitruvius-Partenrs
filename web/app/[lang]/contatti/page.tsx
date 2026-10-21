@@ -4,6 +4,7 @@ import { TLink } from "@/components/layout/PageTransition";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
+import { Mark } from "@/components/marks/Mark";
 import { company } from "@/content/site";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
@@ -110,6 +111,24 @@ export default async function ContactPage() {
               </TLink>
               {c.careersNoteEnd}
             </p>
+            {/* who answers: four published facts, the same ones the About page sources */}
+            <div className="mt-12 lg:mt-16">
+              <h3 className="t-label mb-4">{c.proofs.label}</h3>
+              <dl className="grid grid-cols-2 gap-x-[var(--col-gap)] border-t border-[var(--line)] lg:grid-cols-1">
+                {c.proofs.items.map((p) => (
+                  <div key={p.value} className="border-b border-[var(--line)] py-4">
+                    <dt className="flex items-baseline gap-2.5">
+                      <Mark className="text-[var(--fg)]" />
+                      <span className="t-s t-num leading-none">{p.value}</span>
+                    </dt>
+                    <dd className="t-small mt-2 text-[var(--fg-2)]">{p.label}</dd>
+                  </div>
+                ))}
+              </dl>
+              <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink t-small mt-4 inline-block text-[var(--fg)]">
+                {t.home.numbers.source}
+              </TLink>
+            </div>
           </div>
           <div className="col-span-4 lg:col-span-7 lg:col-start-6">
             <ContactForm labels={c.form} />

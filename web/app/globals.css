@@ -366,6 +366,88 @@
   .vp-tabs::-webkit-scrollbar {
     display: none;
   }
+  /* contact topic: large rows, the chosen one carries the slope mark */
+  .vp-choice {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .vp-choice__list {
+    display: grid;
+    border-top: 1px solid var(--line);
+  }
+  @media (min-width: 40rem) {
+    .vp-choice__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+    }
+  }
+  .vp-choice__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    min-height: 3.5rem;
+    padding-block: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    color: var(--fg-2);
+    transition: color var(--dur-ui) var(--ease-move);
+  }
+  .vp-choice__item:hover,
+  .vp-choice__item:has(input:checked) {
+    color: var(--fg);
+  }
+  .vp-choice__item:has(input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .vp-choice__mark {
+    height: 0.9rem;
+  }
+  /* the select keeps its native picker; only the arrow is drawn */
+  .vp-select {
+    position: relative;
+  }
+  .vp-select::after {
+    content: "";
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 1px solid currentColor;
+    border-bottom: 1px solid currentColor;
+    transform: translateY(-75%) rotate(45deg);
+    pointer-events: none;
+  }
+  .vp-select select:invalid {
+    color: var(--fg-2);
+  }
+  .vp-select option {
+    color: var(--color-ink);
+  }
+  /* file rows: the input is visually hidden, so its focus shows on the row */
+  .vp-filerow:has(+ input:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 4px;
+  }
+  .vp-reveal-group {
+    animation: vp-group-in 480ms var(--ease-enter) both;
+  }
+  @keyframes vp-group-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-reveal-group {
+      animation: none;
+    }
+  }
+
   /* archive search: a hairline field, like the form fields */
   .vp-search {
     display: grid;
