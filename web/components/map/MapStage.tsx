@@ -8,7 +8,7 @@ import { ScrollTrigger, prefersReducedMotion, setupGsap } from "@/lib/motion";
  * middle of the screen: the layered outline reads as a slab, the marks stand up.
  * Without JavaScript, or with reduced motion, it rests at the CSS default tilt.
  */
-export function MapStage({ children, className = "" }: { children: ReactNode; className?: string }) {
+export function MapStage({ children, className = "", focused = false }: { children: ReactNode; className?: string; focused?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export function MapStage({ children, className = "" }: { children: ReactNode; cl
   }, []);
 
   return (
-    <div ref={root} className={`vp-map__stage ${className}`}>
+    <div ref={root} className={`vp-map__stage ${className}`} data-focus={focused ? "" : undefined}>
       <div className="vp-map__plane">{children}</div>
     </div>
   );

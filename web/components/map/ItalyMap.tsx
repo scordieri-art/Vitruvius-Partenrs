@@ -22,59 +22,68 @@ export type MapPlace = {
   item: ReactNode;
 };
 
+/** Places projected onto the map, in percent of the slab. */
+const placePins = (places: Omit<MapPlace, "item">[]) =>
+  places.map((p) => {
+    const [x, y] = project(p.lat, p.lon);
+    return { ...p, left: ((x - VIEW.x) / VIEW.w) * 100, top: ((-y - VIEW.y) / VIEW.h) * 100 };
+  });
+
+/** The tilted navy slab with a standing mark per place; `focus` lights one and dims the rest. */
+export function MapSlab({ places, focus, className = "" }: { places: Omit<MapPlace, "item">[]; focus?: string; className?: string }) {
+  return (
+    <MapStage className={className} focused={!!focus}>
+      {Array.from({ length: LAYERS }, (_, i) => (
+        <svg
+          key={i}
+          className="vp-map__layer"
+          viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
+          aria-hidden="true"
+          focusable="false"
+          style={{ "--i": i } as CSSProperties}
+        >
+          <path d={OUTLINE} />
+        </svg>
+      ))}
+      {placePins(places).map((p) => (
+        <span
+          key={p.key}
+          className="vp-map__pin"
+          data-k={p.key}
+          data-kind={p.kind}
+          style={{ left: `${p.left}%`, top: `${p.top}%`, ...(focus === p.key ? { "--on": 1 } : null) } as CSSProperties}
+          aria-hidden="true"
+        >
+          <span className="vp-map__blade">
+            <Mark />
+          </span>
+        </span>
+      ))}
+    </MapStage>
+  );
+}
+
 /**
  * Italy as a slab in the brand navy, tilted into depth by the scroll, with a standing
  * mark for each place. The list beside it is the readable, accessible version: hovering
  * or focusing an entry lights its mark and dims the others (CSS only, see the rules below).
- * `focus` lights one place permanently (a case page).
  */
-export function ItalyMap({ places, caption, label, focus }: { places: MapPlace[]; caption: string; label: string; focus?: string }) {
-  const pins = places.map((p) => {
-    const [x, y] = project(p.lat, p.lon);
-    return { ...p, left: ((x - VIEW.x) / VIEW.w) * 100, top: ((-y - VIEW.y) / VIEW.h) * 100 };
-  });
-  // one pair of rules per place: its list entry lights its mark
-  const rules = pins
+export function ItalyMap({ places, caption, label }: { places: MapPlace[]; caption: string; label: string }) {
+  // one rule per place: its list entry lights its mark
+  const rules = places
     .map((p) => `.vp-map:has(.vp-map__item[data-k="${p.key}"]:is(:hover,:focus-within)) .vp-map__pin[data-k="${p.key}"]{--on:1}`)
     .join("");
 
   return (
-    <figure className="vp-map grid-12 gap-y-10" data-focus={focus ? "" : undefined} aria-label={label}>
+    <figure className="vp-map grid-12 gap-y-10" aria-label={label}>
       <style>{rules}</style>
       <div className="col-span-4 lg:col-span-7">
-        <MapStage>
-          {Array.from({ length: LAYERS }, (_, i) => (
-            <svg
-              key={i}
-              className="vp-map__layer"
-              viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.w} ${VIEW.h}`}
-              aria-hidden="true"
-              focusable="false"
-              style={{ "--i": i } as CSSProperties}
-            >
-              <path d={OUTLINE} />
-            </svg>
-          ))}
-          {pins.map((p) => (
-            <span
-              key={p.key}
-              className="vp-map__pin"
-              data-k={p.key}
-              data-kind={p.kind}
-              style={{ left: `${p.left}%`, top: `${p.top}%`, ...(focus === p.key ? { "--on": 1 } : null) } as CSSProperties}
-              aria-hidden="true"
-            >
-              <span className="vp-map__blade">
-                <Mark />
-              </span>
-            </span>
-          ))}
-        </MapStage>
+        <MapSlab places={places} />
       </div>
       <div className="col-span-4 lg:col-span-4 lg:col-start-9 lg:self-center">
         <ol className="vp-map__list">
-          {pins.map((p) => (
-            <li key={p.key} className="vp-map__item" data-k={p.key} data-kind={p.kind} aria-current={focus === p.key ? "true" : undefined}>
+          {places.map((p) => (
+            <li key={p.key} className="vp-map__item" data-k={p.key} data-kind={p.kind}>
               {p.item}
             </li>
           ))}

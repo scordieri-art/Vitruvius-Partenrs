@@ -6,10 +6,15 @@ import { ProjectImage } from "@/components/cases/ProjectImage";
 import { StageTrack } from "@/components/cases/StageTrack";
 import { Mark } from "@/components/marks/Mark";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { Cta } from "@/components/ui/Cta";
+import { MapSlab } from "@/components/map/ItalyMap";
+import { company } from "@/content/site";
 import { findProject, projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href, locales } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
+
+const mapsUrl = (address: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
 export function generateStaticParams() {
   return locales.flatMap((lang) => projects.map((p) => ({ lang, slug: p.slug[lang] })));
@@ -95,23 +100,90 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
           </div>
         </section>
 
-        {/* Two short paragraphs */}
-        <section data-theme="paper" className="py-[var(--section-y)]">
-          <div className="container-x grid-12 gap-y-12">
-            <div className="col-span-4 lg:col-span-5" data-reveal="fade">
-              <h2 className="t-label">{c.context}</h2>
-              <p className="t-body-l mt-4">{p.context[lang]}</p>
-            </div>
-            <div className="col-span-4 lg:col-span-6 lg:col-start-7" data-reveal="fade">
-              <h2 className="t-label">{c.contribution}</h2>
-              <p className="t-body-l mt-4">{p.contribution[lang]}</p>
-              <ul className="mt-8 flex flex-wrap gap-2" aria-label={c.capabilities}>
-                {p.capabilities[lang].map((cap) => (
-                  <li key={cap} className="t-small border border-[var(--line)] px-3 py-1.5">
-                    {cap}
-                  </li>
+        {/* The case at a glance: a fact sheet that stays in view, with the place on the map; the story beside it */}
+        <section data-theme="paper" aria-labelledby="sheet-title" className="pb-[var(--section-y)] pt-[clamp(4.5rem,9vw,8rem)]">
+          <div className="container-x grid-12 gap-y-14">
+            <aside className="col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:col-span-4 lg:self-start">
+              <h2 id="sheet-title" className="t-label mb-5">
+                {c.sheet}
+              </h2>
+              <dl className="vp-sheet">
+                {[
+                  [c.place, p.place[lang]],
+                  [c.address, p.address[lang]],
+                  [c.year, p.year],
+                  [c.stages, p.status[lang]],
+                  [c.role, p.role[lang]],
+                ].map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="t-label">{k}</dt>
+                    <dd className="t-body">{v}</dd>
+                  </div>
                 ))}
-              </ul>
+              </dl>
+              <figure className="mt-10 grid gap-5" aria-label={c.mapLabel}>
+                <MapSlab
+                  places={[
+                    ...company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const })),
+                    { key: p.slug.it, lat: p.coords.lat, lon: p.coords.lon, kind: "project" as const },
+                  ]}
+                  focus={p.slug.it}
+                  className="max-w-[16rem] lg:mx-0"
+                />
+                <div>
+                  <Cta href={mapsUrl(p.address.it)} external externalNote={t.ui.externalNew}>
+                    {c.maps}
+                  </Cta>
+                </div>
+              </figure>
+            </aside>
+
+            <div className="col-span-4 grid gap-[clamp(3rem,6vw,4.5rem)] lg:col-span-7 lg:col-start-6">
+              <div data-reveal="fade">
+                <h2 className="t-label">{c.context}</h2>
+                <p className="t-body-l mt-4">{p.context[lang]}</p>
+              </div>
+              <div data-reveal="fade">
+                <h2 className="t-label">{c.contribution}</h2>
+                <p className="t-body-l mt-4">{p.contribution[lang]}</p>
+                <ul className="mt-8 flex flex-wrap gap-2" aria-label={c.capabilities}>
+                  {p.capabilities[lang].map((cap) => (
+                    <li key={cap} className="t-small border border-[var(--line)] px-3 py-1.5">
+                      {cap}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="border-t border-[var(--line)] pt-10">
+                <h2 className="t-label mb-8">{c.stages}</h2>
+                <StageTrack
+                  stages={p.stages.map((st) => ({ label: st.label[lang], when: st.when[lang], done: st.done }))}
+                  doneLabel={c.legend.done}
+                  plannedLabel={c.legend.planned}
+                />
+              </div>
+              <div className="grid gap-10 border-t border-[var(--line)] pt-10 sm:grid-cols-2">
+                <div>
+                  <h2 className="t-label">{c.outcome}</h2>
+                  <p className="t-body mt-4">{p.outcome.text[lang]}</p>
+                </div>
+                <div>
+                  <h2 className="t-label">{c.sources}</h2>
+                  <p className="t-body mt-4 flex flex-wrap gap-x-5 gap-y-2">
+                    {newsSlug ? (
+                      <TLink href={href(lang, "news", newsSlug)} className="vp-ulink">
+                        {c.newsLink}
+                      </TLink>
+                    ) : null}
+                    {p.sources.slice(0, 3).map((src) => (
+                      <a key={src.url} href={src.url} target="_blank" rel="noopener noreferrer" className="vp-ulink">
+                        {src.label} <span aria-hidden="true">↗</span>
+                        <span className="sr-only"> ({t.ui.externalNew})</span>
+                      </a>
+                    ))}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -130,38 +202,6 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
             </div>
           </section>
         ) : null}
-
-        {/* Where it stands */}
-        <section data-theme="paper" className="py-[clamp(4.5rem,9vw,8rem)]">
-          <div className="container-x grid-12 gap-y-10">
-            <div className="col-span-4 lg:col-span-7">
-              <h2 className="t-label mb-8">{c.stages}</h2>
-              <StageTrack
-                stages={p.stages.map((s) => ({ label: s.label[lang], when: s.when[lang], done: s.done }))}
-                doneLabel={c.legend.done}
-                plannedLabel={c.legend.planned}
-              />
-            </div>
-            <div className="col-span-4 lg:col-span-4 lg:col-start-9">
-              <h2 className="t-label">{c.outcome}</h2>
-              <p className="t-body mt-4">{p.outcome.text[lang]}</p>
-              <h2 className="t-label mt-10">{c.sources}</h2>
-              <p className="t-body mt-3 flex flex-wrap gap-x-5 gap-y-2">
-                {newsSlug ? (
-                  <TLink href={href(lang, "news", newsSlug)} className="vp-ulink">
-                    {c.newsLink}
-                  </TLink>
-                ) : null}
-                {p.sources.slice(0, 3).map((s) => (
-                  <a key={s.url} href={s.url} target="_blank" rel="noopener noreferrer" className="vp-ulink">
-                    {s.label} <span aria-hidden="true">↗</span>
-                    <span className="sr-only"> ({t.ui.externalNew})</span>
-                  </a>
-                ))}
-              </p>
-            </div>
-          </div>
-        </section>
 
         {/* Next project */}
         <section data-theme="paper" aria-label={t.projectsPage.next} className="pb-[var(--section-y)]">

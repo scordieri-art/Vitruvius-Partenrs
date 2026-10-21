@@ -512,7 +512,7 @@
     font-size: clamp(1.3rem, 0.8rem + 2.1vw, 2.5rem);
   }
   .vp-map:has(.vp-map__item:is(:hover, :focus-within)) .vp-map__pin,
-  .vp-map[data-focus] .vp-map__pin {
+  .vp-map__stage[data-focus] .vp-map__pin {
     --dim: 0.32;
   }
   .vp-map__list {
@@ -532,6 +532,19 @@
     gap: 0.2rem;
     padding-block: 1rem;
     min-height: 44px;
+  }
+
+  /* case fact sheet: label above value, hairline between rows */
+  .vp-sheet {
+    border-top: 1px solid var(--line);
+  }
+  .vp-sheet > div {
+    display: grid;
+    grid-template-columns: 7.5rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: baseline;
+    padding-block: 0.85rem;
+    border-bottom: 1px solid var(--line);
   }
 
   /* archive search: a hairline field, like the form fields */
