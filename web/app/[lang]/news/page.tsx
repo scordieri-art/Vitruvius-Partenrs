@@ -48,7 +48,8 @@ export default async function NewsIndex() {
                       src={item.image}
                       alt=""
                       fill
-                      priority={i === 0}
+                      loading={i === 0 ? "eager" : undefined}
+                      fetchPriority={i === 0 ? "high" : undefined}
                       sizes="(min-width: 1024px) 31vw, 78vw"
                       className="object-cover transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
                     />

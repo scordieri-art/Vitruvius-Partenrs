@@ -37,7 +37,7 @@ export function Hero({ copy, image }: { copy: HeroCopy; image: string }) {
   return (
     <section ref={root} data-theme="navy" aria-labelledby="hero-title" className="vp-hero">
       <div className="vp-hero__img">
-        <Image src={image} alt="" fill priority sizes="100vw" className="object-cover" />
+        <Image src={image} alt="" fill loading="eager" fetchPriority="high" sizes="100vw" className="object-cover" />
       </div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[linear-gradient(to_bottom,rgb(10_35_66/0.6),transparent)]" />
       <div className="vp-hero__mass">

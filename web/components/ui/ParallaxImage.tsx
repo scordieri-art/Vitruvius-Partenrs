@@ -51,7 +51,15 @@ export function ParallaxImage({
   return (
     <div ref={frame} className={`vp-parallax overflow-hidden ${className}`} style={{ "--ps": strength } as CSSProperties}>
       <div className="vp-parallax__inner">
-        <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className={`object-cover ${imgClassName}`} />
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          loading={priority ? "eager" : undefined}
+          fetchPriority={priority ? "high" : undefined}
+          className={`object-cover ${imgClassName}`}
+        />
       </div>
       {children}
     </div>

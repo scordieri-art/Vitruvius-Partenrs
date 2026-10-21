@@ -63,6 +63,9 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <link rel="preconnect" href="https://p.typekit.net" crossOrigin="" />
         {/* Adobe Fonts web kit "zgd5zbh": Aktiv Grotesk Light 300, Regular 400, Bold 700 */}
         <link rel="stylesheet" href="https://use.typekit.net/zgd5zbh.css" />
+        {/* the kit @imports Adobe's page-view stylesheet: fetching it in parallel saves a
+            render-blocking round trip. If the kit changes, update the URL (see the kit's CSS). */}
+        <link rel="preload" as="style" href="https://p.typekit.net/p.css?s=1&k=zgd5zbh&ht=tk&f=14032.14034.14036&a=265650721&app=typekit&e=css" />
         <script
           dangerouslySetInnerHTML={{
             __html:

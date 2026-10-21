@@ -93,7 +93,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
                   <span className="t-label">{press?.outlet ?? n.label}</span>
                   <span className="t-label">{formatDate(item.date, lang)}</span>
                 </div>
-                <SafeImage src={item.image} alt="" fill priority sizes="100vw" className="object-cover" />
+                <SafeImage src={item.image} alt="" fill loading="eager" fetchPriority="high" sizes="100vw" className="object-cover" />
               </div>
             </div>
           </div>

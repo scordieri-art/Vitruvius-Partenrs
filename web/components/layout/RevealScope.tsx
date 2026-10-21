@@ -49,15 +49,23 @@ export function RevealScope({ children }: { children: ReactNode }) {
       const kind = el.dataset.reveal;
       const delay = Number(el.dataset.revealDelay ?? 0);
       const start = el.dataset.revealStart ?? "top 88%";
-      gsap.set(el, { visibility: "visible" });
 
       if (kind === "lines") {
-        const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "vp-line", aria: "none" });
-        splits.push(split);
-        // 150%: fully below the mask, padding included (see .vp-line-mask)
-        gsap.set(split.lines, { yPercent: 150 });
-        when(el, start, () => gsap.to(split.lines, { yPercent: 0, duration: 1.05, ease: "enter", stagger: 0.09, delay }));
-      } else if (kind === "image") {
+        // split only when the heading is about to play: splitting every heading on load
+        // forces a layout per heading while the page is still busy hydrating
+        when(el, start, () => {
+          const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "vp-line", aria: "none" });
+          splits.push(split);
+          // 150%: fully below the mask, padding included (see .vp-line-mask)
+          gsap.set(split.lines, { yPercent: 150 });
+          gsap.set(el, { visibility: "visible" });
+          gsap.to(split.lines, { yPercent: 0, duration: 1.05, ease: "enter", stagger: 0.09, delay });
+        });
+        return;
+      }
+      gsap.set(el, { visibility: "visible" });
+
+      if (kind === "image") {
         const inner = el.querySelector<HTMLElement>("img, video, canvas");
         const st = { p: 0 };
         const set = () => {

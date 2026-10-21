@@ -32,10 +32,27 @@ export function ProjectImage({
 }) {
   return (
     <div className={`relative overflow-hidden bg-[var(--line)] ${className}`}>
-      <Image src={p.placeholder} alt="" fill sizes={sizes} priority={priority} className={`object-cover ${imgClassName}`} />
+      {/* the stock photograph is the visible picture only when no published one exists */}
+      <Image
+        src={p.placeholder}
+        alt=""
+        fill
+        sizes={sizes}
+        loading={priority && !p.image ? "eager" : undefined}
+        fetchPriority={priority && !p.image ? "high" : undefined}
+        className={`object-cover ${imgClassName}`}
+      />
       <span className={`vp-tag absolute z-[1] ${tagClassName}`}>{label}</span>
       {p.image ? (
-        <SafeImage src={p.image.src} alt={p.image.alt[lang]} fill sizes={sizes} priority={priority} className={`z-[2] object-cover ${imgClassName}`} />
+        <SafeImage
+          src={p.image.src}
+          alt={p.image.alt[lang]}
+          fill
+          sizes={sizes}
+          loading={priority ? "eager" : undefined}
+          fetchPriority={priority ? "high" : undefined}
+          className={`z-[2] object-cover ${imgClassName}`}
+        />
       ) : null}
       {hoverLabel ? (
         <span className="vp-sweep" aria-hidden="true">
