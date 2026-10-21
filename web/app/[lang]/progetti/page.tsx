@@ -1,0 +1,65 @@
+import type { Metadata } from "next";
+import { RevealScope } from "@/components/layout/RevealScope";
+import { TLink } from "@/components/layout/PageTransition";
+import { ProjectImage } from "@/components/cases/ProjectImage";
+import { Mark } from "@/components/marks/Mark";
+import { PageHero } from "@/components/ui/PageHero";
+import { projects } from "@/content/projects";
+import { getDictionary } from "@/lib/content";
+import { href } from "@/lib/i18n";
+import { alternates } from "@/lib/seo";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang, t } = await getDictionary();
+  return { title: t.meta.titles.projects, description: t.projectsPage.lead, alternates: alternates(lang, "projects") };
+}
+
+/** Projects: the latest operation large, the others side by side. Image, status, name, place. */
+export default async function ProjectsIndex() {
+  const { lang, t } = await getDictionary();
+  const pp = t.projectsPage;
+
+  return (
+    <RevealScope>
+      <PageHero label={pp.label} title={pp.title} lead={pp.lead} />
+      <section data-theme="paper" className="pb-[var(--section-y)]">
+        <ul className="container-x grid-12 gap-y-[clamp(4rem,8vw,7rem)]">
+          {projects.map((p, i) => {
+            const first = i === 0;
+            return (
+              <li key={p.slug.it} id={`p-${p.slug[lang]}`} className={first ? "col-span-4 lg:col-span-12" : i === 1 ? "col-span-4 lg:col-span-6" : "col-span-4 lg:col-span-5 lg:col-start-8 lg:mt-[clamp(6rem,14vw,14rem)]"}>
+                <TLink href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="group block">
+                  <div data-reveal="image">
+                    <ProjectImage
+                      p={p}
+                      lang={lang}
+                      label={t.home.projects.placeholder}
+                      sizes={first ? "100vw" : "(min-width: 1024px) 50vw, 100vw"}
+                      priority={first}
+                      className={first ? "aspect-[4/5] sm:aspect-[16/9]" : "aspect-[4/5]"}
+                      imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
+                      hoverLabel={t.home.projects.open}
+                    />
+                  </div>
+                  <div className="mt-6 flex items-start justify-between gap-6">
+                    <div className="min-w-0">
+                      <p className="t-label flex items-center gap-2">
+                        <Mark className="text-[var(--fg)]" />
+                        {p.status[lang]} · <span className="t-num">{p.year}</span>
+                      </p>
+                      <h2 className={`${first ? "t-l" : "t-m"} mt-3`}>{p.name}</h2>
+                      <p className="t-body-l mt-1 text-[var(--fg-2)]">{p.address[lang]}</p>
+                    </div>
+                    <span aria-hidden="true" className="vp-go mt-8">
+                      →
+                    </span>
+                  </div>
+                </TLink>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </RevealScope>
+  );
+}

@@ -1,0 +1,399 @@
+[
+ {
+  "key": "LEADERSHIP",
+  "people": [
+   {
+    "name": "Roberto Schiavo",
+    "role": "Co-founder & CEO",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2022/08/Roberto_Schiavo.jpg"
+   },
+   {
+    "name": "Luca Limone",
+    "role": "Co-founder & CEO",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2022/08/Luca_Limone.jpg"
+   },
+   {
+    "name": "Vittorio Ligresti",
+    "role": "Co-founder",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/03/Vittorio_Ligresti.jpg"
+   },
+   {
+    "name": "Alessandro Padolecchia",
+    "role": "CEO & Partner",
+    "unit": "Vitruvius Living",
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/Alessandro-VP.jpg"
+   },
+   {
+    "name": "Davide Raffaele",
+    "role": "Managing Director",
+    "unit": "Vitruvius Construction",
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/07/DAVIDE-RAFFAELE.png"
+   }
+  ]
+ },
+ {
+  "key": "PROJECT MANAGEMENT & TECHNICAL OFFICE",
+  "people": [
+   {
+    "name": "Marco Piergallini",
+    "role": "Project Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/06/Marco-Piergallini.png"
+   },
+   {
+    "name": "Eliano Vezzoli",
+    "role": "Project Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/Foto-team-VP.png"
+   },
+   {
+    "name": "Alice Guagliumi",
+    "role": "Project Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/11/Alice_Guagliumi-1.jpeg"
+   },
+   {
+    "name": "Alessandro Strazzante",
+    "role": "Site Manager – Surveyor",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Alessandro_Strazzante2.jpg"
+   },
+   {
+    "name": "Niccolò Bietti",
+    "role": "Site Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Niccolo_Bietti-1.jpg"
+   },
+   {
+    "name": "Marco Moretti",
+    "role": "Site Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/12/Marco-spinetti.jpg"
+   },
+   {
+    "name": "Franco Matzedda",
+    "role": "Site Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/franco.png"
+   },
+   {
+    "name": "Anxhela Sinani",
+    "role": "Junior Site Engineer",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/anxhela.png"
+   },
+   {
+    "name": "Vincenza Scognamillo",
+    "role": "Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/11/Vincenza_Scognamillo.jpeg"
+   },
+   {
+    "name": "Richard Angeloni",
+    "role": "Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/07/richard-1.jpg"
+   },
+   {
+    "name": "Martina Castellini",
+    "role": "Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/06/Martina.prova_.jpg"
+   },
+   {
+    "name": "Flavia Torretta",
+    "role": "Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/09/flavia-2.jpg"
+   },
+   {
+    "name": "Martina Zanichelli",
+    "role": "Junior Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/09/marti.jpg"
+   },
+   {
+    "name": "Pietro Vissani",
+    "role": "Operation Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/11/Pietro_Vissani.jpg"
+   },
+   {
+    "name": "Arialdo Gega",
+    "role": "Technical Surveyor",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Arialdo_Gega.jpg"
+   },
+   {
+    "name": "Giorgia Zaffino",
+    "role": "Permitting & Safety",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Giorgia_Zaffino.jpg"
+   },
+   {
+    "name": "Carola Saccilotto",
+    "role": "Procurement Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/carola.png"
+   }
+  ]
+ },
+ {
+  "key": "REAL ESTATE DEPARTMENT",
+  "people": [
+   {
+    "name": "Guglielmo Bartocci",
+    "role": "Development Project Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/09/Guglielmo.png"
+   },
+   {
+    "name": "Matteo Conti",
+    "role": "Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/conti.png"
+   },
+   {
+    "name": "Ilaria Francesca Gevi",
+    "role": "Junior Project Architect",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/gevi.png"
+   },
+   {
+    "name": "Martina Scrivo",
+    "role": "Marketing Manager",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/11/Martina-scrivo.png"
+   },
+   {
+    "name": "Miriana Tritico",
+    "role": "Graphic Designer",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/2-grande-1.png"
+   },
+   {
+    "name": "Margot Nadalin",
+    "role": "Junior Graphic Designer",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/06/Margot.png"
+   },
+   {
+    "name": "Claudio Lonis",
+    "role": "3D Visual Artist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/06/claudio.jpg"
+   },
+   {
+    "name": "Matteo Danilo Portalupi",
+    "role": "Junior Render Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/Matteo-1.png"
+   },
+   {
+    "name": "Elena Corona",
+    "role": "Junior Render Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/elena-Vitruvius.jpg"
+   },
+   {
+    "name": "Giovanni Antonioni",
+    "role": "Junior Customer Care Strategist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/05/Giovanni.png"
+   },
+   {
+    "name": "Viviana Porcaro",
+    "role": "Sales Coordinator",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/viviana-Vitruvius.jpg"
+   },
+   {
+    "name": "Federico Ferrazzi",
+    "role": "Real Estate Broker",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/05/Federico.jpg"
+   },
+   {
+    "name": "Pietro Marcelli",
+    "role": "Finance Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/10/Pietro-Marcelli-.jpg"
+   }
+  ]
+ },
+ {
+  "key": "CONDOVI - CONDO MANAGEMENT",
+  "people": [
+   {
+    "name": "Annalisa Lauri",
+    "role": "Director – Back Office",
+    "unit": "& Integration",
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/03/Annalisa_Lauri-1-1.jpg"
+   },
+   {
+    "name": "Barolyn Torres",
+    "role": "Back Office Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Baro_Torres-1.jpg"
+   },
+   {
+    "name": "Massimo Licata",
+    "role": "Administration",
+    "unit": "Condovi Project",
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/05/Max_Licata.jpg"
+   },
+   {
+    "name": "Beatrice Giannotte",
+    "role": "Customer Care",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/06/Beatrice.png"
+   },
+   {
+    "name": "Vasko Todorov",
+    "role": "Customer Care",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/Vasko-VP-1.jpg"
+   },
+   {
+    "name": "Carole Di Marco",
+    "role": "Customer Care",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/06/Carole.png"
+   }
+  ]
+ },
+ {
+  "key": "V&P CORPORATE TEAM",
+  "people": [
+   {
+    "name": "Valentina Piano",
+    "role": "Director - Legal & Human Resources",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/03/Valentina_Piano-1.jpg"
+   },
+   {
+    "name": "Arianna Zaffaroni",
+    "role": "Legal Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Arianna_Zaffaroni-1.jpg"
+   },
+   {
+    "name": "Alessia Trentini",
+    "role": "Junior Legal Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/Alessia-VP.jpg"
+   },
+   {
+    "name": "Eva Vigoni",
+    "role": "Junior Legal Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/eva.png"
+   },
+   {
+    "name": "Manuela Pellegrino",
+    "role": "Junior Legal Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/09/manuela.jpg"
+   },
+   {
+    "name": "Elena Schiapacassa",
+    "role": "HR Generalist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Elena_Schiapacassa2-1.jpg"
+   },
+   {
+    "name": "Danielly Carvalho",
+    "role": "HR Generalist & Accounting Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Vitoria-Carvalho-1.jpg"
+   },
+   {
+    "name": "Laura D’Anna",
+    "role": "HR Generalist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/07/Laura.png"
+   },
+   {
+    "name": "Beatrice Tagliafierro",
+    "role": "HR Generalist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/bea.png"
+   },
+   {
+    "name": "Renato Marra",
+    "role": "Junior Finance Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/renat0-2.png"
+   },
+   {
+    "name": "Rebecca Bonacina",
+    "role": "Junior Finance Internship",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/woman-1.jpg"
+   },
+   {
+    "name": "Paola Pregno",
+    "role": "Director - Treasury",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/05/Paola_Pregno-1.jpg"
+   },
+   {
+    "name": "Lorenzo Confetti",
+    "role": "Junior Accounting",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/lorenzo.png"
+   },
+   {
+    "name": "Nicole Giuliani",
+    "role": "Junior Accounting",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/12/woman-1.jpg"
+   },
+   {
+    "name": "Carola Dogliotti",
+    "role": "Junior Treasury & Payments Specialist",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/09/Carola.jpg"
+   },
+   {
+    "name": "Silvia Spertino",
+    "role": "Accounting Support",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/05/Silvia-Spertino.png"
+   },
+   {
+    "name": "Marco Orrù",
+    "role": "Director - IT Office & Marketing",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2023/03/Marco_Orru-1-1.jpg"
+   },
+   {
+    "name": "Simone Cordieri",
+    "role": "Support IT & Graphic Designer",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/01/Simone_Cordieri.jpg"
+   },
+   {
+    "name": "Matteo Goglio",
+    "role": "Developer",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2026/04/matteo.png"
+   },
+   {
+    "name": "Stefania Lauciello",
+    "role": "Secretariat (Milano Office)",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2024/01/Stefania_Lauciello.jpg"
+   },
+   {
+    "name": "Beatrice Marino",
+    "role": "Secretariat (Milano Office)",
+    "unit": null,
+    "photo": "https://vitruviusandpartners.com/wp-content/uploads/2025/07/Foto-team-VP.jpg"
+   }
+  ]
+ }
+]

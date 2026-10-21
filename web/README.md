@@ -1,0 +1,172 @@
+# Vitruvius & Partners — sito di gruppo
+
+Next.js 16 (App Router) · TypeScript · GSAP + ScrollTrigger · Lenis · Tailwind CSS 4. Nessuna scena 3D: il sito non dipende da WebGL.
+
+## Avvio
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm run build && npm start
+npm run lint
+```
+
+Node 20.9 o successivo.
+
+## Variabili d'ambiente
+
+Copia `.env.example` in `.env.local` (in locale) o impostale su Vercel.
+
+| Variabile | Uso |
+| --- | --- |
+| `RESEND_API_KEY` | Invio email dei moduli Contatti e Candidatura (Resend). In sviluppo, senza chiave, i messaggi vengono solo scritti nel log; in produzione il visitatore vede “Invio non riuscito” con l’indirizzo email, così nessun messaggio va perso in silenzio. |
+| `MAIL_FROM` | Mittente, su un dominio verificato in Resend. Default: `Sito Vitruvius & Partners <noreply@vitruviusandpartners.com>` |
+| `MAIL_TO` | Destinatario. Default: `info@vitruviusandpartners.com` |
+
+Il CV allegato è limitato a 5 MB (PDF, DOC, DOCX); il limite del corpo delle Server Action è 6 MB (`next.config.ts`).
+
+## Font
+
+Aktiv Grotesk arriva dal web kit Adobe Fonts **`zgd5zbh`** (Light 300, Regular 400, Bold 700), caricato in `app/[lang]/layout.tsx`.
+
+- Il kit è abilitato per `localhost`, `127.0.0.1`, `vitruviusandpartners.com`, `www.vitruviusandpartners.com`, `*.vercel.app`. Se il sito va su un altro dominio (staging), va aggiunto nelle impostazioni del kit su fonts.adobe.com.
+- Nelle impostazioni del kit, imposta **font-display: swap**.
+- Nessun font di sistema è previsto nel design: i fallback nello stack CSS servono solo durante il caricamento.
+
+## Lingue e URL
+
+- Italiano alla radice (`/chi-siamo`, `/progetti`, `/news`, `/lavora-con-noi`, `/contatti`).
+- Inglese sotto `/en` con slug inglesi (`/en/about-us`, `/en/projects`, `/en/news`, `/en/careers`, `/en/contact`).
+- La mappa degli slug è in `lib/i18n.ts`; la riscrittura degli URL è in `proxy.ts`.
+- Gli URL del vecchio WordPress (news alla radice, `/jobs/…`, `/current-jobs`, `/category/news`, `/pablot`) hanno redirect permanenti in `next.config.ts`.
+- `sitemap.xml` (con hreflang) e `robots.txt` sono generati da `app/sitemap.ts` e `app/robots.ts`.
+
+## Dove si modificano i contenuti
+
+| Cosa | File |
+| --- | --- |
+| Testi di interfaccia e pagine (IT / EN) | `content/dictionaries/it.ts`, `content/dictionaries/en.ts` |
+| Dati societari, sedi, social, certificazioni | `content/site.ts` |
+| Operazioni (home, indice e pagine progetto) | `content/projects.ts` |
+| Evidenze: valore della produzione, classifiche, attività, qualifiche | `content/evidence.ts` |
+| News, posizioni aperte, team | generati da `scripts/build-content.mjs` in `content/generated/*.json` |
+
+News, offerte di lavoro e team sono stati estratti dal sito attuale (`../content-raw/`, un file markdown per pagina). Per rigenerarli:
+
+```bash
+node scripts/build-content.mjs            # legge ../content-raw
+CONTENT_RAW=/percorso/altro node scripts/build-content.mjs
+```
+
+Per aggiungere una news senza passare dallo script, aggiungi un oggetto in `content/generated/news-it.json` (e l'eventuale traduzione in `news-en.json`, collegata dal campo `translation`).
+
+## Brand
+
+- Logo e simbolo: `public/brand/` e `components/brand/logo-paths.ts`. Sono i vettori esatti della **tavola 2** di `Proposte_rebranding_VP.ai` (compresa la “&” della tavola 2), esportati senza ridisegno.
+- Il segno-unità del sito (`components/marks/Mark.tsx`) è il tratto principale dello stesso simbolo, non ridisegnato. Il simbolo non viene ingrandito da solo come elemento decorativo.
+- Palette (`app/globals.css`, `@theme`): navy `#0A2342`, slate `#6B7280`, paper `#FAFAF9`, bianco, ink `#0F172A`, hairline `#DCE1E6`. Nessun altro colore: i toni secondari sono opacità della palette.
+- Favicon, apple-icon e immagine Open Graph (`app/icon.svg`, `app/apple-icon.png`, `app/favicon.ico`, `public/og.jpg`) usano la versione negativa su navy.
+
+## Contenuti: regola di verifica
+
+Ogni affermazione del sito viene da una fonte pubblicata dal gruppo (News & Press, sito attuale, PDF delle certificazioni) o dagli articoli di stampa che il gruppo stesso cita. Niente è dedotto o arrotondato.
+
+- **Operazioni** (`content/projects.ts`): contesto, intervento, cifre, stato e fonti. Le cifre dichiarano la loro natura: *dato documentato* oppure *obiettivo dichiarato* (es. il −50% di Civitas 5, non ancora misurato). Dove un risultato non è pubblicato, il caso lo dice.
+- **Evidenze** (`content/evidence.ts`): valore della produzione, classifiche, qualifiche, ognuna con la sua fonte (pagina Chi siamo, “Le verifiche esterne”).
+
+## Immagini
+
+- **Foto indicative** in `public/images/placeholder/` (licenze e provenienza in `CREDITS.md`): hero, le tre fasi del gruppo, Chi siamo, banda Contatti, Lavora con noi, foto sotto le operazioni. Vanno sostituite con le foto del gruppo (vedi **Scatti da fare o da chiedere**).
+- **Un solo trattamento** per tutte: `tools/grade.py` le desatura e porta le ombre verso il navy del marchio e le luci verso il bianco carta, così si leggono come una famiglia e non competono con le immagini vere. Originali non trattati in `assets/stock/web-src/`; per rigenerare: `python3 -I tools/grade.py assets/stock/web-src web/public/images/placeholder`.
+- **Niente edifici riconoscibili** (Getty Center, Kiasma, Porta Nuova e simili): farebbero pensare a opere del gruppo. Sono stati tolti.
+- **Progetti**: ogni operazione ha `image` (l'immagine pubblicata dal gruppo nella news del caso) sopra `placeholder` (una foto indicativa). La foto indicativa porta sempre l'etichetta “Immagine indicativa” e resta visibile solo dove l'immagine del gruppo non si carica (per esempio nell'anteprima, che non raggiunge il server WordPress). Nessuna foto stock viene presentata come il progetto.
+
+### Scatti da fare o da chiedere
+
+Formato per tutti: originali JPEG o TIFF, almeno 2800 px sul lato lungo, senza filtri (il trattamento si applica dopo, uguale per tutti), liberatorie per le persone riconoscibili, diritti d'uso web senza scadenza, nome del fotografo per i crediti.
+
+| Priorità | Dove | Soggetto | Formato |
+|---|---|---|---|
+| 1 | Home, apertura | Un edificio o un cantiere del gruppo in luce radente. Su desktop la massa navy copre il terzo sinistro: il soggetto va a destra. | Orizzontale 3:2 + verticale 4:5 |
+| 1 | Home, «Sviluppare» | Il lavoro di progetto vero: tavole, sopralluogo, ufficio tecnico al lavoro. | Verticale 4:5 |
+| 1 | Home, «Costruire» | Un cantiere di Vitruvius Construction: gru, ponteggi, squadre con i DPI del gruppo. | Verticale 4:5 |
+| 1 | Home, «Valorizzare» | Un interno finito di un immobile di Vitruvius Living, luce naturale. | Verticale 4:5 |
+| 1 | Palazzo ex INPS | La facciata su Corso Italia 30, oggi. | 16:9 + 4:5 |
+| 1 | Via Asinari | Il complesso di Asti, stato attuale. | 16:9 + 4:5 |
+| 1 | Civitas 5 | Cantiere o render ufficiali (con il permesso d'uso dello studio Panzeri). | 16:9 + 4:5 |
+| 2 | Chi siamo | Immagine larga: la sede di Milano, il team, un dettaglio di cantiere del gruppo. | 21:9 (e 4:5 per il telefono) |
+| 2 | Contatti | Facciata o ingresso delle sedi di Milano (via Stresa 6) e Asti (corso Torino 285). | Orizzontale 3:2 |
+| 2 | Lavora con noi | Persone del team in ufficio; una squadra in cantiere. | 4:5 + orizzontale a tutta pagina |
+| 2 | Team | Ritratti con stesso fondo e stessa luce (oggi mancano per alcune persone: si vedono le iniziali). | 4:5, 1600 px |
+
+Per sostituire una foto: stesso nome file in `public/images/placeholder/` (oppure un nuovo percorso nel componente), e per i progetti il campo `image` in `content/projects.ts`; l'etichetta “Immagine indicativa” sparisce da sola quando l'immagine del gruppo si carica.
+
+## Aggiungere un'operazione
+
+Le operazioni sono in `content/projects.ts`. Ne servono almeno cinque perché la fila della home diventi “fissa” e scorrevole di lato su desktop (`components/home/ProjectRail.tsx`, costante `PIN_FROM`); sotto le cinque è una griglia. Ogni nuova operazione richiede, da fonti pubblicate dal gruppo o da articoli che il gruppo cita: nome, luogo, anno, stato, una frase di sintesi, contesto, intervento, competenze, esito (documentato, obiettivo o stato), cifre con la loro natura (`documented` / `target`), fasi con data, fonti con link. Nessun campo si riempie per deduzione: se un dato non è pubblicato, il caso dice a che punto è.
+
+## Home
+
+Una cosa per schermata, niente nascosto dietro un passaggio del mouse:
+
+1. **Apertura** — “Governare la complessità.” Su desktop una massa navy tagliata con l'inclinazione del simbolo copre la foto e si ritira lungo la stessa inclinazione scorrendo. Su telefono e tablet la foto sta sopra e la massa sotto, con un gradino tagliato sull'inclinazione che entra nella foto.
+2. **Il gruppo: come lavora** — Sviluppare → Costruire → Valorizzare, ognuna con chi la fa, una frase e **una prova pubblicata**: 15,87 M€ del Palazzo ex INPS (con link al caso), l'attestazione SOA OG1 classe III (con link alle qualifiche), 200+ immobili l'anno dichiarati da Vitruvius Living. Su desktop tre colonne allineate riga per riga (subgrid); su telefono una fila da sfogliare.
+3. **In numeri e in stampa** — 300+ cantieri, 30+ città, 73,8 M€ (2023), 83° nella Top 200; sotto, le testate che hanno scritto delle operazioni (Il Secolo XIX, La Stampa, Agi, Affaritaliani.it, Il Corriere Nazionale), solo come testo, ognuna col link all'articolo.
+4. **Progetti** — griglia di tre su desktop, fila da sfogliare su telefono.
+5. **Contatti** — una frase, un bottone, l'email. Le sedi sono nel footer, che è chiaro e compatto.
+
+Su telefono la home è circa un quarto più corta della versione precedente, pur con due blocchi in più (le prove e la stampa).
+
+## Lavora con noi
+
+Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in numeri su una foto di cantiere, le posizioni aperte (banda navy sull'inclinazione al passaggio del mouse), i tre passaggi per candidarsi, LinkedIn. Ogni posizione ha in apertura sede, contratto e data, il testo con le specifiche a lato, i passaggi accanto al modulo e in fondo le altre posizioni.
+
+## Contatti e News
+
+- **Contatti**: email e telefoni subito, poi le due sedi (con “Apri in Mappe”), il modulo (con il rimando a Lavora con noi per le candidature), i dati societari.
+- **News**: le tre più recenti con la loro immagine, poi l'archivio per anno con un filtro (Tutte, Dal gruppo, Rassegna stampa). Le voci di rassegna si riconoscono dalla testata a inizio titolo (`pressOutlet` in `lib/content.ts`), che il sito mostra a parte. Ogni articolo ha a lato data, sezione e, se c'è, il progetto di cui parla.
+
+## Sistema visivo
+
+- **Tre tipi di azione e basta**: *primaria* (`Button`, `.vp-btn`: blocco pieno con l'estremità tagliata sull'inclinazione del simbolo, al massimo una per schermata: “Contatti” nell'header, “Scrivici”, “Candidati”, invio dei moduli); *secondaria* (`Cta`, `.vp-cta`: trattino che si allunga e testo); *link* (`.vp-ulink`: filo che si disegna da sinistra). Più due controlli: `.vp-iconbtn` (quadrato, precedente/successivo) e `.vp-tab` (schede e filtri, sottolineati). Niente pillole né cerchi.
+- **Testo piccolo**: mai sotto 14 px; il secondario è un'opacità del navy (contrasto 6,3:1 sul bianco carta), non un grigio a parte.
+
+## Movimento
+
+Tre gesti, tutti disattivati con “riduci movimento”:
+
+1. **Il taglio obliquo del simbolo** (99,655 / 170): massa dell'hero, rivelazione delle immagini, transizioni di pagina, banda navy al passaggio del mouse su schede e righe, riempimento del bottone primario.
+2. **Foto più lente della pagina** (`ParallaxImage`, `ScrollProgress`).
+3. **Righe di testo che salgono dalla loro maschera** (`data-reveal="lines"`).
+
+Tolti di proposito: numeri che contano su importi e classifiche (contano solo i conteggi, 300+ e 30+), parole che si accendono, foto che segue il mouse, anteprima che segue il cursore nelle news, frecce che oscillano, team che entra in sequenza, fila dei progetti fissa con sole tre schede.
+
+- Il tratto del simbolo è anche il segno di stato (`components/marks/Mark.tsx`): **pieno** = fatto documentato o fase conclusa, **contorno** = obiettivo dichiarato o fase prevista.
+- Senza movimento o senza JavaScript tutto è nello stato finale.
+- Curve: entrate `cubic-bezier(0.22, 1, 0.36, 1)`, movimenti `cubic-bezier(0.65, 0, 0.35, 1)`. Niente rimbalzi.
+- Le animazioni d'ingresso si dichiarano nel markup (`data-reveal="lines" | "fade" | "image" | "rule" | "fill"`), dentro `<RevealScope>`.
+- Le maschere delle righe hanno spazio sopra e sotto il testo, così accenti e discendenti (à, g, p) non vengono mai tagliati. Il controllo automatico lo verifica.
+
+## Navigazione e accessibilità
+
+- Il cursore di sistema resta sempre visibile.
+- Chi siamo: le tappe si trascinano (mouse), si sfogliano (touch) o si scorrono con i pulsanti; il team è diviso in schede (frecce sinistra/destra da tastiera). Il filtro delle news è un gruppo di pulsanti con stato premuto e un annuncio del numero di articoli.
+- Le file da sfogliare contengono link raggiungibili da tastiera; nessun contenuto richiede il passaggio del mouse.
+- Testi lunghi, email e link non escono mai dal loro riquadro, le ancore atterrano sotto l'header fisso.
+- Controllo automatico usato in sviluppo: nessun testo tagliato, sovrapposto o fuori schermo e nessuno scroll orizzontale da 320 a 1920 px, in italiano e in inglese; 0 violazioni axe (WCAG 2.2 AA), con e senza movimento; nessun errore di idratazione.
+
+## Da confermare con il gruppo prima della messa online
+
+1. **Condovi**: nel sito attuale compare solo come intestazione di un gruppo del team (“Condovi – Condo management”). Il rapporto societario non è documentato, quindi il nuovo sito **non** lo presenta come società o divisione del gruppo: il team si chiama “Condo management”. Se il rapporto viene confermato, si aggiunge nella struttura del gruppo (`group.entities` nei dizionari).
+2. **Immagini**: le foto indicative vanno sostituite con le foto del gruppo (elenco in **Scatti da fare o da chiedere**). Per i progetti: le tre immagini delle news (`genova.png`, l'immagine di Civitas 5, `asinari.png`) vanno verificate (che siano foto o render dei progetti, non ritagli di articoli) e scaricate in `public/` prima di spegnere WordPress; servono, se disponibili, una foto attuale di Corso Italia 30, render o foto di cantiere di Civitas 5, un'immagine del complesso di via Asinari.
+3. **Immagini del vecchio sito**: anche news e ritratti del team sono caricati da `vitruviusandpartners.com/wp-content/uploads/`: vanno copiati in `public/`.
+4. **Classifica Guamari 2023 (dati 2021)**: il comunicato di maggio 2023 indica il 42° posto, la news di giugno 2023 il 44°. Il sito non la riporta finché il dato non è confermato; usa solo 24° su 65 (2023) e 31° su 70 (2024).
+5. **Esiti**: Civitas 5 mostra un obiettivo dichiarato (−50% di energia elettrica); se esiste un dato misurato a fine lavori, va inserito come esito documentato. Via Asinari: mancano dettagli pubblicati dell'intervento.
+6. **Testi legali**: privacy e cookie policy (`privacyPage` nei dizionari) sono un testo provvisorio, da far redigere al consulente legale. La pagina è `noindex` finché non è definitiva.
+7. **Team**: nel sito attuale compare “Barolyn Torres”, probabilmente un refuso (Carolyn?): verificare in `content-raw` e rigenerare.
+8. **Email**: configurare Resend e verificare il dominio mittente.
+9. **Altre operazioni**: con tre casi la sezione Progetti regge, ma è sottile. Servono altre operazioni documentate (vedi **Aggiungere un'operazione**).
+
+## Deploy
+
+Pensato per Vercel: collega il repository, imposta le variabili d'ambiente, aggiungi il dominio del deploy al kit Adobe Fonts. Nessun database.
