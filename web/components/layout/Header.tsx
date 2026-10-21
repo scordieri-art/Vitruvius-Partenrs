@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Mark } from "@/components/marks/Mark";
 import { ButtonBody } from "@/components/ui/Button";
@@ -10,6 +10,8 @@ import { TLink, useTransitionNavigate } from "./PageTransition";
 import { useLenis } from "./SmoothScroll";
 
 type NavItem = { href: string; label: string };
+
+const noopSubscribe = () => () => {};
 
 export function Header({
   lang,
@@ -106,7 +108,15 @@ export function Header({
     setOpen(false);
   }
 
-  const isActive = (href: string) => href !== homeHref && pathname.startsWith(href);
+  // The server renders this shell with the internal path (/it/news), the browser has the
+  // public one (/news): mark the current page only once hydrated, so both renders match.
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const isActive = (href: string) => hydrated && href !== homeHref && pathname.startsWith(href);
+  const onLatest = hydrated && pathname.startsWith(latest.href);
   const onDark = dark || open;
 
   return (
@@ -204,7 +214,7 @@ export function Header({
             </ul>
           </nav>
           <div className="container-x grid gap-8 t-small">
-            {pathname.startsWith(latest.href) ? null : (
+            {onLatest ? null : (
               <TLink href={latest.href} transitionLabel={latest.name} className="vp-menu-latest group flex items-center gap-4">
                 <span className="relative block aspect-[4/3] w-24 shrink-0 overflow-hidden bg-[var(--line)]">
                   <Image src={latest.image} alt="" fill sizes="96px" className="object-cover" />

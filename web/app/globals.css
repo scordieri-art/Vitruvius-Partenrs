@@ -366,6 +366,29 @@
   .vp-tabs::-webkit-scrollbar {
     display: none;
   }
+  /* archive search: a hairline field, like the form fields */
+  .vp-search {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .vp-search__input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.4rem 0;
+    background: transparent;
+    color: var(--fg);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    transition: border-color var(--dur-ui) var(--ease-move);
+  }
+  .vp-search__input::placeholder {
+    color: var(--fg-2);
+  }
+  .vp-search__input:hover,
+  .vp-search__input:focus {
+    border-bottom-color: var(--fg);
+  }
   .vp-tab {
     position: relative;
     flex: none;

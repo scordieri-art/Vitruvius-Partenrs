@@ -5,32 +5,60 @@ import { TLink } from "@/components/layout/PageTransition";
 
 export type NewsRow = { href: string; title: string; outlet: string | null; date: string; dateIso: string };
 
-type Labels = { label: string; all: string; group: string; press: string };
+type Labels = { label: string; all: string; group: string; press: string; search: string; searchHint: string; noResults: string };
+
+/** lower case, no accents: "Perché" finds "perche" and the other way round */
+const fold = (s: string) => s.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
 /**
- * The archive: one filter (all, the group's news, the press review), then the
- * articles by year as text rows. The whole row is the link; nothing follows the cursor.
- * The server renders every row; filtering only hides rows, so nothing shifts on hydration.
+ * The archive: one filter (all, the group's news, the press review) and a search on
+ * title and outlet, then the articles by year as text rows. The whole row is the link;
+ * nothing follows the cursor. The server renders every row; filtering only hides rows,
+ * so nothing shifts on hydration.
  */
 export function NewsList({ rows, labels, countLabel }: { rows: NewsRow[]; labels: Labels; countLabel: string }) {
   const [filter, setFilter] = useState<"all" | "group" | "press">("all");
+  const [query, setQuery] = useState("");
+  const words = fold(query).split(/\s+/).filter(Boolean);
   const counts = { all: rows.length, group: rows.filter((r) => !r.outlet).length, press: rows.filter((r) => r.outlet).length };
-  const visible = rows.filter((r) => filter === "all" || (filter === "press" ? !!r.outlet : !r.outlet));
+  const visible = rows.filter((r) => {
+    if (filter !== "all" && (filter === "press" ? !r.outlet : !!r.outlet)) return false;
+    const text = fold(`${r.title} ${r.outlet ?? ""}`);
+    return words.every((w) => text.includes(w));
+  });
   const years = [...new Set(visible.map((r) => r.dateIso.slice(0, 4)))];
 
   return (
     <div>
-      <div role="group" aria-label={labels.label} className="vp-tabs mb-[clamp(2.5rem,5vw,4rem)]" data-hscroll="">
-        {(["all", "group", "press"] as const).map((k) => (
-          <button key={k} type="button" className="vp-tab" aria-pressed={filter === k} onClick={() => setFilter(k)}>
-            {labels[k]} <span className="t-label t-num">{counts[k]}</span>
-          </button>
-        ))}
+      <div className="mb-[clamp(2.5rem,5vw,4rem)] flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div role="group" aria-label={labels.label} className="vp-tabs" data-hscroll="">
+          {(["all", "group", "press"] as const).map((k) => (
+            <button key={k} type="button" className="vp-tab" aria-pressed={filter === k} onClick={() => setFilter(k)}>
+              {labels[k]} <span className="t-label t-num">{counts[k]}</span>
+            </button>
+          ))}
+        </div>
+        <div className="vp-search lg:w-[22rem]">
+          <label htmlFor="news-search" className="t-label">
+            {labels.search}
+          </label>
+          <input
+            id="news-search"
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={labels.searchHint}
+            autoComplete="off"
+            enterKeyHint="search"
+            className="vp-search__input t-body"
+          />
+        </div>
       </div>
 
       <p role="status" className="sr-only">
         {countLabel.replace("{n}", String(visible.length))}
       </p>
+      {visible.length === 0 ? <p className="t-body-l max-w-[40ch] text-[var(--fg-2)]">{labels.noResults}</p> : null}
       <div className="grid gap-[clamp(3rem,6vw,5rem)]">
         {years.map((y) => (
           <section key={y} aria-labelledby={`y${y}`} className="grid-12 gap-y-4">
