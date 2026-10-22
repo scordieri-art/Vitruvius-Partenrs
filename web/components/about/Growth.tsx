@@ -78,25 +78,28 @@ export function Growth({ lang, copy }: { lang: Locale; copy: Copy }) {
             </div>
           ))}
         </div>
-        <table className="sr-only">
-          <thead>
-            <tr>
-              <th scope="col">{copy.year}</th>
-              <th scope="col">{`${copy.value} (${copy.productionUnit})`}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {production.map((p) => (
-              <tr key={p.year}>
-                <th scope="row">{p.year}</th>
-                <td>
-                  {p.display[lang]}
-                  {p.change ? ` (${p.change[lang]})` : ""}
-                </td>
+        {/* the wrapper hides it: a table ignores the 1px width of sr-only and would widen the page */}
+        <div className="sr-only">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{copy.year}</th>
+                <th scope="col">{`${copy.value} (${copy.productionUnit})`}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {production.map((p) => (
+                <tr key={p.year}>
+                  <th scope="row">{p.year}</th>
+                  <td>
+                    {p.display[lang]}
+                    {p.change ? ` (${p.change[lang]})` : ""}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <Sources lang={lang} sources={production.map((p) => p.source)} label={copy.source} />
       </figure>
 
@@ -136,22 +139,25 @@ export function Growth({ lang, copy }: { lang: Locale; copy: Copy }) {
             </span>
           ))}
         </div>
-        <table className="sr-only">
-          <thead>
-            <tr>
-              <th scope="col">{copy.year}</th>
-              <th scope="col">{copy.position}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {top200.points.map((p) => (
-              <tr key={p.year}>
-                <th scope="row">{p.year}</th>
-                <td>{`${p.rank}° / ${top200.of}`}</td>
+        {/* the wrapper hides it: a table ignores the 1px width of sr-only and would widen the page */}
+        <div className="sr-only">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{copy.year}</th>
+                <th scope="col">{copy.position}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {top200.points.map((p) => (
+                <tr key={p.year}>
+                  <th scope="row">{p.year}</th>
+                  <td>{`${p.rank}° / ${top200.of}`}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <Sources lang={lang} sources={[top200.source]} label={copy.source} />
       </figure>
     </div>

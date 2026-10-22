@@ -1099,10 +1099,12 @@
   left: 0;
   transform: translateX(-50%);
 }
+/* above the line, left of its midpoint: the line runs lower there, and the label never
+   reaches the right edge of a narrow plot */
 .vp-slope__climb {
   position: absolute;
   white-space: nowrap;
-  transform: translate(1rem, 0.4rem);
+  transform: translate(calc(-100% - 0.6rem), calc(-100% - 0.5rem));
 }
 .vp-slope__year {
   transform: translateX(-50%);
