@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
+import { Growth } from "@/components/about/Growth";
 import { Timeline } from "@/components/about/Timeline";
 import { TeamTabs } from "@/components/about/TeamTabs";
 import { Mark } from "@/components/marks/Mark";
@@ -71,7 +72,7 @@ export default async function AboutPage() {
           <div data-reveal="image">
             <ParallaxImage src="/images/placeholder/texture-grey-triangular-panels-01.jpg" alt="" sizes="100vw" strength={10} className="aspect-[4/5] bg-[var(--line)] sm:aspect-[21/9]" />
           </div>
-          <dl className="mt-12 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-8 md:grid-cols-3 lg:grid-cols-5">
+          <dl className="mt-12 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-2 md:grid-cols-3 lg:grid-cols-5">
             {[
               { k: a.facts.founded, v: "2020" },
               { k: a.facts.offices, v: company.offices.map((o) => o.city).join(" · ") },
@@ -79,9 +80,10 @@ export default async function AboutPage() {
               { k: a.facts.qualifications, v: a.facts.qualificationsValue },
               { k: a.facts.ranking, v: g.rank(top200.points[1].rank) },
             ].map((f) => (
-              <div key={f.k} className="flex min-w-0 flex-col border-t border-[var(--line)] pt-5" data-reveal="fade">
-                <dt className="t-label order-2 mt-2">{f.k}</dt>
-                <dd className="t-s t-num order-1 [overflow-wrap:anywhere]">{f.v}</dd>
+              // two rows shared across the line: a value that wraps lifts its row, the labels stay aligned
+              <div key={f.k} className="row-span-2 mb-6 grid min-w-0 grid-rows-subgrid border-t border-[var(--line)] pt-5" data-reveal="fade">
+                <dt className="t-label row-start-2">{f.k}</dt>
+                <dd className="t-s t-num row-start-1 self-end [overflow-wrap:anywhere]">{f.v}</dd>
               </div>
             ))}
           </dl>
@@ -135,6 +137,19 @@ export default async function AboutPage() {
             {a.milestonesTitle}
           </h2>
           <Timeline items={a.milestones} prev={t.ui.previous} next={t.ui.next} hint={a.dragHint} />
+        </div>
+      </section>
+
+      {/* Growth, in two charts */}
+      <section data-theme="paper" aria-labelledby="growth-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
+        <div className="container-x">
+          <p className="t-label mb-5" data-reveal="fade">
+            {a.growthLabel}
+          </p>
+          <h2 id="growth-title" className="t-l mb-4" data-reveal="lines">
+            {a.growthTitle}
+          </h2>
+          <Growth lang={lang} copy={a.growth} />
         </div>
       </section>
 

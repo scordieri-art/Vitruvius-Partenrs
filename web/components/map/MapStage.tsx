@@ -6,6 +6,8 @@ import { ScrollTrigger, prefersReducedMotion, setupGsap } from "@/lib/motion";
 type View = { x: number; y: number; w: number; h: number };
 
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+/** the entries that zoom the model onto their place: the map's own list, or any element marked for it */
+const ITEM = ".vp-map__item, [data-map-target]";
 
 /**
  * The model's 3D stage. Flat when the section enters, tilted into depth as it reaches the
@@ -85,17 +87,17 @@ export function MapStage({
     };
     let leaveTimer = 0;
     const onEnter = (e: Event) => {
-      const k = (e.target as HTMLElement).closest<HTMLElement>(".vp-map__item")?.dataset.k;
+      const k = (e.target as HTMLElement).closest<HTMLElement>(ITEM)?.dataset.k;
       if (!k || !targets[k]) return;
       clearTimeout(leaveTimer);
       go(targets[k]);
     };
-    // a short grace, so moving from one entry to the next does not bounce out to the whole sheet
+    // a short grace, so moving from one entry to the next does not bounce back out to the resting view
     const onLeave = () => {
       clearTimeout(leaveTimer);
-      leaveTimer = window.setTimeout(() => go(sheet), 180);
+      leaveTimer = window.setTimeout(() => go(view), 180);
     };
-    const items = Array.from(figure.querySelectorAll<HTMLElement>(".vp-map__item"));
+    const items = Array.from(figure.querySelectorAll<HTMLElement>(ITEM));
     items.forEach((i) => {
       i.addEventListener("pointerenter", onEnter);
       i.addEventListener("focusin", onEnter);

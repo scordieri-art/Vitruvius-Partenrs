@@ -54,19 +54,40 @@ const Layer = ({ id, z, className, view }: { id: string; z: number; className: s
  * that many times closer around it (computed here, so it needs no JavaScript). Zooming
  * moves the SVG viewBox, never a CSS scale, so the cartography is redrawn sharp.
  */
-export function MapSlab({ places, focus, zoom, zoomTargets, className = "" }: { places: Pin[]; focus?: string; zoom?: number; zoomTargets?: boolean; className?: string }) {
+export function MapSlab({
+  places,
+  focus,
+  zoom,
+  frame,
+  zoomTargets,
+  zoomScale = 2.6,
+  className = "",
+}: {
+  places: Pin[];
+  focus?: string;
+  zoom?: number;
+  /** a resting view closer than the whole sheet, centred on a point, with no place lit */
+  frame?: { lat: number; lon: number; scale: number };
+  zoomTargets?: boolean;
+  /** how close the hover zoom gets */
+  zoomScale?: number;
+  className?: string;
+}) {
   const focused = places.find((p) => p.key === focus);
-  const view: View = focused && zoom ? viewAround(...(placeXY(focused) as [number, number]), zoom) : V;
+  const view: View =
+    focused && zoom ? viewAround(...(placeXY(focused) as [number, number]), zoom) : frame ? viewAround(...(placeXY(frame) as [number, number]), frame.scale) : V;
   const viewBox = vb(view);
   const pins = places.map((p) => ({ ...p, xy: placeXY(p) as [number, number] }));
   const near = (x: number, y: number) => pins.some((p) => Math.hypot(p.xy[0] - x, p.xy[1] - y) < 30);
+  // a mark just east of a city would stand on its name: the name moves to the west of the dot
+  const eastOf = (x: number, y: number) => pins.some((p) => p.xy[0] - x > 15 && p.xy[0] - x < 80 && Math.abs(p.xy[1] - y) < 35);
   return (
     <MapStage
       className={className}
       focused={!!focus}
       sheet={V}
       view={view}
-      targets={zoomTargets ? Object.fromEntries(pins.map((p) => [p.key, viewAround(p.xy[0], p.xy[1], 2.6)])) : undefined}
+      targets={zoomTargets ? Object.fromEntries(pins.map((p) => [p.key, viewAround(p.xy[0], p.xy[1], zoomScale)])) : undefined}
     >
       {/* the sheet: thickness below, then the printed face */}
       <span className="vp-map__edge" style={{ "--z": "-6px" } as CSSProperties} aria-hidden="true" />
@@ -118,7 +139,7 @@ export function MapSlab({ places, focus, zoom, zoomTargets, className = "" }: { 
             <g key={name}>
               <circle cx={x} cy={y} r={4.5} />
               {/* beside a mark, the name steps clear of it */}
-              <text x={x} y={y} style={{ "--off": near(x, y) ? 26 : 11 } as CSSProperties}>
+              <text x={x} y={y} textAnchor={eastOf(x, y) ? "end" : undefined} style={{ "--off": (eastOf(x, y) ? -1 : 1) * (near(x, y) ? 26 : 11) } as CSSProperties}>
                 {name}
               </text>
             </g>
@@ -155,10 +176,14 @@ export function MapSlab({ places, focus, zoom, zoomTargets, className = "" }: { 
  * Hovering or focusing an entry lights its mark and dims the others (CSS, one rule per
  * place, below) and, on wide screens, zooms the cartography onto it (MapStage).
  */
-export function ItalyMap({ places, caption, label }: { places: MapPlace[]; caption: string; label: string }) {
-  const rules = places
-    .map((p) => `.vp-map:has(.vp-map__item[data-k="${p.key}"]:is(:hover,:focus-within)) .vp-map__pin[data-k="${p.key}"]{--on:1}`)
+/** CSS that lights a place's mark while its entry (`.vp-map__item` or `[data-map-target]`) is hovered or focused. */
+export const lightRules = (keys: string[]) =>
+  keys
+    .map((k) => `.vp-map:has(:is(.vp-map__item,[data-map-target])[data-k="${k}"]:is(:hover,:focus-within)) .vp-map__pin[data-k="${k}"]{--on:1}`)
     .join("");
+
+export function ItalyMap({ places, caption, label }: { places: MapPlace[]; caption: string; label: string }) {
+  const rules = lightRules(places.map((p) => p.key));
 
   return (
     <figure className="vp-map grid-12 gap-y-10" aria-label={label}>

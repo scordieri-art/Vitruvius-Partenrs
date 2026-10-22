@@ -5,6 +5,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
 import { Mark } from "@/components/marks/Mark";
+import { MapSlab, lightRules } from "@/components/map/ItalyMap";
 import { company } from "@/content/site";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
@@ -15,6 +16,8 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.meta.titles.contact, description: t.contactPage.lead, alternates: alternates(lang, "contact") };
 }
 
+const mid = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
 const maps = (street: string, postal: string) =>
   `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Vitruvius & Partners ${street} ${postal}`)}`;
 
@@ -22,6 +25,7 @@ const maps = (street: string, postal: string) =>
 export default async function ContactPage() {
   const { lang, t } = await getDictionary();
   const c = t.contactPage;
+  const offices = company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const }));
 
   return (
     <RevealScope>
@@ -70,28 +74,34 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      {/* Offices */}
+      {/* Offices: the addresses beside one model framed on the north-west; an address zooms it onto its city */}
       <section data-theme="paper" aria-labelledby="offices-title" className="border-t border-[var(--line)] py-[clamp(4.5rem,9vw,8rem)]">
         <div className="container-x">
           <h2 id="offices-title" className="t-label mb-10">
             {c.offices}
           </h2>
-          <div className="grid gap-x-[var(--col-gap)] gap-y-14 md:grid-cols-2">
-            {company.offices.map((o) => (
-              <address key={o.key} className="flex flex-col not-italic" data-reveal="fade">
-                <p className="t-l">{o.city}</p>
-                <p className="t-body-l mt-5 text-[var(--fg-2)]">
-                  {o.street}
-                  <br />
-                  {o.postal}
-                </p>
-                <div className="mt-6">
-                  <Cta href={maps(o.street, o.postal)} external externalNote={t.ui.externalNew}>
-                    {c.maps}
-                  </Cta>
-                </div>
-              </address>
-            ))}
+          <div className="vp-map grid-12 gap-y-14">
+            <style>{lightRules(offices.map((o) => o.key))}</style>
+            <div className="col-span-4 grid content-start gap-y-14 lg:col-span-5">
+              {company.offices.map((o) => (
+                <address key={o.key} data-map-target="" data-k={o.key} className="flex flex-col border-t border-[var(--line)] pt-8 not-italic" data-reveal="fade">
+                  <p className="t-l">{o.city}</p>
+                  <p className="t-body-l mt-5 text-[var(--fg-2)]">
+                    {o.street}
+                    <br />
+                    {o.postal}
+                  </p>
+                  <div className="mt-6">
+                    <Cta href={maps(o.street, o.postal)} external externalNote={t.ui.externalNew}>
+                      {c.maps}
+                    </Cta>
+                  </div>
+                </address>
+              ))}
+            </div>
+            <div className="col-span-4 lg:col-span-6 lg:col-start-7 lg:self-center">
+              <MapSlab places={offices} frame={{ lat: mid(offices.map((o) => o.lat)), lon: mid(offices.map((o) => o.lon)), scale: 2.3 }} zoomTargets zoomScale={4.2} className="max-w-[36rem] lg:mr-0" />
+            </div>
           </div>
         </div>
       </section>

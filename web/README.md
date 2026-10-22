@@ -122,9 +122,14 @@ Su telefono la home è circa un quarto più corta della versione precedente, pur
 
 Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in numeri su una foto di cantiere, le posizioni aperte (banda navy sull'inclinazione al passaggio del mouse), i tre passaggi per candidarsi, LinkedIn. Ogni posizione ha in apertura sede, contratto e data, il testo con le specifiche a lato, i passaggi accanto al modulo e in fondo le altre posizioni.
 
+## Chi siamo
+
+- **Crescita** (`components/about/Growth.tsx`): due grafici disegnati in HTML sul server, con i dati e le fonti di `content/evidence.ts`. Il valore della produzione per anno è a barre con l'angolo tagliato come il segno del marchio. La classifica Top 200 ha la scala capovolta, con il 1° in alto. Ogni grafico ha una tabella per i lettori di schermo; le barre e la linea crescono con lo scorrimento (CSS `view()`, statiche dove non è supportato o con movimento ridotto).
+- **Dati in apertura**: ogni voce occupa due righe di una griglia condivisa (`subgrid`), così le etichette restano allineate anche se un valore va a capo.
+
 ## Contatti e News
 
-- **Contatti**: email e telefoni subito, poi le due sedi (con “Apri in Mappe”), il modulo, i dati societari. Il modulo chiede prima l'argomento (immobile, investimento, fornitore, stampa, altro); per un immobile aggiunge città, tipologia, superficie, stato, telefono e fino a 5 foto (JPG, PNG, WEBP, 5 MB in tutto), e l'email arriva con oggetto «[Proposta immobile] dal sito — Città — Nome». Accanto, quattro dati di solidità già documentati in Chi siamo.
+- **Contatti**: email e telefoni subito, poi le due sedi (con “Apri in Mappe”) accanto a un plastico inquadrato sul Nord-Ovest che, passando su un indirizzo, si avvicina alla sua città (`MapSlab` con `frame`, `zoomScale` e `[data-map-target]`), il modulo, i dati societari. Il modulo chiede prima l'argomento (immobile, investimento, fornitore, stampa, altro); per un immobile aggiunge città, tipologia, superficie, stato, telefono e fino a 5 foto (JPG, PNG, WEBP, 5 MB in tutto), e l'email arriva con oggetto «[Proposta immobile] dal sito — Città — Nome». Accanto, quattro dati di solidità già documentati in Chi siamo.
 - **Moduli**: React 19 svuota un modulo dopo ogni invio, anche con errori. Contatti e Candidatura inviano con `useSubmitKeepingValues` (`components/forms/Fields.tsx`): i campi restano finché l'invio non riesce. L'attributo `action` resta, quindi i moduli funzionano anche prima dell'idratazione.
 - **News**: le tre più recenti con la loro immagine, poi l'archivio per anno con un filtro (Tutte, Dal gruppo, Rassegna stampa) e una ricerca su titolo e testata (senza distinzione di maiuscole e accenti). Le voci di rassegna si riconoscono dalla testata a inizio titolo (`pressOutlet` in `lib/content.ts`), che il sito mostra a parte. Ogni articolo ha a lato data, sezione e, se c'è, il progetto di cui parla.
 
