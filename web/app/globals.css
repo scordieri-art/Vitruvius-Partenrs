@@ -855,8 +855,16 @@
     font-size: var(--t-small);
     line-height: 1.3;
     padding-block: 0.75rem;
+    /* room the rule takes on hover, so the button keeps its width and nothing beside it moves */
+    padding-inline-end: 1rem;
     min-height: 44px;
+    transition: padding-inline-end 320ms var(--ease-move);
   }
+  .vp-cta:hover,
+  .vp-cta:focus-visible {
+    padding-inline-end: 0;
+  }
+  /* the rule grows by its width, so it pushes the text along instead of running over it */
   .vp-cta__rule {
     display: block;
     flex: none;
@@ -864,20 +872,15 @@
     width: 2.5rem;
     height: 1px;
     background: currentColor;
-    transform-origin: left;
-    transition: transform 320ms var(--ease-move);
+    transition: width 320ms var(--ease-move);
   }
   .vp-cta:hover .vp-cta__rule,
   .vp-cta:focus-visible .vp-cta__rule {
-    transform: scaleX(1.8);
+    width: 3.5rem;
   }
   .vp-cta__text {
     min-width: 0;
     overflow-wrap: break-word;
-    transition: transform 320ms var(--ease-move);
-  }
-  .vp-cta:hover .vp-cta__text {
-    transform: translateX(0.35rem);
   }
 
   /* Rich text from the legacy CMS (news, jobs) */
