@@ -66,7 +66,7 @@ const en: Dictionary = {
     },
     lines: {
       label: "The group",
-      title: "Three crafts, one direction.",
+      title: "An integrated group across the entire real estate value chain.",
       swipe: "Swipe",
     },
     press: {
@@ -213,16 +213,16 @@ const en: Dictionary = {
     leadershipTitle: "Who leads the group.",
     milestonesLabel: "Milestones",
     milestonesTitle: "Six years, in short.",
-    dragHint: "Drag",
     milestones: [
-      { year: "2020", text: "Founded in Milan." },
-      { year: "2021", text: "First year of operations: €35 million of production." },
-      { year: "2022", text: "€73 million of production, +109%." },
-      { year: "2023", text: "ISO 9001 certification and SOA OG1 class III attestation." },
-      { year: "2024", text: "83rd in the Top 200 construction companies ranking." },
-      { year: "2025", text: "Via Asinari, in Asti." },
-      { year: "2026", text: "Acquisition of the former INPS palace in Genoa." },
+      { year: "2020", tag: "Founded", text: "Founded in Milan, a construction and energy-requalification company." },
+      { year: "2021", tag: "Production", text: "First year of operations: €35 million of production." },
+      { year: "2022", tag: "Growth", text: "€73 million of production, +109%." },
+      { year: "2023", tag: "Qualifications", text: "ISO 9001 certification and SOA OG1 class III attestation." },
+      { year: "2024", tag: "Ranking", text: "83rd in the Top 200 construction companies ranking." },
+      { year: "2025", tag: "Operation", text: "Via Asinari, in Asti: the revival of a residential complex." },
+      { year: "2026", tag: "Acquisition", text: "Awarded the former INPS palace in Genoa, for €15.87 million." },
     ],
+    milestoneLinks: { news: "The news", credentials: "Qualifications", project: "The project" },
     teamLabel: "Our team",
     teamTitle: "The people of the group.",
     groups: {

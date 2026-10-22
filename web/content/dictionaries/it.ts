@@ -59,7 +59,7 @@ const it = {
     },
     lines: {
       label: "Il gruppo",
-      title: "Tre mestieri, una sola regia.",
+      title: "Un gruppo integrato lungo tutta la filiera immobiliare.",
       swipe: "Scorri",
     },
     press: {
@@ -206,16 +206,16 @@ const it = {
     leadershipTitle: "Chi guida il gruppo.",
     milestonesLabel: "Tappe",
     milestonesTitle: "Sei anni, in breve.",
-    dragHint: "Trascina",
     milestones: [
-      { year: "2020", text: "Nasce a Milano." },
-      { year: "2021", text: "Primo anno di attività: 35 milioni di euro di produzione." },
-      { year: "2022", text: "73 milioni di euro di produzione, +109%." },
-      { year: "2023", text: "Certificazione ISO 9001 e attestazione SOA OG1 classe III." },
-      { year: "2024", text: "83° nella classifica Top 200 imprese di costruzioni." },
-      { year: "2025", text: "Via Asinari, ad Asti." },
-      { year: "2026", text: "Acquisizione del Palazzo ex INPS di Genova." },
+      { year: "2020", tag: "Fondazione", text: "Nasce a Milano, impresa di costruzioni e riqualificazione energetica." },
+      { year: "2021", tag: "Produzione", text: "Primo anno di attività: 35 milioni di euro di produzione." },
+      { year: "2022", tag: "Crescita", text: "73 milioni di euro di produzione, +109%." },
+      { year: "2023", tag: "Qualifiche", text: "Certificazione ISO 9001 e attestazione SOA OG1 classe III." },
+      { year: "2024", tag: "Classifica", text: "83° nella classifica Top 200 imprese di costruzioni." },
+      { year: "2025", tag: "Operazione", text: "Via Asinari, ad Asti: la rinascita di un complesso residenziale." },
+      { year: "2026", tag: "Acquisizione", text: "Aggiudicato il Palazzo ex INPS di Genova, per 15,87 milioni di euro." },
     ],
+    milestoneLinks: { news: "La news", credentials: "Le qualifiche", project: "Il progetto" },
     teamLabel: "Il nostro team",
     teamTitle: "Le persone del gruppo.",
     groups: {

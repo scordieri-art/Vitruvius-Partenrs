@@ -132,6 +132,7 @@ Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in nume
 
 ## Chi siamo
 
+- **Tappe** (`components/about/Milestones.tsx`): sei anni come una scala, un gradino per anno che sale da sinistra a destra, disegnata da una sola linea navy quando la sezione entra in vista; il segno del marchio su ogni gradino si riempie, poi compaiono anno, tipo di tappa, testo e il link a ciò che la prova (news, qualifiche, pagina del progetto). Sul telefono la scala diventa una linea verticale. Testi e categorie nei dizionari (`about.milestones`).
 - **Crescita** (`components/about/Growth.tsx`): due grafici disegnati in HTML sul server, con i dati e le fonti di `content/evidence.ts`. Il valore della produzione per anno è a barre con l'angolo tagliato come il segno del marchio. La classifica Top 200 ha la scala capovolta, con il 1° in alto. Ogni grafico ha una tabella per i lettori di schermo; le barre e la linea crescono con lo scorrimento (CSS `view()`, statiche dove non è supportato o con movimento ridotto).
 - **Dati in apertura**: ogni voce occupa due righe di una griglia condivisa (`subgrid`), così le etichette restano allineate anche se un valore va a capo.
 
@@ -175,7 +176,7 @@ Tolti di proposito: numeri che contano su importi e classifiche (contano solo i 
 - Il cursore di sistema resta sempre visibile.
 - Ciò che aspetta la sua animazione d'ingresso è trasparente, non nascosto (`opacity`, non `visibility`): un lettore di schermo trova ogni titolo anche prima che sia stato scorso, e un blocco raggiunto da tastiera compare subito.
 - I titoli dei testi pubblicati (news e annunci, che su WordPress partono da h4) sono rinumerati sotto l'h1 della pagina (`outline` in `lib/content.ts`): la struttura non ha salti e l'aspetto non cambia.
-- Chi siamo: le tappe si trascinano (mouse), si sfogliano (touch) o si scorrono con i pulsanti; il team è diviso in schede (frecce sinistra/destra da tastiera). Il filtro delle news è un gruppo di pulsanti con stato premuto e un annuncio del numero di articoli.
+- Chi siamo: le tappe sono tutte in vista, senza nulla da trascinare; il team è diviso in schede (frecce sinistra/destra da tastiera). Il filtro delle news è un gruppo di pulsanti con stato premuto e un annuncio del numero di articoli.
 - Le file da sfogliare contengono link raggiungibili da tastiera; nessun contenuto richiede il passaggio del mouse.
 - Testi lunghi, email e link non escono mai dal loro riquadro, le ancore atterrano sotto l'header fisso.
 - Controllo automatico usato in sviluppo: nessun testo tagliato, sovrapposto o fuori schermo e nessuno scroll orizzontale da 320 a 1920 px, in italiano e in inglese; 0 violazioni axe (WCAG 2.2 AA), con e senza movimento; nessun errore di idratazione.

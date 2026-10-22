@@ -1627,37 +1627,143 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
 }
 
 @layer components {
-  .vp-timeline {
-    position: relative; /* contains the sr-only text of the items, which would otherwise widen the page */
+  /* Chi siamo, six years as a staircase: one step a year, rising left to right. Each step
+     sits --rise lower than the next; its tread runs the full column, its riser climbs from
+     the previous tread. When the stair comes into view ([data-filled], see RevealScope "fill")
+     risers and treads draw in turn, the brand stroke on each tread fills, the words follow. */
+  .vp-stair {
+    --rise: clamp(1.75rem, 2.4vw, 2.6rem);
+    --pad: clamp(0.75rem, 1.5vw, 1.75rem);
+    --step: 300ms;
+    position: relative;
     display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: min(78vw, 20rem);
-    column-gap: var(--col-gap);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    cursor: grab;
-    padding-bottom: 0.25rem;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    padding-top: 2.25rem; /* room for the stroke standing on the highest tread */
   }
-  .vp-timeline::-webkit-scrollbar {
-    display: none;
+  .vp-stair__step {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: calc((var(--n) - 1 - var(--i)) * var(--rise));
+    padding-right: var(--pad);
   }
-  .vp-timeline.is-grabbing {
-    cursor: grabbing;
-    scroll-snap-type: none;
-    user-select: none;
+  .vp-stair__tread {
+    position: relative;
+    display: block;
+    align-self: stretch;
+    height: 1.5rem;
+    margin-right: calc(var(--pad) * -1);
   }
-  .vp-timeline__item {
-    scroll-snap-align: start;
+  .vp-stair__tread::after,
+  .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    background: var(--fg);
   }
-  @media (min-width: 64rem) {
-    .vp-timeline {
-      grid-auto-columns: 22rem;
+  .vp-stair__tread::after {
+    right: 0;
+    top: 0;
+    height: 2px;
+    transform-origin: left;
+    transition: transform 420ms var(--ease-move) calc(var(--i) * var(--step) + 180ms);
+  }
+  .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
+    top: 0;
+    width: 2px;
+    height: calc(var(--rise) + 2px);
+    transform-origin: bottom;
+    transition: transform 200ms var(--ease-move) calc(var(--i) * var(--step));
+  }
+  .vp-stair__mark {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 0.45rem);
+    height: 1.15rem;
+    color: var(--fg);
+  }
+  .vp-stair .vp-mark polygon {
+    transition-delay: calc(var(--d, 0) * var(--step) + 560ms);
+  }
+  .vp-stair__year {
+    font-size: clamp(2rem, 3.2vw, 3.4rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .vp-stair__text {
+    max-width: 24ch;
+    font-size: var(--t-small);
+    line-height: 1.5;
+  }
+  @media (min-width: 80rem) {
+    .vp-stair__text {
+      font-size: var(--t-body);
     }
   }
-  .vp-timeline__bar {
-    transform-origin: left;
-    transform: scaleX(var(--tp, 0));
+  .vp-stair__step > :not(.vp-stair__tread) {
+    transition:
+      opacity 700ms var(--ease-enter) calc(var(--i) * var(--step) + 420ms),
+      translate 700ms var(--ease-enter) calc(var(--i) * var(--step) + 420ms);
+  }
+  html.js-motion .vp-stair:not([data-filled]) .vp-stair__tread::after {
+    transform: scaleX(0);
+  }
+  html.js-motion .vp-stair:not([data-filled]) .vp-stair__tread::before {
+    transform: scaleY(0);
+  }
+  html.js-motion .vp-stair:not([data-filled]) .vp-stair__step > :not(.vp-stair__tread) {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+  /* phones and tablets: the stair stands up into a rail down the page */
+  @media (max-width: 63.99rem) {
+    .vp-stair {
+      --step: 160ms;
+      grid-template-columns: minmax(0, 1fr);
+      padding-top: 0;
+    }
+    .vp-stair__step {
+      padding: 0 0 2.75rem 2.75rem;
+    }
+    .vp-stair__step:last-child {
+      padding-bottom: 0;
+    }
+    .vp-stair__tread {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 1.4rem;
+      height: auto;
+      margin: 0;
+    }
+    .vp-stair__tread::after {
+      display: none;
+    }
+    .vp-stair__step .vp-stair__tread::before,
+    .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
+      content: "";
+      position: absolute;
+      left: 0.6rem;
+      top: 1.75rem;
+      bottom: 0.25rem;
+      width: 2px;
+      height: auto;
+      background: var(--fg);
+      transform-origin: top;
+    }
+    .vp-stair__step:last-child .vp-stair__tread::before {
+      display: none;
+    }
+    .vp-stair__mark {
+      left: 0;
+      top: 0.35rem;
+      bottom: auto;
+    }
+    .vp-stair__text {
+      max-width: 34ch;
+      font-size: var(--t-body);
+    }
   }
 }
 

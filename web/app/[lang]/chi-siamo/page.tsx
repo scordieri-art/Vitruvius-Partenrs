@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Growth } from "@/components/about/Growth";
-import { Timeline } from "@/components/about/Timeline";
+import { Milestones } from "@/components/about/Milestones";
 import { TeamTabs } from "@/components/about/TeamTabs";
 import { Mark } from "@/components/marks/Mark";
 import { PageHero } from "@/components/ui/PageHero";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
-import { guamari, qualifications, top200 } from "@/content/evidence";
+import { guamari, production, qualifications, top200 } from "@/content/evidence";
+import { projects } from "@/content/projects";
 import { company } from "@/content/site";
 import { getDictionary, getTeam, newsHref } from "@/lib/content";
+import { href } from "@/lib/i18n";
 import { alternates, metaText, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -48,6 +50,17 @@ export default async function AboutPage() {
     { e: construction, people: leadsOf("Vitruvius Construction") },
     { e: living, people: leadsOf("Vitruvius Living") },
   ];
+  const caseHref = (itSlug: string) => href(lang, "projects", projects.find((p) => p.slug.it === itSlug)?.slug[lang]);
+  // each step links to what proves it: the news, the qualifications below, the case
+  const proof: Record<string, { href: string; label: string }> = {
+    "2021": { href: newsHref(lang, production[0].source.news!), label: a.milestoneLinks.news },
+    "2022": { href: newsHref(lang, production[1].source.news!), label: a.milestoneLinks.news },
+    "2023": { href: href(lang, "about", undefined, "credentials"), label: a.milestoneLinks.credentials },
+    "2024": { href: newsHref(lang, top200.source.news!), label: a.milestoneLinks.news },
+    "2025": { href: caseHref("via-asinari-asti"), label: a.milestoneLinks.project },
+    "2026": { href: caseHref("palazzo-ex-inps-genova"), label: a.milestoneLinks.project },
+  };
+  const milestones = a.milestones.map((m) => ({ ...m, link: proof[m.year] }));
   const credentials = [
     ...qualifications.map((q) => ({
       key: q.name,
@@ -133,10 +146,10 @@ export default async function AboutPage() {
           <p className="t-label mb-5" data-reveal="fade">
             {a.milestonesLabel}
           </p>
-          <h2 id="milestones" className="t-l mb-14" data-reveal="lines">
+          <h2 id="milestones" className="t-l mb-16 lg:mb-20" data-reveal="lines">
             {a.milestonesTitle}
           </h2>
-          <Timeline items={a.milestones} prev={t.ui.previous} next={t.ui.next} hint={a.dragHint} />
+          <Milestones items={milestones} label={a.milestonesTitle} />
         </div>
       </section>
 

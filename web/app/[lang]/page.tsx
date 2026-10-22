@@ -88,7 +88,7 @@ export default async function HomePage() {
           <p className="t-label mb-5" data-reveal="fade">
             {h.lines.label}
           </p>
-          <h2 id="lines-title" className="t-l max-w-[16ch]" data-reveal="lines">
+          <h2 id="lines-title" className="t-l max-w-[20ch] [text-wrap:balance]" data-reveal="lines">
             {h.lines.title}
           </h2>
         </div>
