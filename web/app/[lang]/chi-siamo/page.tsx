@@ -11,11 +11,11 @@ import { ParallaxImage } from "@/components/ui/ParallaxImage";
 import { guamari, qualifications, top200 } from "@/content/evidence";
 import { company } from "@/content/site";
 import { getDictionary, getTeam, newsHref } from "@/lib/content";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getDictionary();
-  return { title: t.meta.titles.about, description: t.meta.aboutDescription, alternates: alternates(lang, "about") };
+  return { title: t.meta.titles.about, description: metaText(t.meta.aboutDescription), alternates: alternates(lang, "about"), ...share(lang, ogPath(lang, "about")) };
 }
 
 const groupAnchor: Record<string, string> = {

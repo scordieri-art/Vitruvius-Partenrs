@@ -29,7 +29,7 @@ export function RevealScope({ children }: { children: ReactNode }) {
     gsap.registerPlugin(SplitText);
     const els = Array.from(scope.querySelectorAll<HTMLElement>("[data-reveal]"));
     if (prefersReducedMotion()) {
-      els.forEach((el) => (el.style.visibility = "visible"));
+      els.forEach((el) => (el.style.opacity = "1"));
       return;
     }
     const triggers: ScrollTrigger[] = [];
@@ -60,12 +60,12 @@ export function RevealScope({ children }: { children: ReactNode }) {
           splits.push(split);
           // 150%: fully below the mask, padding included (see .vp-line-mask)
           gsap.set(split.lines, { yPercent: 150 });
-          gsap.set(el, { visibility: "visible" });
+          gsap.set(el, { opacity: 1 });
           gsap.to(split.lines, { yPercent: 0, duration: 1.05, ease: "enter", stagger: 0.09, delay });
         });
         return;
       }
-      gsap.set(el, { visibility: "visible" });
+      gsap.set(el, { opacity: 1 });
 
       if (kind === "image") {
         const inner = el.querySelector<HTMLElement>("img, video, canvas");

@@ -8,9 +8,9 @@ import { JobList } from "@/components/careers/JobList";
 import { JumpLink } from "@/components/ui/JumpLink";
 import { Mark } from "@/components/marks/Mark";
 import { jobFacts } from "@/content/jobFacts";
-import { getDictionary, getJobs } from "@/lib/content";
+import { getDictionary, getJobs, outline } from "@/lib/content";
 import { formatDate, href, locales } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, metaTitle, ogPath, share } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.flatMap((lang) => getJobs().map((j) => ({ lang, slug: j.slug })));
@@ -22,9 +22,10 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/lavora-con
   const job = getJobs().find((j) => j.slug === slug);
   if (!job) return {};
   return {
-    title: `${job.title} — ${t.meta.titles.careers}`,
-    description: job.html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 155),
+    title: metaTitle(`${job.title} — ${t.meta.titles.careers}`),
+    description: metaText(job.html),
     alternates: alternates(lang, "careers", { it: job.slug, en: job.slug }),
+    ...share(lang, ogPath(lang, "careers", job.slug)),
   };
 }
 
@@ -140,7 +141,7 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
               </div>
             </div>
           </aside>
-          <div lang="it" className="prose-vp col-span-4 lg:col-span-7 lg:col-start-1 lg:row-start-1" dangerouslySetInnerHTML={{ __html: job.html }} />
+          <div lang="it" className="prose-vp col-span-4 lg:col-span-7 lg:col-start-1 lg:row-start-1" dangerouslySetInnerHTML={{ __html: outline(job.html) }} />
         </div>
       </section>
 

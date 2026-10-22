@@ -41,6 +41,11 @@ Aktiv Grotesk arriva dal web kit Adobe Fonts **`zgd5zbh`** (Light 300, Regular 4
 - La mappa degli slug è in `lib/i18n.ts`; la riscrittura degli URL è in `proxy.ts`.
 - Gli URL del vecchio WordPress (news alla radice, `/jobs/…`, `/current-jobs`, `/category/news`, `/pablot`) hanno redirect permanenti in `next.config.ts`.
 - `sitemap.xml` (con hreflang) e `robots.txt` sono generati da `app/sitemap.ts` e `app/robots.ts`.
+- **Indirizzo del sito** (`lib/site.ts`): link canonici, sitemap, dati strutturati e immagini di condivisione usano il dominio di produzione del progetto su Vercel (`VERCEL_PROJECT_PRODUCTION_URL`): oggi l'indirizzo vercel.app, il dominio del gruppo appena viene collegato, senza toccare il codice. Fuori da Vercel vale `company.url`.
+- **Indicizzazione**: le pagine servite da un host diverso dal dominio del gruppo (vercel.app, anteprime dei rami) rispondono con `X-Robots-Tag: noindex` (`proxy.ts`), così la copia di prova non compete con il sito vero. Collegato il dominio, il sito diventa indicizzabile da solo.
+- **Titoli e descrizioni** (`lib/seo.ts`): `metaText` pulisce le descrizioni (tag, entità, anche doppie) e le taglia a fine parola entro 155 caratteri; `metaTitle` toglie “— Vitruvius & Partners” dai titoli lunghi, così un risultato di ricerca mostra le parole che contano.
+- **Immagini di condivisione** (`lib/og.tsx`, `app/og/`): ogni pagina principale, operazione e posizione aperta ha la sua immagine 1200 × 630 (logo, sezione, titolo, piano inclinato del simbolo), generata alla build; gli articoli usano la loro foto. Il carattere è Inter (licenza OFL, `assets/fonts/`): la licenza Adobe di Aktiv Grotesk non copre l'uso nelle immagini.
+- **Fonti sparite** (`content/deadLinks.ts`): i link a fonti non più online puntano alla loro copia su archive.org; dove non c'è copia resta il nome della fonte, con “non più online”. Il controllo dei link va ripetuto ogni tanto.
 
 ## Dove si modificano i contenuti
 
@@ -66,7 +71,7 @@ Per aggiungere una news senza passare dallo script, aggiungi un oggetto in `cont
 - Logo e simbolo: `public/brand/` e `components/brand/logo-paths.ts`. Sono i vettori esatti della **tavola 2** di `Proposte_rebranding_VP.ai` (compresa la “&” della tavola 2), esportati senza ridisegno.
 - Il segno-unità del sito (`components/marks/Mark.tsx`) è il tratto principale dello stesso simbolo, non ridisegnato. Il simbolo non viene ingrandito da solo come elemento decorativo.
 - Palette (`app/globals.css`, `@theme`): navy `#0A2342`, slate `#6B7280`, paper `#FAFAF9`, bianco, ink `#0F172A`, hairline `#DCE1E6`. Nessun altro colore: i toni secondari sono opacità della palette.
-- Favicon, apple-icon e immagine Open Graph (`app/icon.svg`, `app/apple-icon.png`, `app/favicon.ico`, `public/og.jpg`) usano la versione negativa su navy.
+- Favicon e apple-icon (`app/icon.svg`, `app/apple-icon.png`, `app/favicon.ico`) usano la versione negativa su navy, come le immagini di condivisione (`lib/og.tsx`, vedi «Lingue e URL»).
 
 ## Contenuti: regola di verifica
 
@@ -168,6 +173,8 @@ Tolti di proposito: numeri che contano su importi e classifiche (contano solo i 
 ## Navigazione e accessibilità
 
 - Il cursore di sistema resta sempre visibile.
+- Ciò che aspetta la sua animazione d'ingresso è trasparente, non nascosto (`opacity`, non `visibility`): un lettore di schermo trova ogni titolo anche prima che sia stato scorso, e un blocco raggiunto da tastiera compare subito.
+- I titoli dei testi pubblicati (news e annunci, che su WordPress partono da h4) sono rinumerati sotto l'h1 della pagina (`outline` in `lib/content.ts`): la struttura non ha salti e l'aspetto non cambia.
 - Chi siamo: le tappe si trascinano (mouse), si sfogliano (touch) o si scorrono con i pulsanti; il team è diviso in schede (frecce sinistra/destra da tastiera). Il filtro delle news è un gruppo di pulsanti con stato premuto e un annuncio del numero di articoli.
 - Le file da sfogliare contengono link raggiungibili da tastiera; nessun contenuto richiede il passaggio del mouse.
 - Testi lunghi, email e link non escono mai dal loro riquadro, le ancore atterrano sotto l'header fisso.
@@ -188,3 +195,6 @@ Tolti di proposito: numeri che contano su importi e classifiche (contano solo i 
 ## Deploy
 
 Pensato per Vercel: collega il repository, imposta le variabili d'ambiente, aggiungi il dominio del deploy al kit Adobe Fonts. Nessun database.
+
+- Header di sicurezza in `next.config.ts`: niente incorporamento in pagine altrui (`X-Frame-Options`, `frame-ancestors`), moduli inviati solo al sito, HSTS da Vercel.
+- **Moduli senza Resend**: se l'invio non riesce (chiave mancante o servizio irraggiungibile) il visitatore vede l'errore e il link «Apri l'email già compilata», che apre il suo programma di posta con i campi scritti, ciascuno con la sua etichetta (`MailFallback` in `components/forms/Fields.tsx`); i file vanno allegati a mano.

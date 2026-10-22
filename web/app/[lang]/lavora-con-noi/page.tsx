@@ -9,11 +9,11 @@ import { jobFacts } from "@/content/jobFacts";
 import { company } from "@/content/site";
 import { getDictionary, getJobs, getTeam } from "@/lib/content";
 import { href } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getDictionary();
-  return { title: t.meta.titles.careers, description: t.careersPage.lead, alternates: alternates(lang, "careers") };
+  return { title: t.meta.titles.careers, description: metaText(t.careersPage.lead), alternates: alternates(lang, "careers"), ...share(lang, ogPath(lang, "careers")) };
 }
 
 /** Careers: the promise and a photograph, the team in figures, the open positions, how to apply. */

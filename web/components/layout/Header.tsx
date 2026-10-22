@@ -166,7 +166,7 @@ export function Header({
                 navigate(altHref, labels.switchTo);
               }}
               className="vp-navlink t-small"
-              aria-label={`${labels.language}: ${labels.switchTo}`}
+              aria-label={`${labels.switchToShort}, ${labels.switchTo}`}
             >
               {labels.switchToShort}
             </a>

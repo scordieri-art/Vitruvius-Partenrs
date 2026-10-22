@@ -10,7 +10,8 @@ import { company } from "@/content/site";
 import { projects } from "@/content/projects";
 import { dictionaryFor } from "@/lib/content";
 import { hasLocale, href, locales, type RouteKey } from "@/lib/i18n";
-import { organizationJsonLd } from "@/lib/seo";
+import { ogPath, organizationJsonLd, share } from "@/lib/seo";
+import { siteUrl } from "@/lib/site";
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
@@ -28,17 +29,11 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   if (!hasLocale(lang)) return {};
   const t = dictionaryFor(lang);
   return {
-    metadataBase: new URL(company.url),
+    metadataBase: new URL(siteUrl),
     title: { default: t.meta.siteName, template: `%s — ${t.meta.siteName}` },
     description: t.meta.description,
     applicationName: t.meta.siteName,
-    openGraph: {
-      type: "website",
-      siteName: t.meta.siteName,
-      locale: lang === "it" ? "it_IT" : "en_GB",
-      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Vitruvius & Partners" }],
-    },
-    twitter: { card: "summary_large_image", site: "@VitruviusandP" },
+    ...share(lang, ogPath(lang, "home")),
   };
 }
 

@@ -6,11 +6,11 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { NewsList } from "@/components/sections/NewsList";
 import { getDictionary, getNews, pressOutlet } from "@/lib/content";
 import { formatDate, href } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getDictionary();
-  return { title: t.meta.titles.news, description: t.newsPage.title, alternates: alternates(lang, "news") };
+  return { title: t.meta.titles.news, description: t.meta.newsDescription, alternates: alternates(lang, "news"), ...share(lang, ogPath(lang, "news")) };
 }
 
 /** News: the three latest as cards with their picture, then the archive by year, filterable. */

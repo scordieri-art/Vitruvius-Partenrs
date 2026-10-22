@@ -10,11 +10,11 @@ import { mapPins } from "@/components/map/mapPlaces";
 import { company } from "@/content/site";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getDictionary();
-  return { title: t.meta.titles.contact, description: t.contactPage.lead, alternates: alternates(lang, "contact") };
+  return { title: t.meta.titles.contact, description: t.meta.contactDescription, alternates: alternates(lang, "contact"), ...share(lang, ogPath(lang, "contact")) };
 }
 
 const mid = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;

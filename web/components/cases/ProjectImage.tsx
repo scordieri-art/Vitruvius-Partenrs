@@ -1,12 +1,12 @@
 import Image from "next/image";
-import { SafeImage } from "@/components/ui/SafeImage";
+import { PublishedImage } from "./PublishedImage";
 import type { Project } from "@/content/projects";
 import type { Locale } from "@/lib/i18n";
 
 /**
- * A project's picture: the image published by the group, over an indicative stock
- * photograph that carries its own "indicative image" label. Where the published image
- * cannot load, the label stays visible, so a stock photo is never passed off as the project.
+ * A project's picture: the image published by the group; where there is none, or it cannot
+ * load, an indicative stock photograph that carries its own "indicative image" label, so a
+ * stock photo is never passed off as the project.
  */
 export function ProjectImage({
   p,
@@ -32,28 +32,32 @@ export function ProjectImage({
 }) {
   return (
     <div className={`relative overflow-hidden bg-[var(--line)] ${className}`}>
-      {/* the stock photograph is the visible picture only when no published one exists */}
-      <Image
-        src={p.placeholder}
-        alt=""
-        fill
-        sizes={sizes}
-        loading={priority && !p.image ? "eager" : undefined}
-        fetchPriority={priority && !p.image ? "high" : undefined}
-        className={`object-cover ${imgClassName}`}
-      />
-      <span className={`vp-tag absolute z-[1] ${tagClassName}`}>{label}</span>
       {p.image ? (
-        <SafeImage
+        <PublishedImage
           src={p.image.src}
           alt={p.image.alt[lang]}
-          fill
+          placeholder={p.placeholder}
+          label={label}
           sizes={sizes}
-          loading={priority ? "eager" : undefined}
-          fetchPriority={priority ? "high" : undefined}
-          className={`z-[2] object-cover ${imgClassName}`}
+          priority={priority}
+          imgClassName={imgClassName}
+          tagClassName={tagClassName}
         />
-      ) : null}
+      ) : (
+        <>
+          {/* no published picture: the stock photograph, always labelled */}
+          <Image
+            src={p.placeholder}
+            alt=""
+            fill
+            sizes={sizes}
+            loading={priority ? "eager" : undefined}
+            fetchPriority={priority ? "high" : undefined}
+            className={`object-cover ${imgClassName}`}
+          />
+          <span className={`vp-tag absolute z-[1] ${tagClassName}`}>{label}</span>
+        </>
+      )}
       {hoverLabel ? (
         <span className="vp-sweep" aria-hidden="true">
           <span className="vp-sweep__label t-s">

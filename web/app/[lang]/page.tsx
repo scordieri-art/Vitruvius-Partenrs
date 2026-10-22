@@ -12,7 +12,7 @@ import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
 import { projects } from "@/content/projects";
-import { getDictionary } from "@/lib/content";
+import { getDictionary, liveLink } from "@/lib/content";
 import { href, type Locale } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
 
@@ -72,8 +72,8 @@ export default async function HomePage() {
 
   const press = PRESS.flatMap((outlet) => {
     for (const p of projects) {
-      const s = p.sources.find((x) => x.label === outlet);
-      if (s) return [{ outlet, url: s.url, topic: `${p.name} · ${s.date[lang].replace(/^\D+/, "")}` }];
+      const s = p.sources.find((x) => x.label === outlet && liveLink(x.url));
+      if (s) return [{ outlet, url: liveLink(s.url)!, topic: `${p.name} · ${s.date[lang].replace(/^\D+/, "")}` }];
     }
     return [];
   });

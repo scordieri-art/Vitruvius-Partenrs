@@ -7,6 +7,7 @@ import {
   useTransition,
   type FormEvent,
   type InputHTMLAttributes,
+  type RefObject,
   type ReactNode,
   type TextareaHTMLAttributes,
 } from "react";
@@ -286,5 +287,35 @@ export function Honeypot() {
         <input type="text" name="website" tabIndex={-1} autoComplete="off" />
       </label>
     </div>
+  );
+}
+
+/**
+ * When the site cannot send a form, the visitor's own mail app takes over: a link that opens
+ * an email to the group already written with what was typed (each field by its label), so
+ * nothing has to be typed again. Files cannot travel in a mailto link: `note` asks for them.
+ */
+export function MailFallback({ form, to, subject, label, note }: { form: RefObject<HTMLFormElement | null>; to: string; subject: string; label: string; note?: string }) {
+  const open = () => {
+    const f = form.current;
+    if (!f) return;
+    const lines: string[] = [];
+    for (const el of Array.from(f.elements) as (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[]) {
+      if (!el.name || ["website", "consent"].includes(el.name) || (el as HTMLInputElement).type === "file" || el.type === "hidden") continue;
+      if ((el.type === "radio" || el.type === "checkbox") && !(el as HTMLInputElement).checked) continue;
+      const value = el instanceof HTMLSelectElement ? (el.value ? el.selectedOptions[0]?.text : "") : el.value;
+      if (!value?.trim()) continue;
+      // a radio is named by its group's legend, its value by its own label
+      const group = el.type === "radio" ? el.closest("fieldset")?.querySelector("legend")?.textContent : null;
+      const own = el.labels?.[0]?.textContent?.replace(/\s*\*\s*$/, "").trim();
+      lines.push(group ? `${group.replace(/\s*\*\s*$/, "").trim()}: ${own ?? value}` : `${own ?? el.name}: ${value.trim()}`);
+    }
+    if (note) lines.push("", note);
+    window.location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
+  };
+  return (
+    <button type="button" onClick={open} className="vp-ulink t-small mt-2 block text-left">
+      {label} <span aria-hidden="true">↗</span>
+    </button>
   );
 }

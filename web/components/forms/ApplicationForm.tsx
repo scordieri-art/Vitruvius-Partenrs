@@ -2,10 +2,14 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { sendApplication, type FormState } from "@/lib/actions";
-import { Consent, Field, Honeypot, Submit, useSubmitKeepingValues } from "./Fields";
+import { Consent, Field, Honeypot, MailFallback, Submit, useSubmitKeepingValues } from "./Fields";
+import { company } from "@/content/site";
 
 type Labels = {
   failed: string;
+  mailFallback: string;
+  mailSubject: string;
+  mailNote: string;
   title: string;
   name: string;
   birth: string;
@@ -91,6 +95,8 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
         <Submit pending={pending} label={labels.submit} pendingLabel={labels.sending} />
         <p ref={status} tabIndex={-1} role="status" aria-live="polite" className="t-small outline-none">
           {state.ok ? labels.success : state.failed ? labels.failed : state.errors ? labels.error : ""}
+          {state.failed ? " " : null}
+          {state.failed ? <MailFallback form={form} to={company.email} subject={`${labels.mailSubject}: ${job}`} label={labels.mailFallback} note={labels.mailNote} /> : null}
         </p>
       </div>
     </form>

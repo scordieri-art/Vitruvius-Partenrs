@@ -11,9 +11,9 @@ import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
 import { findProject, projects } from "@/content/projects";
-import { getDictionary } from "@/lib/content";
+import { getDictionary, liveLink } from "@/lib/content";
 import { href, locales } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, ogPath, share } from "@/lib/seo";
 
 const mapsUrl = (address: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
@@ -26,7 +26,12 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/progetti/[
   const { lang } = await getDictionary();
   const p = findProject(lang, slug);
   if (!p) return {};
-  return { title: `${p.name}, ${p.place[lang]}`, description: p.summary[lang], alternates: alternates(lang, "projects", p.slug) };
+  return {
+    title: `${p.name}, ${p.place[lang]}`,
+    description: metaText(p.summary[lang]),
+    alternates: alternates(lang, "projects", p.slug),
+    ...share(lang, ogPath(lang, "projects", p.slug[lang])),
+  };
 }
 
 /** A case: the picture first, then a sentence, the figures, two short paragraphs and where it stands. */
@@ -175,12 +180,19 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                         {c.newsLink}
                       </TLink>
                     ) : null}
-                    {p.sources.slice(0, 3).map((src) => (
-                      <a key={src.url} href={src.url} target="_blank" rel="noopener noreferrer" className="vp-ulink">
-                        {src.label} <span aria-hidden="true">↗</span>
-                        <span className="sr-only"> ({t.ui.externalNew})</span>
-                      </a>
-                    ))}
+                    {/* the first three that can still be read (archived copies included) */}
+                    {p.sources
+                      .flatMap((src) => {
+                        const url = liveLink(src.url);
+                        return url ? [{ ...src, url }] : [];
+                      })
+                      .slice(0, 3)
+                      .map((src) => (
+                        <a key={src.url} href={src.url} target="_blank" rel="noopener noreferrer" className="vp-ulink">
+                          {src.label} <span aria-hidden="true">↗</span>
+                          <span className="sr-only"> ({t.ui.externalNew})</span>
+                        </a>
+                      ))}
                   </p>
                 </div>
               </div>

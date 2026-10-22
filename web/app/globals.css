@@ -1166,8 +1166,14 @@
 }
 
 /* Pre-hide elements that animate in (only when JS + motion are available) */
+/* opacity, not visibility: what waits for its entrance stays in the accessibility tree, so a
+   screen reader finds every heading before it has been scrolled to */
 html.js-motion [data-reveal] {
-  visibility: hidden;
+  opacity: 0;
+}
+/* reached by the keyboard before its entrance: shown at once */
+html.js-motion [data-reveal]:focus-within {
+  opacity: 1 !important;
 }
 
 @layer utilities {

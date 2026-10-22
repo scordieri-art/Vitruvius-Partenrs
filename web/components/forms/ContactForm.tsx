@@ -2,13 +2,17 @@
 
 import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sendContact, type FormState } from "@/lib/actions";
-import { Choice, Consent, Field, Files, Honeypot, Select, Submit, useSubmitKeepingValues } from "./Fields";
+import { Choice, Consent, Field, Files, Honeypot, MailFallback, Select, Submit, useSubmitKeepingValues } from "./Fields";
+import { company } from "@/content/site";
 
 type Topic = "property" | "invest" | "supplier" | "press" | "other";
 const TOPICS: Topic[] = ["property", "invest", "supplier", "press", "other"];
 
 type Labels = {
   failed: string;
+  mailFallback: string;
+  mailSubject: string;
+  mailNote: string;
   name: string;
   email: string;
   message: string;
@@ -133,6 +137,10 @@ export function ContactForm({ labels }: { labels: Labels }) {
         <Submit pending={pending} label={labels.submit} pendingLabel={labels.sending} />
         <p ref={status} tabIndex={-1} role="status" aria-live="polite" className="t-small outline-none">
           {state.ok ? labels.success : state.failed ? labels.failed : state.errors ? labels.error : ""}
+          {state.failed ? " " : null}
+          {state.failed ? (
+            <MailFallback form={form} to={company.email} subject={labels.mailSubject} label={labels.mailFallback} note={property ? labels.mailNote : undefined} />
+          ) : null}
         </p>
       </div>
     </form>

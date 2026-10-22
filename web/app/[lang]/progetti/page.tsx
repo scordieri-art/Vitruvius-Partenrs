@@ -10,11 +10,17 @@ import { mapPlaces } from "@/components/map/mapPlaces";
 import { projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, ogPath, share } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { lang, t } = await getDictionary();
-  return { title: t.meta.titles.projects, description: t.projectsPage.lead, alternates: alternates(lang, "projects") };
+  return {
+    title: t.meta.titles.projects,
+    // the operations by name: what someone searching for them types
+    description: metaText(`${t.meta.projectsDescription} ${projects.map((p) => `${p.name} (${p.place[lang].replace(/\s*\(.*\)$/, "")})`).join(", ")}.`),
+    alternates: alternates(lang, "projects"),
+    ...share(lang, ogPath(lang, "projects")),
+  };
 }
 
 /** Projects: the latest operation large, the others side by side. Image, status, name, place. */

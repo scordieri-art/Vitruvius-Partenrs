@@ -4,10 +4,10 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { notFound } from "next/navigation";
 import { Cta } from "@/components/ui/Cta";
 import { TLink } from "@/components/layout/PageTransition";
-import { getDictionary, getNews, getNewsItem, newsCounterpart, pressOutlet } from "@/lib/content";
+import { getDictionary, getNews, getNewsItem, newsCounterpart, outline, pressOutlet } from "@/lib/content";
 import { projects } from "@/content/projects";
 import { formatDate, href, locales } from "@/lib/i18n";
-import { alternates } from "@/lib/seo";
+import { alternates, metaText, metaTitle, ogPath, share } from "@/lib/seo";
 
 export function generateStaticParams() {
   return locales.flatMap((lang) => getNews(lang).map((n) => ({ lang, slug: n.slug })));
@@ -20,10 +20,11 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/news/[slug
   if (!item) return {};
   const other = newsCounterpart(lang, item);
   return {
-    title: item.title,
-    description: item.lede || item.excerpt,
+    title: metaTitle(item.title),
+    description: metaText(item.lede || item.excerpt),
     alternates: alternates(lang, "news", lang === "it" ? { it: item.slug, en: other } : { it: other, en: item.slug }),
-    openGraph: { type: "article", publishedTime: item.date, images: item.image ? [{ url: item.image }] : undefined },
+    // the article's own picture when it has one
+    ...share(lang, item.image ?? ogPath(lang, "news"), { type: "article", publishedTime: item.date }),
   };
 }
 
@@ -136,16 +137,23 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
               </dl>
             </aside>
             <div className="col-span-4 lg:col-span-7 lg:col-start-4 lg:row-start-1">
-              <div className="prose-vp" dangerouslySetInnerHTML={{ __html: item.html }} />
+              <div className="prose-vp" dangerouslySetInnerHTML={{ __html: outline(item.html) }} />
               {item.sources.length ? (
                 <div className="mt-14 border-t border-[var(--line)] pt-6">
                   <p className="t-label mb-2">{t.ui.sources}</p>
                   <ul className="grid">
                     {item.sources.map((s) => (
                       <li key={s.url}>
-                        <Cta href={s.url} external externalNote={t.ui.externalNew}>
-                          {sourceName(s.label, s.url)} <span aria-hidden="true">↗</span>
-                        </Cta>
+                        {s.gone ? (
+                          // the page has gone and no copy was archived: the name stays, as a record
+                          <p className="t-small py-2">
+                            {sourceName(s.label, s.url)} <span className="text-[var(--fg-2)]">({t.ui.gone})</span>
+                          </p>
+                        ) : (
+                          <Cta href={s.url} external externalNote={t.ui.externalNew}>
+                            {sourceName(s.label, s.url)} <span aria-hidden="true">↗</span>
+                          </Cta>
+                        )}
                       </li>
                     ))}
                   </ul>

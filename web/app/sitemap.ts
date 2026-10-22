@@ -1,10 +1,10 @@
 import type { MetadataRoute } from "next";
-import { company } from "@/content/site";
+import { siteUrl } from "@/lib/site";
 import { projects } from "@/content/projects";
 import { getJobs, getNews, newsCounterpart } from "@/lib/content";
 import { href, type RouteKey } from "@/lib/i18n";
 
-const abs = (path: string) => `${company.url}${path === "/" ? "" : path}`;
+const abs = (path: string) => `${siteUrl}${path === "/" ? "" : path}`;
 
 function pair(key: RouteKey, it: string | null, en: string | null, lastModified?: string): MetadataRoute.Sitemap {
   const itUrl = it !== null ? abs(href("it", key, it || undefined)) : null;
