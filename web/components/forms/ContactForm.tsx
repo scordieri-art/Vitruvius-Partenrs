@@ -34,6 +34,7 @@ type Labels = {
   phoneHint: string;
   photos: string;
   photosButton: string;
+  noPhotos: string;
   photosHint: string;
   /** plain strings: labels cross from the server to this client component */
   photosChosenOne: string;
@@ -123,6 +124,7 @@ export function ContactForm({ labels }: { labels: Labels }) {
           hint={labels.photosHint}
           accept="image/jpeg,image/png,image/webp"
           chosenLabel={(n) => (n === 1 ? labels.photosChosenOne : labels.photosChosen.replace("{n}", String(n)))}
+          empty={labels.noPhotos}
           error={msg(state.errors?.photos)}
         />
       ) : null}

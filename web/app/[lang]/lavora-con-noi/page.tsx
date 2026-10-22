@@ -4,6 +4,8 @@ import { JobList } from "@/components/careers/JobList";
 import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
+import { Mark } from "@/components/marks/Mark";
+import { jobFacts } from "@/content/jobFacts";
 import { company } from "@/content/site";
 import { getDictionary, getJobs, getTeam } from "@/lib/content";
 import { href } from "@/lib/i18n";
@@ -19,6 +21,15 @@ export default async function CareersPage() {
   const { lang, t } = await getDictionary();
   const c = t.careersPage;
   const jobs = getJobs().map((j) => ({ slug: j.slug, title: j.title, location: j.location, type: j.type, href: href(lang, "careers", j.slug) }));
+  // every tangible term the open postings state, with the positions that state it
+  const offers = new Map<string, { label: string; roles: string[] }>();
+  for (const j of getJobs()) {
+    for (const o of jobFacts[j.slug]?.offer ?? []) {
+      const e = offers.get(o.it) ?? { label: o[lang], roles: [] };
+      e.roles.push(j.title.split(/\s[–-]\s/)[0]);
+      offers.set(o.it, e);
+    }
+  }
   const people = getTeam().reduce((n, g) => n + g.people.length, 0);
   const facts = [
     { v: String(people), k: c.facts.people },
@@ -87,6 +98,37 @@ export default async function CareersPage() {
           </div>
         </div>
       </section>
+
+      {/* What the postings offer */}
+      {offers.size ? (
+        <section data-theme="paper" aria-labelledby="offers-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
+          <div className="container-x grid-12 gap-y-12">
+            <div className="col-span-4 lg:col-span-4">
+              <p className="t-label mb-5" data-reveal="fade">
+                {c.offers.label}
+              </p>
+              <h2 id="offers-title" className="t-l" data-reveal="lines">
+                {c.offers.title}
+              </h2>
+              <p className="t-body mt-6 max-w-[34ch] text-[var(--fg-2)]">{c.offers.note}</p>
+            </div>
+            <ul className="col-span-4 grid gap-x-[var(--col-gap)] sm:grid-cols-2 lg:col-span-8 lg:col-start-5">
+              {/* the terms most positions share first */}
+              {[...offers.values()].sort((a, b) => b.roles.length - a.roles.length).map((o) => (
+                <li key={o.label} className="border-t border-[var(--line)] py-5" data-reveal="fade">
+                  <p className="t-s flex items-baseline gap-3">
+                    <Mark className="h-[0.8rem] shrink-0" />
+                    {o.label}
+                  </p>
+                  <p lang="it" className="t-label mt-2 pl-[1.6rem]">
+                    {o.roles.join(" · ")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       {/* How to apply */}
       <section data-theme="paper" aria-labelledby="apply-title" className="border-t border-[var(--line)] py-[clamp(4.5rem,10vw,9rem)]">

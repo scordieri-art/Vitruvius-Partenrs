@@ -13,6 +13,8 @@ type Labels = {
   email: string;
   address: string;
   cv: string;
+  cvChoose: string;
+  noFile: string;
   cvHint: string;
   consent: string;
   submit: string;
@@ -64,8 +66,8 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
           {labels.cv} <span aria-hidden="true">*</span>
         </span>
         <label htmlFor="a-cv" className="vp-filerow mt-3 flex cursor-pointer items-center justify-between gap-6 border-b border-[var(--line)] pb-3 pt-2">
-          <span className="t-body-l truncate">{fileName || "—"}</span>
-          <span className="vp-ulink t-small shrink-0">{labels.cv}</span>
+          <span className={`t-body-l truncate ${fileName ? "" : "text-[var(--fg-2)]"}`}>{fileName || labels.noFile}</span>
+          <span className="vp-ulink t-small shrink-0">{labels.cvChoose}</span>
         </label>
         <input
           id="a-cv"

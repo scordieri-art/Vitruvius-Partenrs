@@ -120,7 +120,10 @@ Su telefono la home è circa un quarto più corta della versione precedente, pur
 
 ## Lavora con noi
 
-Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in numeri su una foto di cantiere, le posizioni aperte (banda navy sull'inclinazione al passaggio del mouse), i tre passaggi per candidarsi, LinkedIn. Ogni posizione ha in apertura sede, contratto e data, il testo con le specifiche a lato, i passaggi accanto al modulo e in fondo le altre posizioni.
+Titolo e foto in apertura con il bottone “Posizioni aperte”, il team in numeri su una foto di cantiere, le posizioni aperte (banda navy sull'inclinazione al passaggio del mouse), «Cosa offriamo», i tre passaggi per candidarsi, LinkedIn. Ogni posizione ha in apertura sede, contratto e data, poi il riquadro «In breve» (contratto, durata, orario, esperienza, cosa offre: sul telefono prima del testo, sul desktop a lato e sempre in vista), i passaggi accanto al modulo e in fondo le altre posizioni.
+
+- **`content/jobFacts.ts`**: i dati «In breve» di ogni annuncio, ripresi dal suo testo e tradotti, per slug. Elenca solo condizioni concrete (benefit, retribuzione), non frasi come «contesto dinamico». La sezione «Cosa offriamo» li raccoglie da tutte le posizioni, con accanto quelle che li prevedono. Va aggiornato insieme a `content/generated/jobs.json`; un annuncio senza voce mostra le sue specifiche, senza la «Categoria offerta» interna.
+- **Titoli con trattino**: `DashTitle` tiene unita la parola prima del trattino, così una riga non comincia mai con «–». La divisione in righe dei titoli (`RevealScope`) lascia intatti gli elementi `.vp-keep`.
 
 ## Chi siamo
 

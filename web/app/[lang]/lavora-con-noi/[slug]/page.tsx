@@ -3,8 +3,11 @@ import { RevealScope } from "@/components/layout/RevealScope";
 import { notFound } from "next/navigation";
 import { TLink } from "@/components/layout/PageTransition";
 import { ApplicationForm } from "@/components/forms/ApplicationForm";
+import { DashTitle } from "@/components/careers/DashTitle";
 import { JobList } from "@/components/careers/JobList";
 import { JumpLink } from "@/components/ui/JumpLink";
+import { Mark } from "@/components/marks/Mark";
+import { jobFacts } from "@/content/jobFacts";
 import { getDictionary, getJobs } from "@/lib/content";
 import { formatDate, href, locales } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
@@ -33,6 +36,12 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
   const job = jobs.find((j) => j.slug === slug);
   if (!job) notFound();
   const c = t.careersPage;
+  const facts = jobFacts[job.slug];
+  // the curated facts when the posting has them; otherwise its own published details, less the
+  // internal category (“Ampliamento Organico”), which tells a candidate nothing
+  const rows = facts
+    ? (["contract", "duration", "hours", "experience"] as const).filter((k) => facts[k]).map((k) => ({ label: c.glance[k], value: facts[k]![lang], lang }))
+    : job.specs.filter((s) => !/categoria/i.test(s.label)).map((s) => ({ ...s, lang: "it" as const }));
   const others = jobs.filter((j) => j.slug !== job.slug).map((j) => ({ slug: j.slug, title: j.title, location: j.location, type: j.type, href: href(lang, "careers", j.slug) }));
 
   const jsonLd = {
@@ -61,7 +70,7 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
             <span>{c.openLabel}</span>
           </p>
           <h1 className="t-xl max-w-[16ch]" data-reveal="lines">
-            {job.title}
+            <DashTitle text={job.title} />
           </h1>
           <div className="mt-12 flex flex-col items-start gap-10 border-t border-[var(--line)] pt-8 lg:flex-row lg:items-end lg:justify-between" data-reveal="fade" data-reveal-delay="0.2">
             <dl className="grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-6 sm:grid-cols-3 sm:gap-x-12">
@@ -93,23 +102,45 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
       {/* The position */}
       <section data-theme="paper" aria-label={job.title} className="border-t border-[var(--line)] py-[clamp(4rem,9vw,8rem)]">
         <div className="container-x grid-12 gap-y-16">
-          <div lang="it" className="prose-vp col-span-4 lg:col-span-7" dangerouslySetInnerHTML={{ __html: job.html }} />
-          <aside className="col-span-4 lg:col-span-4 lg:col-start-9">
+          <aside className="col-span-4 lg:col-span-4 lg:col-start-9 lg:row-start-1">
+            {/* the position at a glance: contract, hours, what comes with it, then the way in;
+                first on phones, beside the text on wide screens */}
             <div className="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
-              <p className="t-label mb-4">{c.specs}</p>
+              <p className="t-label mb-4">{facts ? c.glance.title : c.specs}</p>
               <dl className="border-t border-[var(--line)]">
-                {job.specs.map((s) => (
-                  <div key={s.label} lang="it" className="grid grid-cols-2 gap-4 border-b border-[var(--line)] py-4 t-small">
-                    <dt className="text-[var(--fg-2)]">{s.label}</dt>
-                    <dd>{s.value}</dd>
+                {rows.map((r) => (
+                  <div key={r.label} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 border-b border-[var(--line)] py-4">
+                    <dt className="t-label">{r.label}</dt>
+                    <dd lang={r.lang} className="t-small">
+                      {r.value}
+                    </dd>
                   </div>
                 ))}
+                {facts?.offer?.length ? (
+                  <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-4 border-b border-[var(--line)] py-4">
+                    <dt className="t-label">{c.glance.offer}</dt>
+                    <dd>
+                      <ul className="grid gap-1.5">
+                        {facts.offer.map((o) => (
+                          <li key={o.it} className="t-small flex items-baseline gap-2">
+                            <Mark className="h-[0.6rem] shrink-0 translate-y-[0.02em]" />
+                            {o[lang]}
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
-              <JumpLink to="candidatura" cta className="mt-4">
-                {c.apply}
-              </JumpLink>
+              {/* on phones the opening's button is just above */}
+              <div className="mt-8 hidden lg:block">
+                <JumpLink to="candidatura" primary>
+                  {c.apply}
+                </JumpLink>
+              </div>
             </div>
           </aside>
+          <div lang="it" className="prose-vp col-span-4 lg:col-span-7 lg:col-start-1 lg:row-start-1" dangerouslySetInnerHTML={{ __html: job.html }} />
         </div>
       </section>
 

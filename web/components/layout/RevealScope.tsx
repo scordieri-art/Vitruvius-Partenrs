@@ -55,7 +55,8 @@ export function RevealScope({ children }: { children: ReactNode }) {
         // split only when the heading is about to play: splitting every heading on load
         // forces a layout per heading while the page is still busy hydrating
         when(el, start, () => {
-          const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "vp-line", aria: "none" });
+          // .vp-keep: a run of words that must stay on one line (DashTitle) is left whole
+          const split = SplitText.create(el, { type: "lines", mask: "lines", linesClass: "vp-line", aria: "none", ignore: ".vp-keep" });
           splits.push(split);
           // 150%: fully below the mask, padding included (see .vp-line-mask)
           gsap.set(split.lines, { yPercent: 150 });

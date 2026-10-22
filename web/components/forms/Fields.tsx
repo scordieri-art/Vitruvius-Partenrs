@@ -182,6 +182,7 @@ export function Files({
   accept,
   error,
   chosenLabel,
+  empty,
 }: {
   id: string;
   name: string;
@@ -191,6 +192,8 @@ export function Files({
   accept: string;
   error?: string;
   chosenLabel: (n: number) => string;
+  /** shown until something is chosen */
+  empty: string;
 }) {
   const [names, setNames] = useState<string[]>([]);
   const input = useRef<HTMLInputElement>(null);
@@ -211,8 +214,8 @@ export function Files({
       </span>
       {/* same row as the CV field: what is chosen on the left, the action on the right */}
       <label htmlFor={id} className="vp-filerow mt-3 flex cursor-pointer items-center justify-between gap-6 border-b border-[var(--line)] pb-3 pt-2">
-        <span className="t-body-l truncate" aria-live="polite">
-          {names.length ? chosenLabel(names.length) : "—"}
+        <span className={`t-body-l truncate ${names.length ? "" : "text-[var(--fg-2)]"}`} aria-live="polite">
+          {names.length ? chosenLabel(names.length) : empty}
         </span>
         <span className="vp-ulink t-small shrink-0">{button}</span>
       </label>
