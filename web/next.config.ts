@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   experimental: {
     // CV uploads: 5 MB file + multipart overhead.
     serverActions: { bodySizeLimit: "6mb" },
+    // the root layout is in a dynamic segment (app/[lang]): unmatched addresses need app/global-not-found.tsx
+    globalNotFound: true,
   },
   turbopack: {
     rules: {

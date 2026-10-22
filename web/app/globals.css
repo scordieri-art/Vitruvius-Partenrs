@@ -534,6 +534,20 @@
     min-height: 44px;
   }
 
+  /* 404: a navy plane cut on the symbol's slope fills the right of the page */
+  .vp-404__plane {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: calc(16vw + 100svh * var(--slope));
+    background: var(--color-navy);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, calc(100svh * var(--slope)) 100%); /* the symbol's slope: down to the right */
+  }
+  @media (max-width: 63.99rem) {
+    .vp-404__plane {
+      display: none;
+    }
+  }
+
   /* case fact sheet: label above value, hairline between rows */
   .vp-sheet {
     border-top: 1px solid var(--line);
