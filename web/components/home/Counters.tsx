@@ -11,7 +11,8 @@ export type Figure = { value: number; decimals: number; pre: string; post: strin
  * The server renders the final values (no JavaScript, reduced motion and search engines
  * see the real numbers).
  */
-export function Counters({ figures, locale }: { figures: Figure[]; locale: string }) {
+/** `paired`: two columns at every width, for when the figures share the row with the map. */
+export function Counters({ figures, locale, paired = false }: { figures: Figure[]; locale: string; paired?: boolean }) {
   const root = useRef<HTMLDListElement>(null);
   const reduced = useReducedMotion();
 
@@ -51,7 +52,7 @@ export function Counters({ figures, locale }: { figures: Figure[]; locale: strin
   const fmt = (v: number, d: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
 
   return (
-    <dl ref={root} className="grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-10 lg:gap-y-14 xl:grid-cols-4">
+    <dl ref={root} className={`grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-10 lg:gap-y-14 ${paired ? "" : "xl:grid-cols-4"}`}>
       {figures.map((f) => (
         <div key={f.label} className="flex min-w-0 flex-col border-t border-[var(--line)] pt-6">
           <dt className="t-small order-2 mt-3 max-w-[22ch] text-[var(--fg-2)]">{f.label}</dt>

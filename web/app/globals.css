@@ -452,6 +452,11 @@
      plane tilts; the marks counter-rotate so they stand up. --tilt is set by the scroll. */
   .vp-map__stage {
     --tilt: 40deg;
+    /* slab colours on paper; a navy section lightens them so the slab stands off the ground */
+    --slab-top: var(--color-navy);
+    --slab-side: #061a33;
+    --slab-edge: color-mix(in srgb, var(--color-white) 22%, var(--color-navy));
+    --slab-shadow: rgb(10 35 66 / 0.2);
     position: relative;
     width: 100%;
     max-width: min(100%, 44rem);
@@ -475,17 +480,23 @@
     overflow: visible;
     transform: translateZ(calc(var(--i) * -2px));
   }
+  [data-theme="navy"] .vp-map__stage {
+    --slab-top: color-mix(in srgb, var(--color-white) 13%, var(--color-navy));
+    --slab-side: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
+    --slab-edge: color-mix(in srgb, var(--color-white) 34%, var(--color-navy));
+    --slab-shadow: rgb(0 0 0 / 0.35);
+  }
   .vp-map__layer path {
-    fill: #061a33;
+    fill: var(--slab-side);
   }
   .vp-map__layer:first-child path {
-    fill: var(--color-navy);
-    stroke: color-mix(in srgb, var(--color-white) 22%, var(--color-navy));
+    fill: var(--slab-top);
+    stroke: var(--slab-edge);
     stroke-width: 1px;
     vector-effect: non-scaling-stroke;
   }
   .vp-map__layer:last-of-type {
-    filter: drop-shadow(0 1.6rem 1.4rem rgb(10 35 66 / 0.2));
+    filter: drop-shadow(0 1.6rem 1.4rem var(--slab-shadow));
   }
   .vp-map__pin {
     position: absolute;

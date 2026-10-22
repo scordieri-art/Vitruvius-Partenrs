@@ -9,6 +9,8 @@ import { ContactBand } from "@/components/home/ContactBand";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
 import { Cta } from "@/components/ui/Cta";
+import { MapSlab } from "@/components/map/ItalyMap";
+import { company } from "@/content/site";
 import { projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href, type Locale } from "@/lib/i18n";
@@ -66,6 +68,11 @@ export default async function HomePage() {
     proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
   }));
 
+  const places = [
+    ...company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const })),
+    ...projects.map((p) => ({ key: p.slug.it, lat: p.coords.lat, lon: p.coords.lon, kind: "project" as const })),
+  ];
+
   const press = PRESS.flatMap((outlet) => {
     for (const p of projects) {
       const s = p.sources.find((x) => x.label === outlet);
@@ -93,18 +100,31 @@ export default async function HomePage() {
 
       {/* Figures and press */}
       <section data-theme="navy" aria-labelledby="numbers-title" className="py-[clamp(4.5rem,9vw,8rem)]">
-        <div className="container-x">
-          <h2 id="numbers-title" className="t-label mb-8" data-reveal="fade">
-            {h.numbers.label}
-          </h2>
-          <Counters figures={t.group.figures} locale={lang === "it" ? "it-IT" : "en-GB"} />
-          <p className="t-label mt-10">
-            {h.numbers.note} ·{" "}
-            <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink">
-              {h.numbers.source}
-            </TLink>
-          </p>
+        <div className="container-x grid-12 items-center gap-y-14">
+          <div className="col-span-4 lg:order-2 lg:col-span-7 lg:col-start-6">
+            <h2 id="numbers-title" className="t-label mb-8" data-reveal="fade">
+              {h.numbers.label}
+            </h2>
+            <Counters figures={t.group.figures} locale={lang === "it" ? "it-IT" : "en-GB"} paired />
+            <p className="t-label mt-10">
+              {h.numbers.note} ·{" "}
+              <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink">
+                {h.numbers.source}
+              </TLink>
+            </p>
+          </div>
+          {/* the scale of the group: offices and published operations on the navy slab */}
+          <div className="col-span-4 lg:order-1 lg:col-span-5">
+            <MapSlab places={places} className="max-w-[19rem] lg:mx-0 lg:max-w-[28rem]" />
+            <div className="mt-6 flex justify-center lg:justify-start">
+              <Cta href={href(lang, "projects", undefined, "map-title")} transitionLabel={t.meta.titles.projects}>
+                {t.projectsPage.map.label}
+              </Cta>
+            </div>
+          </div>
+        </div>
 
+        <div className="container-x">
           <div className="mt-[clamp(3.5rem,7vw,6rem)]">
             <h2 className="t-label mb-5">{h.press.label}</h2>
             <ul className="vp-press">
