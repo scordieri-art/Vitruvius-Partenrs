@@ -250,7 +250,7 @@ const it = {
       label: "Dove operiamo",
       title: "Due sedi, cantieri in oltre trenta città.",
       office: "Sede",
-      caption: "Le sedi e le operazioni pubblicate dal gruppo. Contorno: Natural Earth.",
+      caption: "Le sedi e le operazioni pubblicate dal gruppo; in rilievo le loro regioni. Cartografia: Natural Earth.",
       aria: "Mappa dell’Italia con le sedi e le operazioni di Vitruvius & Partners",
       here: "Questa operazione",
     },

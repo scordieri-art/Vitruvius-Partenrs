@@ -10,7 +10,7 @@ import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
 import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
-import { company } from "@/content/site";
+import { mapPins } from "@/components/map/mapPlaces";
 import { projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href, type Locale } from "@/lib/i18n";
@@ -68,10 +68,7 @@ export default async function HomePage() {
     proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
   }));
 
-  const places = [
-    ...company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const })),
-    ...projects.map((p) => ({ key: p.slug.it, lat: p.coords.lat, lon: p.coords.lon, kind: "project" as const })),
-  ];
+  const places = mapPins(lang);
 
   const press = PRESS.flatMap((outlet) => {
     for (const p of projects) {
@@ -115,7 +112,7 @@ export default async function HomePage() {
           </div>
           {/* the scale of the group: offices and published operations on the navy slab */}
           <div className="col-span-4 lg:order-1 lg:col-span-5">
-            <MapSlab places={places} className="max-w-[19rem] lg:mx-0 lg:max-w-[28rem]" />
+            <MapSlab places={places} width={440} className="max-w-[19rem] lg:mx-0 lg:max-w-[28rem]" />
             <div className="mt-6 flex justify-center lg:justify-start">
               <Cta href={href(lang, "projects", undefined, "map-title")} transitionLabel={t.meta.titles.projects}>
                 {t.projectsPage.map.label}

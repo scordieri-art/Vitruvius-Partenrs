@@ -452,19 +452,28 @@
      a tilted plane; the cartography comes from one cached SVG through <use>, styled here. */
   .vp-map__stage {
     --tilt: 40deg;
-    /* paper section */
+    /* paper section: a white model, the regions where the group works in navy */
     --sheet: var(--color-white);
     --sheet-edge: #e3e7eb;
-    --grat: #e9edf1;
+    --grat: #edf0f3;
     --grat-text: color-mix(in srgb, var(--color-navy) 45%, var(--color-white));
-    --nb-top: #e8ecef;
-    --nb-side: #d5dbe1;
-    --nb-line: #f7f8f9;
-    --it-top: var(--color-navy);
-    --it-side: #061a33;
-    --it-edge: color-mix(in srgb, var(--color-white) 18%, var(--color-navy));
-    --region: color-mix(in srgb, var(--color-white) 26%, var(--color-navy));
-    --city: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    --nb-top: #f1f3f5;
+    --nb-side: #e2e6ea;
+    --nb-line: var(--color-white);
+    --it-top: #dfe5eb;
+    --it-side: #c6cfd8;
+    --it-edge: #f5f7f9;
+    --region: #c9d2db;
+    --city: color-mix(in srgb, var(--color-navy) 62%, var(--color-white));
+    --op-top: var(--color-navy);
+    --op-side: #061a33;
+    --op-edge: color-mix(in srgb, var(--color-white) 24%, var(--color-navy));
+    --city-high: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    --pin: var(--color-white);
+    --pin-line: var(--color-navy);
+    --rod: var(--color-navy);
+    --tag-bg: var(--color-white);
+    --tag-fg: var(--color-navy);
     --model-shadow: rgb(10 35 66 / 0.16);
     position: relative;
     width: 100%;
@@ -475,19 +484,29 @@
     perspective-origin: 50% 10%;
     overflow: hidden;
   }
+  /* navy section: the same model in negative, the working regions in white */
   [data-theme="navy"] .vp-map__stage {
     --sheet: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
     --sheet-edge: color-mix(in srgb, var(--color-white) 2%, var(--color-navy));
     --grat: color-mix(in srgb, var(--color-white) 9%, var(--color-navy));
     --grat-text: color-mix(in srgb, var(--color-white) 40%, var(--color-navy));
-    --nb-top: color-mix(in srgb, var(--color-white) 11%, var(--color-navy));
-    --nb-side: color-mix(in srgb, var(--color-white) 7%, var(--color-navy));
+    --nb-top: color-mix(in srgb, var(--color-white) 9%, var(--color-navy));
+    --nb-side: color-mix(in srgb, var(--color-white) 6%, var(--color-navy));
     --nb-line: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
-    --it-top: color-mix(in srgb, var(--color-white) 24%, var(--color-navy));
-    --it-side: color-mix(in srgb, var(--color-white) 15%, var(--color-navy));
-    --it-edge: color-mix(in srgb, var(--color-white) 42%, var(--color-navy));
-    --region: color-mix(in srgb, var(--color-white) 42%, var(--color-navy));
-    --city: color-mix(in srgb, var(--color-white) 80%, var(--color-navy));
+    --it-top: color-mix(in srgb, var(--color-white) 19%, var(--color-navy));
+    --it-side: color-mix(in srgb, var(--color-white) 12%, var(--color-navy));
+    --it-edge: color-mix(in srgb, var(--color-white) 30%, var(--color-navy));
+    --region: color-mix(in srgb, var(--color-white) 30%, var(--color-navy));
+    --city: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    --op-top: #eef1f4;
+    --op-side: color-mix(in srgb, var(--color-white) 62%, var(--color-navy));
+    --op-edge: var(--color-white);
+    --city-high: color-mix(in srgb, var(--color-navy) 70%, var(--color-white));
+    --pin: var(--color-navy);
+    --pin-line: var(--color-white);
+    --rod: var(--color-white);
+    --tag-bg: var(--color-navy);
+    --tag-fg: var(--color-white);
     --model-shadow: rgb(0 0 0 / 0.3);
   }
   .vp-map__plane {
@@ -547,6 +566,15 @@
     fill: var(--it-side);
     stroke: none;
   }
+  .vp-map__op {
+    fill: var(--op-top);
+    stroke: var(--op-edge);
+    stroke-width: 0.75px;
+  }
+  .vp-map__op--side {
+    fill: var(--op-side);
+    stroke: none;
+  }
   .vp-map__lakes {
     fill: var(--sheet);
   }
@@ -566,41 +594,145 @@
     transform: translate(calc(var(--off, 11) * 1px * var(--zoomk, 1)), calc(7px * var(--zoomk, 1)));
     letter-spacing: 0.01em;
   }
+  .vp-map__cities--high circle,
+  .vp-map__cities--high text {
+    fill: var(--city-high);
+  }
+  /* a model pin: a dot on the ground with a pulsing ring, a rod standing up against the
+     tilt, a flag with the town. --on lights it, --dim fades the others. */
   .vp-map__pin {
     position: absolute;
     width: 0;
     height: 0;
     transform-style: preserve-3d;
-    transform: translateZ(12.5px);
-    opacity: calc(var(--dim, 1) + var(--on, 0));
-    transition: opacity 300ms var(--ease-move);
+    transform: translateZ(16.5px);
+    /* the fade goes on the parts: opacity on the pin itself would flatten its flag */
+    --lit: min(1, calc(var(--dim, 1) + var(--on, 0)));
   }
   .vp-map__dot {
+    opacity: var(--lit);
+    transition: opacity 300ms var(--ease-move);
+  }
+  /* while one place is lit, the others keep their dot but lower their flags */
+  .vp-map__tag,
+  .vp-map__flag::before {
+    opacity: calc((var(--lit) - 0.32) / 0.68);
+    transition: opacity 300ms var(--ease-move);
+  }
+  .vp-map__dot,
+  .vp-map__ring {
     position: absolute;
     left: 0;
     top: 0;
-    width: 0.5rem;
-    height: 0.5rem;
-    border: 1.5px solid var(--color-white);
     border-radius: 50%;
     transform: translate(-50%, -50%);
   }
-  .vp-map__blade {
+  .vp-map__dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    background: var(--pin);
+    border: 2px solid var(--pin-line);
+  }
+  .vp-map__ring {
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1.5px solid var(--pin);
+    opacity: 0;
+    animation: vp-map-ring 3.2s var(--ease-move) infinite;
+    animation-delay: calc(var(--i, 0) * 0.45s);
+  }
+  @keyframes vp-map-ring {
+    0% {
+      opacity: calc(0.95 * var(--lit, 1));
+      transform: translate(-50%, -50%) scale(0.2);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+  .vp-map__flag {
     position: absolute;
     left: 0;
     bottom: 0;
-    display: block;
-    line-height: 0;
-    color: var(--color-white);
-    font-size: clamp(1.05rem, 0.6rem + 1.6vw, 1.9rem);
-    transform-origin: 50% 100%;
+    width: 0;
+    height: var(--stem, 22px);
+    transform-origin: 0 100%;
     /* stands up against the tilt */
-    transform: translateX(-50%) rotateX(calc(-1 * var(--tilt))) scale(calc(1 + var(--on, 0) * 0.5));
-    transition: transform 500ms var(--ease-enter);
-    filter: drop-shadow(0 0.15rem 0.2rem rgb(0 0 0 / 0.25));
+    transform: rotateX(calc(-1 * var(--tilt)));
+    /* a filter here would flatten the flag into the model and hide its tag */
+    transform-style: preserve-3d;
   }
-  .vp-map__pin[data-kind="office"] .vp-map__blade {
-    font-size: clamp(1.3rem, 0.75rem + 2vw, 2.4rem);
+  .vp-map__flag::before {
+    content: "";
+    position: absolute;
+    left: -0.75px;
+    bottom: 0;
+    width: 1.5px;
+    height: 100%;
+    background: var(--rod);
+    /* a light edge, so the rod reads on the navy regions as on the white sheet */
+    box-shadow: 0 0 0 1px var(--pin);
+  }
+  .vp-map__tag {
+    position: absolute;
+    left: -0.75px;
+    bottom: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.75rem 0.34rem 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    /* one flag for every place, readable on the regions and on the sheet; the mark inside
+       tells an office (solid) from an operation (outline), as in the list */
+    background: var(--tag-bg);
+    color: var(--tag-fg);
+    box-shadow: inset 0 0 0 1px var(--tag-fg);
+    /* the flag's free corner cut at the angle of the brand stroke */
+    clip-path: polygon(0 0, calc(100% - 0.4rem) 0, 100% calc(0.4rem / var(--slope)), 100% 100%, 0 100%);
+    transform-origin: 0 100%;
+    /* a hair in front of its rod, so the two never fight for the same depth */
+    transform: translateZ(1px) scale(calc(1 + var(--on, 0) * 0.14));
+    transition:
+      transform 400ms var(--ease-enter),
+      opacity 300ms var(--ease-move);
+  }
+  .vp-map__tag .vp-mark {
+    height: 0.62rem;
+    width: auto;
+  }
+  /* a flag that opens to the west: hung on its right edge, the free corner cut below */
+  @media (min-width: 40rem) {
+    .vp-map__pin[data-west] .vp-map__tag {
+      left: auto;
+      right: -0.75px;
+      transform-origin: 100% 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0.4rem 100%, 0 calc(100% - 0.4rem / var(--slope)));
+    }
+  }
+  /* phones: a smaller model, so smaller flags on shorter rods, laid out on their own */
+  @media (max-width: 39.99rem) {
+    .vp-map__flag {
+      height: var(--stem-n, 14px);
+    }
+    .vp-map__tag {
+      gap: 0.3rem;
+      padding: 0.24rem 0.55rem 0.26rem 0.38rem;
+      font-size: 0.625rem;
+    }
+    .vp-map__tag .vp-mark {
+      height: 0.5rem;
+    }
+    .vp-map__pin[data-west-n] .vp-map__tag {
+      left: auto;
+      right: -0.75px;
+      transform-origin: 100% 100%;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0.4rem 100%, 0 calc(100% - 0.4rem / var(--slope)));
+    }
   }
   .vp-map:has(:is(.vp-map__item, [data-map-target]):is(:hover, :focus-within)) .vp-map__pin,
   .vp-map__stage[data-focus] .vp-map__pin {
@@ -815,9 +947,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .vp-map__pin,
-  .vp-map__blade {
+  .vp-map__dot,
+  .vp-map__tag,
+  .vp-map__flag::before {
     transition: none;
+  }
+  /* no pulse: the ring rests, half drawn */
+  .vp-map__ring {
+    animation: none;
+    opacity: calc(0.5 * var(--lit, 1));
+    transform: translate(-50%, -50%) scale(0.6);
   }
 }
 

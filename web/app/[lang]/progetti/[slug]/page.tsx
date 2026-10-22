@@ -9,7 +9,7 @@ import { Mark } from "@/components/marks/Mark";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
-import { company } from "@/content/site";
+import { mapPins } from "@/components/map/mapPlaces";
 import { findProject, projects } from "@/content/projects";
 import { getDictionary } from "@/lib/content";
 import { href, locales } from "@/lib/i18n";
@@ -124,12 +124,10 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
               </dl>
               <figure className="mt-10 grid gap-5" aria-label={c.mapLabel}>
                 <MapSlab
-                  places={[
-                    ...company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const })),
-                    { key: p.slug.it, lat: p.coords.lat, lon: p.coords.lon, kind: "project" as const },
-                  ]}
+                  places={mapPins(lang).filter((x) => x.kind === "office" || x.key === p.slug.it)}
                   focus={p.slug.it}
                   zoom={2.2}
+                  width={288}
                   className="max-w-[18rem] lg:mx-0"
                 />
                 <div>

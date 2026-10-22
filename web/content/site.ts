@@ -19,6 +19,8 @@ export const company = {
       region: "MI",
       zip: "20125",
       coords: { lat: 45.4977, lon: 9.2033 },
+      /** for the map: the region it raises */
+      area: "lombardia",
     },
     {
       key: "asti",
@@ -30,6 +32,7 @@ export const company = {
       region: "AT",
       zip: "14100",
       coords: { lat: 44.9056, lon: 8.1868 },
+      area: "piemonte",
     },
   ],
   social: {

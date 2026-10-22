@@ -257,7 +257,7 @@ const en: Dictionary = {
       label: "Where we work",
       title: "Two offices, sites in more than thirty cities.",
       office: "Office",
-      caption: "The group’s offices and published operations. Outline: Natural Earth.",
+      caption: "The group’s offices and published operations, their regions raised. Cartography: Natural Earth.",
       aria: "Map of Italy with the offices and operations of Vitruvius & Partners",
       here: "This operation",
     },

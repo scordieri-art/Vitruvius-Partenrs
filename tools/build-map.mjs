@@ -1,4 +1,4 @@
-// Builds content/geo/italy.json for the site map from Natural Earth (public domain).
+// Builds the site map (public/map/italia.svg, content/geo/map.json) from Natural Earth (public domain).
 // usage: node tools/build-map.mjs <node_modules parent dir> <natural-earth geojson dir> <out dir>
 //   needs: world-atlas@2.0.2, topojson-server@3, topojson-client@3, topojson-simplify@3 (npm) and, from
 //   github.com/nvkelso/natural-earth-vector v5.1.2 geojson/: ne_10m_admin_1_states_provinces, ne_10m_lakes,
@@ -9,7 +9,7 @@ import { createRequire } from "module";
 const [G, NE, OUT] = process.argv.slice(2);
 const require = createRequire(G + "/package.json");
 const { topology } = require("topojson-server");
-const { feature, mesh } = require("topojson-client");
+const { feature, mesh, merge } = require("topojson-client");
 const { presimplify, simplify } = require("topojson-simplify");
 
 // equirectangular, km, centred on 42°N 12.5°E (same as the site's places)
@@ -115,13 +115,46 @@ const nb = feature(topoN, topoN.objects.neighbours).features.map((f) => polyPath
 const lakesPath = feature(topo, topo.objects.lakes).features.map((f) => polyPaths(f.geometry, false)).join("");
 const regions = linePath(mesh(topo, topo.objects.provinces, (a, b) => a !== b && a.properties.region !== b.properties.region));
 
+// each region as a filled shape, so the map can raise the ones where the group works
+const slug = (r) => r.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]+/g, "-").replace(/^-|-$/g, "");
+const regionNames = [...new Set(topo.objects.provinces.geometries.map((g) => g.properties.region))].sort();
+const regionShapes = Object.fromEntries(
+  regionNames.map((r) => [slug(r), polyPaths(merge(topo, topo.objects.provinces.geometries.filter((g) => g.properties.region === r)), false)]),
+);
+// lakes by the region that holds their centre, so a raised region carries its own lakes
+const inRing = ([x, y], r) => {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) if (r[i][1] > y !== r[j][1] > y && x < ((r[j][0] - r[i][0]) * (y - r[i][1])) / (r[j][1] - r[i][1]) + r[i][0]) c = !c;
+  return c;
+};
+const regionOf = (pt) => {
+  for (const f of feature(topo, topo.objects.provinces).features) {
+    const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+    if (polys.some((p) => inRing(pt, p[0]))) return slug(f.properties.region);
+  }
+  return null;
+};
+const lakesByRegion = {};
+for (const f of feature(topo, topo.objects.lakes).features) {
+  const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+  const ring = polys.map((p) => p[0]).sort((a, b) => area(b) - area(a))[0];
+  const c = ring.reduce((m, p) => [m[0] + p[0] / ring.length, m[1] + p[1] / ring.length], [0, 0]);
+  const r = regionOf(c);
+  if (r) (lakesByRegion[r] ??= []).push(polyPaths(f.geometry, false));
+}
+console.log("lakes by region:", Object.fromEntries(Object.entries(lakesByRegion).map(([k, v]) => [k, v.length])));
+
 const cities = { Torino: [7.686, 45.07], Milano: [9.19, 45.464], Venezia: [12.316, 45.44], Genova: [8.946, 44.405], Bologna: [11.343, 44.494], Firenze: [11.255, 43.77], Roma: [12.496, 41.903], Napoli: [14.268, 40.852], Bari: [16.872, 41.117], Palermo: [13.361, 38.116], Cagliari: [9.11, 39.223] };
+// Venezia sits on the lagoon, outside the simplified coast: its region is given
+const cityRegion = (k, v) => regionOf(proj(v)) ?? { Venezia: "veneto" }[k] ?? null;
 const view = { x: VIEW.x0, y: -VIEW.y1, w: VIEW.x1 - VIEW.x0, h: VIEW.y1 - VIEW.y0 };
 const groups = {
   italy: polyPaths(it, false),
   neighbours: nb,
   lakes: lakesPath,
   regions,
+  ...Object.fromEntries(Object.entries(regionShapes).map(([k, d]) => [`r-${k}`, d])),
+  ...Object.fromEntries(Object.entries(lakesByRegion).map(([k, d]) => [`lakes-${k}`, d.join("")])),
 };
 // one static file, cached by the browser and referenced with <use href="/map/italia.svg#italy">;
 // fills and strokes are left unset so each <use> styles its copy
@@ -136,7 +169,8 @@ writeFileSync(
   JSON.stringify({
     source: "Natural Earth 1:10m (public domain); see tools/build-map.mjs",
     view,
-    cities: Object.fromEntries(Object.entries(cities).map(([k, v]) => { const [x, y] = proj(v); return [k, [r1(x), r1(-y)]]; })),
+    regions: Object.keys(regionShapes),
+    cities: Object.fromEntries(Object.entries(cities).map(([k, v]) => { const [x, y] = proj(v); return [k, [r1(x), r1(-y), cityRegion(k, v)]]; })),
   }),
 );
 const pts = (d) => (d.match(/[ML]/g) || []).length;

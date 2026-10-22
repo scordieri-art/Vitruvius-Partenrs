@@ -6,6 +6,7 @@ import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
 import { Mark } from "@/components/marks/Mark";
 import { MapSlab, lightRules } from "@/components/map/ItalyMap";
+import { mapPins } from "@/components/map/mapPlaces";
 import { company } from "@/content/site";
 import { getDictionary } from "@/lib/content";
 import { href } from "@/lib/i18n";
@@ -25,7 +26,7 @@ const maps = (street: string, postal: string) =>
 export default async function ContactPage() {
   const { lang, t } = await getDictionary();
   const c = t.contactPage;
-  const offices = company.offices.map((o) => ({ key: o.key, lat: o.coords.lat, lon: o.coords.lon, kind: "office" as const }));
+  const offices = mapPins(lang).filter((p) => p.kind === "office");
 
   return (
     <RevealScope>
@@ -100,7 +101,7 @@ export default async function ContactPage() {
               ))}
             </div>
             <div className="col-span-4 lg:col-span-6 lg:col-start-7 lg:self-center">
-              <MapSlab places={offices} frame={{ lat: mid(offices.map((o) => o.lat)), lon: mid(offices.map((o) => o.lon)), scale: 2.3 }} zoomTargets zoomScale={4.2} className="max-w-[36rem] lg:mr-0" />
+              <MapSlab places={offices} frame={{ lat: mid(offices.map((o) => o.lat)), lon: mid(offices.map((o) => o.lon)), scale: 2.3 }} zoomTargets zoomScale={4.2} width={560} className="max-w-[36rem] lg:mr-0" />
             </div>
           </div>
         </div>
