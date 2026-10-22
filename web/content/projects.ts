@@ -46,7 +46,8 @@ export type Project = {
   stages: Stage[];
   quote?: { text: L; author: string; role: L; source: L };
   /** published by the group (shown on the live site) */
-  image?: { src: string; alt: L; caption: L };
+  /** width × height in pixels, as published: a picture under 1200 px wide is never stretched across the screen */
+  image?: { src: string; width: number; height: number; alt: L; caption: L };
   /** indicative stock photograph under the published one, always labelled as such */
   placeholder: string;
   newsSlug: { it: string; en?: string };
@@ -103,6 +104,8 @@ export const projects: Project[] = [
     ],
     image: {
       src: "https://vitruviusandpartners.com/wp-content/uploads/2026/07/genova.png",
+      width: 572,
+      height: 429,
       alt: { it: "Il Palazzo ex INPS di Corso Italia, Genova", en: "The former INPS palace on Corso Italia, Genoa" },
       caption: { it: "Immagine pubblicata da Vitruvius & Partners, luglio 2026", en: "Image published by Vitruvius & Partners, July 2026" },
     },
@@ -169,9 +172,12 @@ export const projects: Project[] = [
       source: { it: "La Stampa, 21 marzo 2025", en: "La Stampa, 21 March 2025" },
     },
     image: {
-      src: "https://vitruviusandpartners.com/wp-content/uploads/2025/03/asinari.png",
-      alt: { it: "Via Asinari, Asti", en: "Via Asinari, Asti" },
-      caption: { it: "Immagine pubblicata da Vitruvius & Partners, marzo 2025", en: "Image published by Vitruvius & Partners, March 2025" },
+      // the full render the group attached to the Asinari news (the article shows a 974 px crop of it)
+      src: "https://vitruviusandpartners.com/wp-content/uploads/2025/03/FOTORENDER-1-copia-2-scaled.jpg",
+      width: 1580,
+      height: 2560,
+      alt: { it: "Render del cortile del complesso di Via Asinari, Asti", en: "Render of the courtyard of the Via Asinari complex, Asti" },
+      caption: { it: "Render pubblicato da Vitruvius & Partners, marzo 2025", en: "Render published by Vitruvius & Partners, March 2025" },
     },
     placeholder: "/images/placeholder/residential-white-modular-facade-01.jpg",
     newsSlug: { it: "la-stampa-asti-la-rinascita-di-via-asinari-unoperazione-sentimentale-ed-estetica" },
@@ -243,6 +249,8 @@ export const projects: Project[] = [
     },
     image: {
       src: "https://vitruviusandpartners.com/wp-content/uploads/2023/05/immagine-2-progetto-Civitas5-Airuno-VitruviusPartners2.jpg",
+      width: 1200,
+      height: 800,
       alt: { it: "Il progetto Civitas 5 ad Airuno", en: "The Civitas 5 project in Airuno" },
       caption: { it: "Immagine di progetto pubblicata da Vitruvius & Partners, maggio 2023", en: "Project image published by Vitruvius & Partners, May 2023" },
     },
@@ -262,3 +270,6 @@ export const projects: Project[] = [
 ];
 
 export const findProject = (lang: Locale, slug: string) => projects.find((p) => p.slug[lang] === slug);
+
+/** A published picture too small to fill a wide screen sharply: shown framed, near its own size. */
+export const lowRes = (p: Project) => !!p.image && p.image.width < 1200;

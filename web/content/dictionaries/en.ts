@@ -211,6 +211,7 @@ const en: Dictionary = {
     },
     leadershipLabel: "The group",
     leadershipTitle: "Who leads the group.",
+    since: "Since 2020",
     milestonesLabel: "Milestones",
     milestonesTitle: "Six years, in short.",
     milestones: [

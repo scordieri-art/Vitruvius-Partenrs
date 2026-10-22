@@ -10,7 +10,7 @@ import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
-import { findProject, projects } from "@/content/projects";
+import { findProject, lowRes, projects } from "@/content/projects";
 import { getDictionary, liveLink } from "@/lib/content";
 import { href, locales } from "@/lib/i18n";
 import { alternates, metaText, ogPath, share } from "@/lib/seo";
@@ -49,34 +49,75 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
   return (
     <RevealScope>
       <article>
-        {/* Opening: the picture full frame, the name over it */}
-        <header data-theme="ink">
-          <ScrollProgress className="relative flex min-h-[max(88svh,34rem)] flex-col justify-end overflow-hidden">
-          <div className="absolute inset-0" data-reveal="image">
-            <ProjectImage p={p} lang={lang} label={label} sizes="100vw" priority className="vp-slow h-full w-full" tagClassName="right-[max(1.5rem,6vw)] top-24" />
-          </div>
-          <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[30%] bg-[linear-gradient(to_bottom,rgb(15_23_42/0.6),transparent)]" />
-          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(to_top,rgb(15_23_42/0.88),rgb(15_23_42/0.4)_55%,transparent)]" />
-          <div className="vp-fadeout relative container-x pb-[max(3.5rem,9vh)] pt-40">
-            <p className="t-label mb-6 flex flex-wrap items-center gap-x-3 gap-y-1" data-reveal="fade">
-              <TLink href={href(lang, "projects")} className="vp-ulink">
-                {t.projectsPage.label}
-              </TLink>
-              <span aria-hidden="true" className="h-px w-8 bg-current opacity-40" />
-              <span className="flex items-center gap-2 text-white">
-                <Mark />
-                {p.status[lang]} · <span className="t-num">{p.year}</span>
-              </span>
-            </p>
-            <h1 className="t-hero max-w-[12ch]" data-reveal="lines">
-              {p.name}
-            </h1>
-            <p className="t-body-l mt-5 text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
-              {p.address[lang]}
-            </p>
-          </div>
-          </ScrollProgress>
-        </header>
+        {lowRes(p) && p.image ? (
+          // Opening for a small published picture: the name on navy, the picture beside it near its
+          // own size and captioned, never stretched across the screen
+          <header data-theme="navy" className="pt-[calc(var(--header-h)+clamp(3rem,9vh,6rem))] pb-[clamp(3.5rem,8vw,6rem)]">
+            <div className="container-x grid-12 gap-y-12 lg:items-end">
+              <div className="col-span-4 lg:col-span-6 lg:pb-2">
+                <p className="t-label mb-6 flex flex-wrap items-center gap-x-3 gap-y-1" data-reveal="fade">
+                  <TLink href={href(lang, "projects")} className="vp-ulink">
+                    {t.projectsPage.label}
+                  </TLink>
+                  <span aria-hidden="true" className="h-px w-8 bg-current opacity-40" />
+                  <span className="flex items-center gap-2 text-[var(--fg)]">
+                    <Mark />
+                    {p.status[lang]} · <span className="t-num">{p.year}</span>
+                  </span>
+                </p>
+                <h1 className="t-hero max-w-[12ch]" data-reveal="lines">
+                  {p.name}
+                </h1>
+                <p className="t-body-l mt-5 text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
+                  {p.address[lang]}
+                </p>
+              </div>
+              <figure className="col-span-4 lg:col-span-6" style={{ maxWidth: `${Math.round(p.image.width * 1.25)}px` }}>
+                <div data-reveal="image">
+                  <ProjectImage
+                    p={p}
+                    lang={lang}
+                    label={label}
+                    sizes={`(min-width: 1024px) ${Math.round(p.image.width * 1.25)}px, 100vw`}
+                    priority
+                    className="w-full"
+                    style={{ aspectRatio: `${p.image.width} / ${p.image.height}` }}
+                  />
+                </div>
+                <figcaption className="vp-pubcap t-label mt-4">{p.image.caption[lang]}</figcaption>
+              </figure>
+            </div>
+          </header>
+        ) : (
+          // Opening: the picture full frame, the name over it
+          <header data-theme="ink">
+            <ScrollProgress className="relative flex min-h-[max(88svh,34rem)] flex-col justify-end overflow-hidden">
+              <div className="absolute inset-0" data-reveal="image">
+                <ProjectImage p={p} lang={lang} label={label} sizes="100vw" priority className="vp-slow h-full w-full" tagClassName="right-[max(1.5rem,6vw)] top-24" />
+              </div>
+              <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[30%] bg-[linear-gradient(to_bottom,rgb(15_23_42/0.6),transparent)]" />
+              <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-[70%] bg-[linear-gradient(to_top,rgb(15_23_42/0.88),rgb(15_23_42/0.4)_55%,transparent)]" />
+              <div className="vp-fadeout relative container-x pb-[max(3.5rem,9vh)] pt-40">
+                <p className="t-label mb-6 flex flex-wrap items-center gap-x-3 gap-y-1" data-reveal="fade">
+                  <TLink href={href(lang, "projects")} className="vp-ulink">
+                    {t.projectsPage.label}
+                  </TLink>
+                  <span aria-hidden="true" className="h-px w-8 bg-current opacity-40" />
+                  <span className="flex items-center gap-2 text-white">
+                    <Mark />
+                    {p.status[lang]} · <span className="t-num">{p.year}</span>
+                  </span>
+                </p>
+                <h1 className="t-hero max-w-[12ch]" data-reveal="lines">
+                  {p.name}
+                </h1>
+                <p className="t-body-l mt-5 text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
+                  {p.address[lang]}
+                </p>
+              </div>
+            </ScrollProgress>
+          </header>
+        )}
 
         {/* The sentence and the figures */}
         <section data-theme="paper" className="pt-[var(--section-y)]">
@@ -218,7 +259,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
         {/* Next project */}
         <section data-theme="paper" aria-label={t.projectsPage.next} className="pb-[var(--section-y)]">
           <div className="container-x">
-            <TLink href={href(lang, "projects", next.slug[lang])} transitionLabel={next.name} className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10" morph>
+            <TLink href={href(lang, "projects", next.slug[lang])} transitionLabel={next.name} className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10" morph={!lowRes(next)}>
               <div className="col-span-4 lg:col-span-5">
                 <p className="t-label">{t.projectsPage.next}</p>
                 <p className="t-l mt-3">{next.name}</p>

@@ -960,6 +960,11 @@
   }
 }
 
+/* the caption of a published picture goes when the indicative stock photograph stands in for it */
+figure:has(.vp-tag) .vp-pubcap {
+  display: none;
+}
+
 /* reading progress on articles: CSS scroll-driven, absent where unsupported */
 .vp-progress {
   display: none;

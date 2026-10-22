@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
-/** Inner-page opening: label · rule · index, a large Light headline, an optional lead. */
+/** Inner-page opening: label · rule · a short fact (how many, since when), a large Light headline, an optional lead. */
 export function PageHero({
   label,
-  index = "01",
+  index,
   title,
   lead,
   children,
@@ -21,8 +21,12 @@ export function PageHero({
       <div className="container-x">
         <p className="t-label mb-8 flex items-center gap-3" data-reveal="fade">
           <span>{label}</span>
-          <span aria-hidden="true" className="h-px w-10 bg-current opacity-40" />
-          <span>{index}</span>
+          {index ? (
+            <>
+              <span aria-hidden="true" className="h-px w-10 bg-current opacity-40" />
+              <span className="t-num">{index}</span>
+            </>
+          ) : null}
         </p>
         <h1 className="t-xl max-w-[16ch]" data-reveal="lines">
           {title}

@@ -78,7 +78,7 @@ export default async function AboutPage() {
 
   return (
     <RevealScope>
-      <PageHero label={a.label} title={a.title} lead={a.lead} />
+      <PageHero label={a.label} index={a.since} title={a.title} lead={a.lead} />
 
       <section data-theme="paper" aria-label={a.label}>
         <div className="container-x">

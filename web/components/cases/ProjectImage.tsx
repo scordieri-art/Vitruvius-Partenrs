@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import { PublishedImage } from "./PublishedImage";
 import type { Project } from "@/content/projects";
@@ -18,6 +19,7 @@ export function ProjectImage({
   imgClassName = "",
   tagClassName = "right-3 top-3",
   hoverLabel,
+  style,
 }: {
   p: Project;
   lang: Locale;
@@ -29,9 +31,10 @@ export function ProjectImage({
   tagClassName?: string;
   /** shown on a navy band that sweeps in on hover of the enclosing .group link */
   hoverLabel?: string;
+  style?: CSSProperties;
 }) {
   return (
-    <div className={`relative overflow-hidden bg-[var(--line)] ${className}`}>
+    <div className={`relative overflow-hidden bg-[var(--line)] ${className}`} style={style}>
       {p.image ? (
         <PublishedImage
           src={p.image.src}

@@ -204,6 +204,7 @@ const it = {
     },
     leadershipLabel: "Il gruppo",
     leadershipTitle: "Chi guida il gruppo.",
+    since: "Dal 2020",
     milestonesLabel: "Tappe",
     milestonesTitle: "Sei anni, in breve.",
     milestones: [

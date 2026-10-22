@@ -11,7 +11,7 @@ import { Mark } from "@/components/marks/Mark";
 import { Cta } from "@/components/ui/Cta";
 import { MapSlab } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
-import { projects } from "@/content/projects";
+import { lowRes, projects } from "@/content/projects";
 import { getDictionary, liveLink } from "@/lib/content";
 import { href, type Locale } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
@@ -170,7 +170,7 @@ export default async function HomePage() {
           }
         >
           {projects.map((p) => (
-            <TLink key={p.slug.it} href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="vp-card group block" morph>
+            <TLink key={p.slug.it} href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="vp-card group block" morph={!lowRes(p)}>
               <ProjectImage
                 p={p}
                 lang={lang}

@@ -25,9 +25,7 @@ export default async function NewsIndex() {
 
   return (
     <RevealScope>
-      <PageHero label={n.label} title={n.title}>
-        <p className="t-label t-num mt-10 border-t border-[var(--line)] pt-5">{n.count(items.length)}</p>
-      </PageHero>
+      <PageHero label={n.label} index={n.count(items.length)} title={n.title} />
 
       {/* Latest */}
       <section data-theme="paper" aria-labelledby="latest-title" className="pb-[clamp(4.5rem,9vw,8rem)]">
