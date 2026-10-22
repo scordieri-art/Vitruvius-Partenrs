@@ -129,7 +129,8 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                     { key: p.slug.it, lat: p.coords.lat, lon: p.coords.lon, kind: "project" as const },
                   ]}
                   focus={p.slug.it}
-                  className="max-w-[16rem] lg:mx-0"
+                  zoom={2.2}
+                  className="max-w-[18rem] lg:mx-0"
                 />
                 <div>
                   <Cta href={mapsUrl(p.address.it)} external externalNote={t.ui.externalNew}>

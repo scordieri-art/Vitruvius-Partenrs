@@ -448,64 +448,142 @@
     }
   }
 
-  /* Italy map: the outline repeated in layers down the Z axis reads as a navy slab once the
-     plane tilts; the marks counter-rotate so they stand up. --tilt is set by the scroll. */
+  /* Italy map as an architect's model (components/map). Layers sit at --z along the Z axis of
+     a tilted plane; the cartography comes from one cached SVG through <use>, styled here. */
   .vp-map__stage {
     --tilt: 40deg;
-    /* slab colours on paper; a navy section lightens them so the slab stands off the ground */
-    --slab-top: var(--color-navy);
-    --slab-side: #061a33;
-    --slab-edge: color-mix(in srgb, var(--color-white) 22%, var(--color-navy));
-    --slab-shadow: rgb(10 35 66 / 0.2);
+    /* paper section */
+    --sheet: var(--color-white);
+    --sheet-edge: #e3e7eb;
+    --grat: #e9edf1;
+    --grat-text: color-mix(in srgb, var(--color-navy) 45%, var(--color-white));
+    --nb-top: #e8ecef;
+    --nb-side: #d5dbe1;
+    --nb-line: #f7f8f9;
+    --it-top: var(--color-navy);
+    --it-side: #061a33;
+    --it-edge: color-mix(in srgb, var(--color-white) 18%, var(--color-navy));
+    --region: color-mix(in srgb, var(--color-white) 26%, var(--color-navy));
+    --city: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    --model-shadow: rgb(10 35 66 / 0.16);
     position: relative;
     width: 100%;
-    max-width: min(100%, 44rem);
-    aspect-ratio: 1010 / 1185;
+    max-width: min(100%, 46rem);
+    aspect-ratio: 1160 / 1260;
     margin-inline: auto;
-    perspective: 1700px;
-    perspective-origin: 50% 15%;
+    perspective: 1800px;
+    perspective-origin: 50% 10%;
+    overflow: hidden;
+  }
+  [data-theme="navy"] .vp-map__stage {
+    --sheet: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
+    --sheet-edge: color-mix(in srgb, var(--color-white) 2%, var(--color-navy));
+    --grat: color-mix(in srgb, var(--color-white) 9%, var(--color-navy));
+    --grat-text: color-mix(in srgb, var(--color-white) 40%, var(--color-navy));
+    --nb-top: color-mix(in srgb, var(--color-white) 11%, var(--color-navy));
+    --nb-side: color-mix(in srgb, var(--color-white) 7%, var(--color-navy));
+    --nb-line: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
+    --it-top: color-mix(in srgb, var(--color-white) 24%, var(--color-navy));
+    --it-side: color-mix(in srgb, var(--color-white) 15%, var(--color-navy));
+    --it-edge: color-mix(in srgb, var(--color-white) 42%, var(--color-navy));
+    --region: color-mix(in srgb, var(--color-white) 42%, var(--color-navy));
+    --city: color-mix(in srgb, var(--color-white) 80%, var(--color-navy));
+    --model-shadow: rgb(0 0 0 / 0.3);
   }
   .vp-map__plane {
     position: absolute;
-    inset: 0;
+    inset: 5% 4% 3%;
     transform-style: preserve-3d;
     transform: rotateX(var(--tilt));
-    transform-origin: 50% 62%;
+    transform-origin: 50% 58%;
   }
-  .vp-map__layer {
+  .vp-map__layer,
+  .vp-map__edge {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     overflow: visible;
-    transform: translateZ(calc(var(--i) * -2px));
+    transform: translateZ(var(--z, 0px));
   }
-  [data-theme="navy"] .vp-map__stage {
-    --slab-top: color-mix(in srgb, var(--color-white) 13%, var(--color-navy));
-    --slab-side: color-mix(in srgb, var(--color-white) 5%, var(--color-navy));
-    --slab-edge: color-mix(in srgb, var(--color-white) 34%, var(--color-navy));
-    --slab-shadow: rgb(0 0 0 / 0.35);
+  /* cartography stays on the board when the view zooms in */
+  .vp-map__cut {
+    overflow: hidden;
   }
-  .vp-map__layer path {
-    fill: var(--slab-side);
+  .vp-map__edge {
+    background: var(--sheet-edge);
   }
-  .vp-map__layer:first-child path {
-    fill: var(--slab-top);
-    stroke: var(--slab-edge);
+  .vp-map__edge:first-child {
+    box-shadow: 0 2.2rem 2.6rem -0.6rem var(--model-shadow);
+  }
+  .vp-map__sheet rect {
+    fill: var(--sheet);
+  }
+  .vp-map__grat line {
+    stroke: var(--grat);
     stroke-width: 1px;
     vector-effect: non-scaling-stroke;
   }
-  .vp-map__layer:last-of-type {
-    filter: drop-shadow(0 1.6rem 1.4rem var(--slab-shadow));
+  .vp-map__gratlabel text {
+    fill: var(--grat-text);
+    font-size: calc(15px * var(--zoomk, 1));
+    letter-spacing: 0.04em;
+  }
+  .vp-map__nb {
+    fill: var(--nb-top);
+    stroke: var(--nb-line);
+    stroke-width: 1px;
+  }
+  .vp-map__nb--side {
+    fill: var(--nb-side);
+    stroke: none;
+  }
+  .vp-map__it {
+    fill: var(--it-top);
+    stroke: var(--it-edge);
+    stroke-width: 0.75px;
+  }
+  .vp-map__it--side {
+    fill: var(--it-side);
+    stroke: none;
+  }
+  .vp-map__lakes {
+    fill: var(--sheet);
+  }
+  .vp-map__regions {
+    fill: none;
+    stroke: var(--region);
+    stroke-width: 0.75px;
+  }
+  /* --zoomk: the share of the sheet in view; labels and dots keep their screen size */
+  .vp-map__cities circle {
+    fill: var(--city);
+    r: calc(4.5px * var(--zoomk, 1));
+  }
+  .vp-map__cities text {
+    fill: var(--city);
+    font-size: calc(22px * var(--zoomk, 1));
+    transform: translate(calc(var(--off, 11) * 1px * var(--zoomk, 1)), calc(7px * var(--zoomk, 1)));
+    letter-spacing: 0.01em;
   }
   .vp-map__pin {
     position: absolute;
     width: 0;
     height: 0;
     transform-style: preserve-3d;
-    transform: translateZ(1px);
+    transform: translateZ(12.5px);
     opacity: calc(var(--dim, 1) + var(--on, 0));
     transition: opacity 300ms var(--ease-move);
+  }
+  .vp-map__dot {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border: 1.5px solid var(--color-white);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
   }
   .vp-map__blade {
     position: absolute;
@@ -514,13 +592,15 @@
     display: block;
     line-height: 0;
     color: var(--color-white);
-    font-size: clamp(1rem, 0.6rem + 1.6vw, 1.9rem);
+    font-size: clamp(1.05rem, 0.6rem + 1.6vw, 1.9rem);
     transform-origin: 50% 100%;
-    transform: translateX(-50%) rotateX(calc(-1 * var(--tilt))) scale(calc(1 + var(--on, 0) * 0.55));
-    transition: transform 400ms var(--ease-enter);
+    /* stands up against the tilt */
+    transform: translateX(-50%) rotateX(calc(-1 * var(--tilt))) scale(calc(1 + var(--on, 0) * 0.5));
+    transition: transform 500ms var(--ease-enter);
+    filter: drop-shadow(0 0.15rem 0.2rem rgb(0 0 0 / 0.25));
   }
   .vp-map__pin[data-kind="office"] .vp-map__blade {
-    font-size: clamp(1.3rem, 0.8rem + 2.1vw, 2.5rem);
+    font-size: clamp(1.3rem, 0.75rem + 2vw, 2.4rem);
   }
   .vp-map:has(.vp-map__item:is(:hover, :focus-within)) .vp-map__pin,
   .vp-map__stage[data-focus] .vp-map__pin {
