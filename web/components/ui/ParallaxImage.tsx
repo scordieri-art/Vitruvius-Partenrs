@@ -7,7 +7,7 @@ import { useReducedMotion } from "@/lib/hooks";
 
 /**
  * A framed photograph that drifts slightly against the scroll (the frame stays, the picture moves).
- * One CSS variable per frame; still with reduced motion.
+ * One CSS variable per frame; still with reduced motion and on touch screens.
  */
 export function ParallaxImage({
   src,
@@ -34,7 +34,8 @@ export function ParallaxImage({
 
   useEffect(() => {
     const el = frame.current;
-    if (!el || reduced) return;
+    // phones: the drift is barely visible there and would run on every scroll: the frame stays still
+    if (!el || reduced || matchMedia("(pointer: coarse)").matches) return;
     setupGsap();
     const st = ScrollTrigger.create({
       trigger: el,

@@ -32,18 +32,43 @@ export function RevealScope({ children }: { children: ReactNode }) {
       els.forEach((el) => (el.style.opacity = "1"));
       return;
     }
-    const triggers: ScrollTrigger[] = [];
     const splits: SplitText[] = [];
+    // where everything is, read in one go before any style is written: one layout, not one per element
+    const inView = new Map(els.map((el) => [el, el.getBoundingClientRect().top < window.innerHeight]));
+    // the rest plays as it comes in: one native observer for the page, not a scroll trigger per
+    // element (it never measures the layout); "top 88%" = 12% above the bottom of the screen
+    const pending = new Map<Element, () => void>();
+    const observers = new Map<string, IntersectionObserver>();
+    const observe = (el: HTMLElement, start: string, play: () => void) => {
+      const pct = Number(/top (\d+)%/.exec(start)?.[1] ?? 88);
+      const margin = `0px 0px -${100 - pct}% 0px`;
+      let io = observers.get(margin);
+      if (!io) {
+        io = new IntersectionObserver(
+          (entries, obs) =>
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              obs.unobserve(e.target);
+              pending.get(e.target)?.();
+              pending.delete(e.target);
+            }),
+          { rootMargin: margin },
+        );
+        observers.set(margin, io);
+      }
+      pending.set(el, play);
+      io.observe(el);
+    };
     // already visible when the page opens: play now, never wait for a scroll
     const when = (el: HTMLElement, start: string, play: () => void) => {
-      if (el.getBoundingClientRect().top < window.innerHeight) {
+      if (inView.get(el)) {
         // during a page transition, start as the plane uncovers the page
         // (after a shared-image transition, once the picture has dissolved into the page)
         if (document.documentElement.dataset.vpTransition) gsap.delayedCall(document.documentElement.dataset.vpMorph ? 1.05 : 0.5, play);
         else play();
         return;
       }
-      triggers.push(ScrollTrigger.create({ trigger: el, start, once: true, onEnter: play }));
+      observe(el, start, play);
     };
 
     els.forEach((el) => {
@@ -70,18 +95,19 @@ export function RevealScope({ children }: { children: ReactNode }) {
       if (kind === "image") {
         const inner = el.querySelector<HTMLElement>("img, video, canvas");
         // the picture has just grown into this frame: show it as it is
-        if (document.documentElement.dataset.vpMorph && el.getBoundingClientRect().top < window.innerHeight) return;
+        if (document.documentElement.dataset.vpMorph && inView.get(el)) return;
         const st = { p: 0 };
+        // the frame's proportions are read when it plays, not on load: closed until then
+        let s = 0;
         const set = () => {
-          const w = el.clientWidth || 1;
-          const h = el.clientHeight || 1;
-          const s = (h * SLOPE) / w * 100;
           const r = st.p * (100 + s) - s;
           el.style.clipPath = `polygon(0 0, ${r}% 0, ${r + s}% 100%, 0 100%)`;
         };
-        set();
+        el.style.clipPath = "polygon(0 0, 0 0, 0 100%, 0 100%)";
         if (inner) gsap.set(inner, { scale: 1.08 });
         when(el, start, () => {
+          s = ((el.clientHeight || 1) * SLOPE) / (el.clientWidth || 1) * 100;
+          set();
           gsap.to(st, { p: 1, duration: 1.2, ease: "move", delay, onUpdate: set, onComplete: () => (el.style.clipPath = "") });
           if (inner) gsap.to(inner, { scale: 1, duration: 1.6, ease: "enter", delay });
         });
@@ -97,12 +123,15 @@ export function RevealScope({ children }: { children: ReactNode }) {
       }
     });
 
-    const refresh = () => ScrollTrigger.refresh();
+    // the scrubbed effects (parallax, map tilt…) re-measure once fonts and pictures have settled,
+    // when the main thread has a moment rather than in the middle of the page's start
+    const idle = (fn: () => void) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200));
+    const refresh = () => idle(() => ScrollTrigger.refresh());
     document.fonts?.ready.then(refresh);
     window.addEventListener("load", refresh);
 
     return () => {
-      triggers.forEach((t) => t.kill());
+      observers.forEach((io) => io.disconnect());
       splits.forEach((s) => s.revert());
       window.removeEventListener("load", refresh);
     };
