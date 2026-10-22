@@ -268,6 +268,8 @@ const en: Dictionary = {
     read: "Read",
     back: "All news",
     published: "Published on",
+    reading: "Reading time",
+    minutes: "{n} min",
     category: "Section",
     newer: "Newer",
     older: "Older",

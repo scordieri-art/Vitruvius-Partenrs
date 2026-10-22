@@ -263,6 +263,8 @@ const it = {
     back: "Tutte le news",
     published: "Pubblicato il",
     category: "Sezione",
+    reading: "Lettura",
+    minutes: "{n} min",
     newer: "Più recente",
     older: "Meno recente",
     noTranslation: "Questo articolo è disponibile solo in italiano.",

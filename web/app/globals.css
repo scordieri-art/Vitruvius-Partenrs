@@ -741,6 +741,30 @@
   }
 }
 
+/* reading progress on articles: CSS scroll-driven, absent where unsupported */
+.vp-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .vp-progress {
+    display: block;
+    position: fixed;
+    inset: env(safe-area-inset-top, 0px) 0 auto;
+    z-index: 85;
+    height: 2px;
+    background: var(--color-navy);
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: vp-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes vp-progress {
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* Pre-hide elements that animate in (only when JS + motion are available) */
 html.js-motion [data-reveal] {
   visibility: hidden;

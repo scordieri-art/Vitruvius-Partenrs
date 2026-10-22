@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
+import { ContactBand } from "@/components/home/ContactBand";
 import { TLink } from "@/components/layout/PageTransition";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
@@ -75,6 +76,14 @@ export default async function ProjectsIndex() {
           <ItalyMap places={mapPlaces(lang, t)} caption={pp.map.caption} label={pp.map.aria} />
         </div>
       </section>
+      {/* where the reader is most interested: an offer of a property, with the topic chosen */}
+      <ContactBand
+        label={t.home.contact.label}
+        title={t.home.contact.title}
+        cta={t.home.contact.cta}
+        href={`${href(lang, "contact")}?topic=property#write`}
+        image="/images/placeholder/facade-white-shutters-rhythm-05.jpg"
+      />
     </RevealScope>
   );
 }

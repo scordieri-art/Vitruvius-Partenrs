@@ -30,6 +30,9 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/news/[slug
 const sourceName = (label: string, url: string) =>
   label.replace(/^(LEGGI L’ARTICOLO COMPLETO|CONTINUA A LEGGERE SU:?)\s*/i, "") || url.replace(/^https?:\/\/(www\.)?/, "").split("/")[0];
 
+/** Reading time at 220 words a minute, never under one minute. */
+const readingMinutes = (html: string) => Math.max(1, Math.round(html.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length / 220));
+
 /** An article: date and section, the title, the lede, the picture, then the text with its sources beside it. */
 export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[slug]">) {
   const { slug } = await params;
@@ -99,6 +102,8 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
           </div>
         ) : null}
 
+        {/* reading progress: a hairline across the top, driven by the scroll in CSS alone */}
+        <span aria-hidden="true" className="vp-progress" />
         <div data-theme="paper" className="py-[clamp(4rem,9vw,8rem)]">
           <div className="container-x grid-12 gap-y-14">
             {/* the reading column, with the article's facts beside it on wide screens */}
@@ -109,6 +114,10 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
                   <dd className="t-small mt-1">
                     <time dateTime={item.date}>{formatDate(item.date, lang)}</time>
                   </dd>
+                </div>
+                <div>
+                  <dt className="t-label">{n.reading}</dt>
+                  <dd className="t-small t-num mt-1">{n.minutes.replace("{n}", String(readingMinutes(item.html)))}</dd>
                 </div>
                 <div>
                   <dt className="t-label">{n.category}</dt>

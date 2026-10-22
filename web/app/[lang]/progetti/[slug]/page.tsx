@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RevealScope } from "@/components/layout/RevealScope";
+import { ContactBand } from "@/components/home/ContactBand";
 import { TLink } from "@/components/layout/PageTransition";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { StageTrack } from "@/components/cases/StageTrack";
@@ -224,6 +225,14 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
           </div>
         </section>
       </article>
+      {/* where the reader is most interested: an offer of a property, with the topic chosen */}
+      <ContactBand
+        label={t.home.contact.label}
+        title={t.home.contact.title}
+        cta={t.home.contact.cta}
+        href={`${href(lang, "contact")}?topic=property#write`}
+        image="/images/placeholder/facade-white-shutters-rhythm-05.jpg"
+      />
     </RevealScope>
   );
 }
