@@ -1558,7 +1558,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* Alternative chain, preview only (components/home/FilieraRows.tsx): three rows, the verbs very
+  /* Home, the chain as three rows (components/home/FilieraRows.tsx): the verbs very
      large; the open row unfolds a full-width photograph along the slope of the symbol. */
   .vp-rows {
     border-bottom: 1px solid var(--line);

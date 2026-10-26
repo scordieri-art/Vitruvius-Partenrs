@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
-import { FilieraRows } from "@/components/home/FilieraRows";
+import { Filiera } from "@/components/home/Filiera";
 import { homeSteps } from "@/content/home";
 import { getDictionary } from "@/lib/content";
 
-/** Preview of an alternative concept for the home page's chain: not linked, not indexed. */
+/** The previous version of the home page's chain (verbs and photograph held while the page scrolls), kept for comparison: not linked, not indexed. */
 export const metadata: Metadata = { title: "Prova · filiera", robots: { index: false, follow: false } };
 
 export default async function ChainPreview() {
@@ -12,8 +12,8 @@ export default async function ChainPreview() {
   const h = t.home;
   return (
     <RevealScope>
-      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[calc(var(--header-h)+var(--section-y))] pb-[var(--section-y)]">
-        <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)]">
+      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[calc(var(--header-h)+var(--section-y))]">
+        <div className="container-x">
           <p className="t-label mb-5" data-reveal="fade">
             {h.lines.label}
           </p>
@@ -21,7 +21,7 @@ export default async function ChainPreview() {
             {h.lines.title}
           </h2>
         </div>
-        <FilieraRows steps={homeSteps(lang)} externalNote={t.ui.externalNew} label={h.lines.title} />
+        <Filiera steps={homeSteps(lang)} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
     </RevealScope>
   );

@@ -8,7 +8,7 @@ import { Cta } from "@/components/ui/Cta";
 import type { Step } from "./Filiera";
 
 /**
- * Alternative concept for the chain (preview only): three rows across the page, the verbs in
+ * The chain on the home page: three rows across the page, the verbs in
  * very large type. The open row unfolds a cinematic photograph the full width of the page,
  * revealed along the slope of the symbol and settling from a slight zoom; under it the sentence,
  * the published fact and the way in. Pointing at a row (after a short pause) or choosing it
