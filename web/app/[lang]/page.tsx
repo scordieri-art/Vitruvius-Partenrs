@@ -83,17 +83,9 @@ export default async function HomePage() {
     <RevealScope>
       <Hero copy={h.hero} image={IMG.hero} />
 
-      {/* How the group works */}
-      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)]">
-        <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)]">
-          <p className="t-label mb-5" data-reveal="fade">
-            {h.lines.label}
-          </p>
-          <h2 id="lines-title" className="t-l max-w-[20ch] [text-wrap:balance]" data-reveal="lines">
-            {h.lines.title}
-          </h2>
-        </div>
-        <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
+      {/* How the group works: the chain builds the mark */}
+      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[clamp(2rem,5vw,4rem)]">
+        <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.label} title={h.lines.title} titleId="lines-title" />
       </section>
 
       {/* Figures and press */}
