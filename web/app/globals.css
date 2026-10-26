@@ -1635,242 +1635,205 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
 }
 
 @layer components {
-  /* Chi siamo, who leads the group (components/about/Leadership.tsx), on navy */
-  .vp-lead__tree {
-    display: flex;
-    align-items: center;
-    margin-bottom: clamp(2.5rem, 5vw, 4rem);
-    font-size: var(--t-small);
+  /* Chi siamo, who leads the group (components/about/Leadership.tsx), on navy: each leader is a
+     stroke of the symbol. The bands are parallelograms at the brand slope that overlap by their
+     run (--run), so they tile like the strokes of the mark; the one in view widens (flex-grow). */
+  .vp-bands,
+  .vp-lead__legend {
+    display: none;
   }
-  .vp-lead__node {
-    display: inline-block;
-    padding: 0.45rem 0.75rem;
-    border: 1px solid var(--line);
-    color: var(--fg-2);
-    white-space: nowrap;
-    transition:
-      color 400ms var(--ease-move),
-      border-color 400ms var(--ease-move),
-      background-color 400ms var(--ease-move);
-  }
-  .vp-lead__branches {
-    display: grid;
-    gap: 0.75rem;
-  }
-  /* small phones: the company names wrap inside their boxes, so the chart keeps to the screen */
-  @media (max-width: 29.99rem) {
-    .vp-lead__node {
-      max-width: 8.5rem;
-      padding: 0.4rem 0.55rem;
-      white-space: normal;
-      font-size: var(--t-label);
-      line-height: 1.3;
-    }
-  }
-  .vp-lead__links {
-    width: clamp(2rem, 4vw, 3.5rem);
-    height: 4.5rem;
-    flex: none;
-    overflow: visible;
-  }
-  .vp-lead__links path {
-    fill: none;
-    stroke: var(--line);
-    stroke-width: 1.5px;
-    vector-effect: non-scaling-stroke;
-    transition: stroke 400ms var(--ease-move);
-  }
-  /* the holding is always on the path; a division lights with its people */
-  .vp-lead__tree > .vp-lead__node,
-  .vp-lead[data-group="construction"] .vp-lead__node[data-node="construction"],
-  .vp-lead[data-group="living"] .vp-lead__node[data-node="living"] {
-    color: var(--fg);
-    border-color: var(--fg);
-    background: color-mix(in srgb, var(--color-white) 6%, transparent);
-  }
-  .vp-lead[data-group="construction"] .vp-lead__links [data-link="construction"],
-  .vp-lead[data-group="living"] .vp-lead__links [data-link="living"] {
-    stroke: var(--fg);
-  }
-  .vp-lead__group + .vp-lead__group {
-    margin-top: 2.75rem;
-  }
-  .vp-lead__entity {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-  .vp-lead__person {
-    position: relative;
-    display: grid;
-    grid-template-columns: 3.5rem minmax(0, 1fr);
-    grid-template-areas: "thumb name" "thumb role";
-    column-gap: 1rem;
-    align-items: center;
-    width: 100%;
-    padding: 0.9rem 0;
-    border-top: 1px solid var(--line);
-    text-align: left;
-    color: var(--fg);
-  }
-  .vp-lead__thumb {
-    grid-area: thumb;
-    position: relative;
-    display: block;
-    width: 3.5rem;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--color-white) 10%, var(--color-navy));
-  }
-  .vp-lead__initials {
+  .vp-band__initials {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: var(--t-small);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 300;
     color: var(--fg-2);
   }
-  .vp-lead__mark {
-    display: none;
-  }
-  .vp-lead__name {
-    grid-area: name;
-    font-size: clamp(1.35rem, 2.4vw, 2.5rem);
-    font-weight: 300;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-  }
-  .vp-lead__role {
-    grid-area: role;
-    margin-top: 0.2rem;
-  }
-  /* wide screens: names alone in a column, the portrait beside them; the one in view leads */
   @media (min-width: 64rem) {
-    .vp-lead__person {
-      grid-template-columns: 1.6rem minmax(0, 1fr) auto;
-      grid-template-areas: "mark name role";
-      align-items: baseline;
-      padding: 1.1rem 0;
+    .vp-bands {
+      --h: min(64vh, 44vw, 40rem);
+      --run: calc(var(--h) * var(--slope));
+      --gap: 0.4rem;
+      display: flex;
+      height: var(--h);
+    }
+    .vp-band {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+      margin-right: calc(var(--run) * -1 + var(--gap));
+      transition: flex-grow 1000ms var(--ease-move);
+      /* the boxes overlap by the run: only the stroke itself answers the pointer */
+      pointer-events: none;
+    }
+    .vp-band:last-child {
+      margin-right: 0;
+    }
+    .vp-band[data-on] {
+      flex-grow: 1.9;
+    }
+    /* the stroke: top edge from 0, bottom edge from the run, as in the mark */
+    .vp-band__cut {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      clip-path: polygon(0 0, calc(100% - var(--run)) 0, 100% 100%, var(--run) 100%);
+      pointer-events: auto;
       cursor: pointer;
+      background: color-mix(in srgb, var(--color-white) 8%, var(--color-navy));
     }
-    .vp-lead__thumb {
-      display: none;
+    /* the picture centred on the stroke at face height, not on the box */
+    .vp-band__img {
+      position: absolute;
+      inset: 0 0 0 calc(var(--run) * -0.3);
     }
-    .vp-lead__mark {
-      grid-area: mark;
-      display: block;
-      height: 0.9rem;
+    .vp-band__img img {
+      filter: grayscale(1) contrast(1.08) brightness(0.92);
+      scale: 1.06;
+      transition:
+        filter 900ms var(--ease-move),
+        scale 1400ms var(--ease-enter);
+    }
+    .vp-band[data-on] .vp-band__img img {
+      filter: none;
+      scale: 1;
+    }
+    .vp-band__tint {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top, rgb(10 35 66 / 0.9), rgb(10 35 66 / 0) 45%),
+        rgb(10 35 66 / 0.5);
+      transition: background-color 900ms var(--ease-move);
+    }
+    .vp-band[data-on] .vp-band__tint {
+      background:
+        linear-gradient(to top, rgb(10 35 66 / 0.9), rgb(10 35 66 / 0) 45%),
+        rgb(10 35 66 / 0);
+    }
+    .vp-band__index {
+      position: absolute;
+      left: calc(var(--run) + 1rem);
+      bottom: 1.25rem;
+      color: var(--color-white);
+      transition: opacity 400ms var(--ease-move);
+    }
+    .vp-band[data-on] .vp-band__index {
       opacity: 0;
-      translate: -0.5rem 0;
+    }
+    .vp-band__caption {
+      position: absolute;
+      left: calc(var(--run) + 1.5rem);
+      right: 1.5rem;
+      bottom: 1.5rem;
+      display: grid;
+      gap: 0.3rem;
+      color: var(--color-white);
+      opacity: 0;
+      translate: 0 0.75rem;
       transition:
-        opacity 400ms var(--ease-move),
-        translate 500ms var(--ease-enter);
+        opacity 300ms var(--ease-move),
+        translate 300ms var(--ease-move);
     }
-    .vp-lead__role {
-      margin: 0;
-      text-align: right;
-    }
-    /* the others step back, still readable: large names to 3:1, small roles to 4.5:1 on navy */
-    .vp-lead__name {
-      opacity: 0.55;
-    }
-    .vp-lead__role {
-      opacity: 0.8;
-    }
-    .vp-lead__name,
-    .vp-lead__role {
-      transition:
-        opacity 400ms var(--ease-move),
-        translate 600ms var(--ease-enter);
-    }
-    .vp-lead__person[aria-pressed="true"] .vp-lead__mark {
+    .vp-band[data-on] .vp-band__caption {
       opacity: 1;
       translate: 0 0;
+      transition:
+        opacity 600ms var(--ease-enter) 700ms,
+        translate 800ms var(--ease-enter) 700ms;
     }
-    .vp-lead__person[aria-pressed="true"] :is(.vp-lead__name, .vp-lead__role) {
+    .vp-band__company {
+      color: rgb(255 255 255 / 0.8);
+    }
+    .vp-band__name {
+      font-size: clamp(1.75rem, 2.6vw, 2.75rem);
+      font-weight: 300;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .vp-band__role {
+      color: rgb(255 255 255 / 0.85);
+    }
+    /* the legend under the bands: who is who, in the bands' order */
+    .vp-lead__legend {
+      display: grid;
+      grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      margin-top: 2rem;
+    }
+    .vp-lead__who {
+      display: grid;
+      gap: 0.35rem;
+      width: 100%;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      text-align: left;
+      color: var(--fg);
+      cursor: pointer;
+      transition: border-color 400ms var(--ease-move);
+    }
+    .vp-lead__whoname {
+      font-size: var(--t-body-l);
+      font-weight: 300;
+      line-height: 1.2;
+      opacity: 0.7;
+      transition: opacity 400ms var(--ease-move);
+    }
+    .vp-lead__who[aria-pressed="true"] {
+      border-color: var(--fg);
+    }
+    .vp-lead__who[aria-pressed="true"] .vp-lead__whoname {
       opacity: 1;
     }
-    .vp-lead__person[aria-pressed="true"] .vp-lead__name {
-      translate: 0.35rem 0;
-    }
   }
-  .vp-lead__stage {
-    position: sticky;
-    top: calc(var(--header-h) + 2rem);
+  /* phones and tablets: portraits in a row to swipe, the corner cut like the site's tags */
+  .vp-lead__row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(72vw, 20rem);
+    column-gap: var(--col-gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter-x) * -1);
+    padding-inline: var(--gutter-x);
+    scroll-padding-inline: var(--gutter-x);
+  }
+  .vp-lead__row::-webkit-scrollbar {
+    display: none;
+  }
+  .vp-lead__card {
+    scroll-snap-align: start;
+  }
+  .vp-lead__photo {
+    position: relative;
+    display: block;
     aspect-ratio: 4 / 5;
     overflow: hidden;
     background: color-mix(in srgb, var(--color-white) 8%, var(--color-navy));
+    clip-path: polygon(0 0, calc(100% - 1.5rem) 0, 100% calc(1.5rem / var(--slope)), 100% 100%, 0 100%);
   }
-  /* a portrait opens along the slope of the symbol: on a 4:5 frame the cut runs 73% of the width */
-  .vp-lead__portrait {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    clip-path: polygon(0 0, -73% 0, 0 100%, 0 100%);
-  }
-  .vp-lead__portrait[data-state="under"] {
-    z-index: 1;
-    clip-path: polygon(0 0, 100% 0, 173% 100%, 0 100%);
-  }
-  .vp-lead__portrait[data-state="in"] {
-    z-index: 2;
-    clip-path: polygon(0 0, 100% 0, 173% 100%, 0 100%);
-    transition: clip-path 950ms var(--ease-move);
-  }
-  .vp-lead__portrait img {
-    scale: 1.08;
-    filter: saturate(0.85);
-  }
-  .vp-lead__portrait[data-state="in"] img {
-    scale: 1;
-    transition: scale 1600ms var(--ease-enter);
-  }
-  .vp-lead__initials--big {
-    font-size: clamp(3rem, 6vw, 5rem);
-    font-weight: 300;
-  }
-  .vp-lead__shade {
-    position: absolute;
-    inset: auto 0 0;
-    z-index: 3;
-    height: 45%;
-    background: linear-gradient(to top, rgb(10 35 66 / 0.85), transparent);
-    pointer-events: none;
-  }
-  .vp-lead__count {
-    position: absolute;
-    top: 1.25rem;
-    left: 1.5rem;
-    z-index: 3;
-    color: var(--color-white);
-    text-shadow: 0 1px 6px rgb(10 35 66 / 0.35);
-  }
-  .vp-lead__caption {
-    position: absolute;
-    left: 1.5rem;
-    right: 1.5rem;
-    bottom: 1.5rem;
-    z-index: 3;
-    color: var(--color-white);
-    animation: vp-lead-caption 700ms var(--ease-enter) both;
-  }
-  @keyframes vp-lead-caption {
-    from {
-      opacity: 0;
-      translate: 0 0.75rem;
+  @media (min-width: 64rem) {
+    .vp-lead__row {
+      display: none;
     }
+  }
+  .vp-lead__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin-top: 2.5rem;
   }
   @media (prefers-reduced-motion: reduce) {
-    .vp-lead__portrait[data-state="in"],
-    .vp-lead__portrait[data-state="in"] img,
-    .vp-lead__caption {
+    .vp-band,
+    .vp-band__img img,
+    .vp-band__tint,
+    .vp-band__caption,
+    .vp-band[data-on] .vp-band__caption {
       transition: none;
-      animation: none;
-    }
-    .vp-lead__portrait img {
-      scale: 1;
     }
   }
 

@@ -1,8 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { Mark } from "@/components/marks/Mark";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 type Person = { name: string; role: string; photo?: string | null };
 type Group = { key: string; name: string; kind: string; href?: string; linkLabel?: string; people: Person[] };
@@ -13,110 +12,116 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
+const two = (n: number) => String(n).padStart(2, "0");
 
 /**
- * Who leads the group. On wide screens: the names, large, under the company they lead, and
- * beside them one portrait that stays in view; pointing at a name (or reaching it with the
- * keyboard) opens that person's portrait along the slope of the symbol, and the small chart of
- * the group above lights the branch they belong to. On phones each name carries its portrait.
- * The list holds everything (names, roles, companies); the portrait stage repeats it for the eye.
+ * Who leads the group: each leader is a stroke of the symbol. On wide screens five bands cut at
+ * the slope of the brand stroke stand side by side across the page, the portraits in navy
+ * duotone; pointing at a band or at a name in the legend below it (or reaching the name with the
+ * keyboard) widens that band and brings the person into colour, with name, role and company.
+ * Left alone in view, the bands take turns slowly; the first gesture stops that for good.
+ * The legend is the readable list; the bands repeat it for the eye. On phones the portraits
+ * form a row to swipe. Reduced motion: no turns, no easing.
  */
 export function Leadership({ groups, externalNote }: { groups: Group[]; externalNote: string }) {
   const people = groups.flatMap((g) => g.people.map((p) => ({ ...p, group: g })));
   const [active, setActive] = useState(0);
-  const [under, setUnder] = useState<number | null>(null);
+  const touched = useRef(false);
+  const stage = useRef<HTMLDivElement>(null);
+
   const pick = (i: number) => {
-    if (i === active) return;
-    setUnder(active);
+    touched.current = true;
     setActive(i);
   };
-  const lead = people[active];
-  const two = (n: number) => String(n).padStart(2, "0");
-  let n = 0;
+
+  // left alone and in view, the bands take turns
+  useEffect(() => {
+    const el = stage.current;
+    if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer = 0;
+    const stop = () => window.clearInterval(timer);
+    const io = new IntersectionObserver(
+      ([e]) => {
+        stop();
+        if (e.isIntersecting && !touched.current)
+          timer = window.setInterval(() => {
+            if (touched.current) return stop();
+            if (!document.hidden) setActive((a) => (a + 1) % people.length);
+          }, 4200);
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => {
+      stop();
+      io.disconnect();
+    };
+  }, [people.length]);
 
   return (
-    <div className="vp-lead grid-12 gap-y-14" data-group={lead.group.key}>
-      <div className="col-span-4 lg:col-span-6">
-        {/* the group in one line: the holding and its two divisions, the active branch lit */}
-        <div className="vp-lead__tree" aria-hidden="true">
-          <span className="vp-lead__node" data-node={groups[0]?.key}>
-            {groups[0]?.name}
-          </span>
-          <svg className="vp-lead__links" viewBox="0 0 48 64" preserveAspectRatio="none">
-            <path data-link={groups[1]?.key} d="M0 32 H20 V12 H48" />
-            <path data-link={groups[2]?.key} d="M0 32 H20 V52 H48" />
-          </svg>
-          <span className="vp-lead__branches">
-            {groups.slice(1).map((g) => (
-              <span key={g.key} className="vp-lead__node" data-node={g.key}>
-                {g.name}
+    <div ref={stage} className="vp-lead" style={{ "--n": people.length } as CSSProperties}>
+      {/* wide screens: the bands, a visual echo of the legend below */}
+      <div className="vp-bands" aria-hidden="true">
+        {people.map((p, i) => (
+          <div key={p.name} className="vp-band" data-on={i === active ? "" : undefined} onPointerEnter={() => pick(i)} onClick={() => pick(i)}>
+            <div className="vp-band__cut">
+              <span className="vp-band__img">
+                <span className="vp-band__initials">{initials(p.name)}</span>
+                {p.photo ? <Image src={p.photo} alt="" fill sizes="(min-width: 1024px) 45vw, 1px" className="object-cover object-[50%_22%]" /> : null}
               </span>
-            ))}
-          </span>
-        </div>
-
-        {groups.map((g) => (
-          <div key={g.key} className="vp-lead__group">
-            <p className="vp-lead__entity">
-              <span className="t-label">{g.kind}</span>
-              <span className="t-small">{g.name}</span>
-            </p>
-            <ul>
-              {g.people.map((p) => {
-                const i = n++;
-                return (
-                  <li key={p.name}>
-                    <button
-                      type="button"
-                      className="vp-lead__person"
-                      aria-pressed={i === active}
-                      onPointerEnter={() => pick(i)}
-                      onFocus={() => pick(i)}
-                      onClick={() => pick(i)}
-                    >
-                      <span className="vp-lead__thumb" aria-hidden="true">
-                        <span className="vp-lead__initials">{initials(p.name)}</span>
-                        {p.photo ? <Image src={p.photo} alt="" fill sizes="4rem" className="object-cover object-[50%_20%]" /> : null}
-                      </span>
-                      <Mark className="vp-lead__mark" />
-                      <span className="vp-lead__name">{p.name}</span>
-                      <span className="vp-lead__role t-label">{p.role}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            {g.href ? (
-              <a href={g.href} target="_blank" rel="noopener noreferrer" className="vp-ulink t-small mt-5 inline-block">
-                {g.linkLabel} <span aria-hidden="true">↗</span>
-                <span className="sr-only"> ({externalNote})</span>
-              </a>
-            ) : null}
+              <span className="vp-band__tint" />
+              <span className="vp-band__index t-label t-num">{two(i + 1)}</span>
+              <span className="vp-band__caption">
+                <span className="t-label vp-band__company">{p.group.name}</span>
+                <span className="vp-band__name">{p.name}</span>
+                <span className="t-small vp-band__role">{p.role}</span>
+              </span>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* the portrait stage: wide screens only, a visual echo of the list */}
-      <div className="hidden lg:col-span-5 lg:col-start-8 lg:block">
-        <div className="vp-lead__stage" aria-hidden="true">
-          {people.map((p, i) => (
-            <div key={p.name} className="vp-lead__portrait" data-state={i === active ? "in" : i === under ? "under" : undefined}>
-              <span className="vp-lead__initials vp-lead__initials--big">{initials(p.name)}</span>
-              {p.photo ? <Image src={p.photo} alt="" fill sizes="(min-width: 1024px) 40vw, 1px" className="object-cover object-[50%_20%]" /> : null}
-            </div>
+      {/* the legend: who is who, and the way in for the keyboard */}
+      <ol className="vp-lead__legend">
+        {people.map((p, i) => (
+          <li key={p.name}>
+            <button type="button" className="vp-lead__who" aria-pressed={i === active} onPointerEnter={() => pick(i)} onFocus={() => pick(i)} onClick={() => pick(i)}>
+              <span className="t-label t-num">{two(i + 1)}</span>
+              <span className="vp-lead__whoname">{p.name}</span>
+              <span className="t-label">
+                {p.role} · {p.group.name}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+
+      {/* phones and tablets: a row of portraits to swipe */}
+      <ul className="vp-lead__row">
+        {people.map((p) => (
+          <li key={p.name} className="vp-lead__card">
+            <span className="vp-lead__photo" aria-hidden="true">
+              <span className="vp-band__initials">{initials(p.name)}</span>
+              {p.photo ? <Image src={p.photo} alt="" fill sizes="(min-width: 1024px) 1px, 75vw" className="object-cover object-[50%_22%]" /> : null}
+            </span>
+            <span className="t-label mt-4 block">{p.group.name}</span>
+            <span className="t-m mt-1 block">{p.name}</span>
+            <span className="t-small mt-1 block text-[var(--fg-2)]">{p.role}</span>
+          </li>
+        ))}
+      </ul>
+
+      {/* the two divisions' own sites */}
+      <p className="vp-lead__links t-small">
+        {groups
+          .filter((g) => g.href)
+          .map((g) => (
+            <a key={g.key} href={g.href} target="_blank" rel="noopener noreferrer" className="vp-ulink">
+              {g.linkLabel} <span aria-hidden="true">↗</span>
+              <span className="sr-only"> ({externalNote})</span>
+            </a>
           ))}
-          <div className="vp-lead__shade" />
-          <p className="vp-lead__count t-label t-num">
-            {two(active + 1)} / {two(people.length)}
-          </p>
-          <div key={active} className="vp-lead__caption">
-            <p className="t-m">{lead.name}</p>
-            <p className="t-small mt-1 text-white/75">
-              {lead.role} · {lead.group.name}
-            </p>
-          </div>
-        </div>
-      </div>
+      </p>
     </div>
   );
 }
