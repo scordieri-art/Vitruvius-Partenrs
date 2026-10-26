@@ -107,11 +107,12 @@ export default async function AboutPage() {
       <PageHero label={a.label} index={a.since} title={a.title} lead={a.lead} />
 
       <section data-theme="paper" aria-label={a.label}>
-        <div className="container-x">
-          <div data-reveal="image">
-            <ParallaxImage src="/images/pages/about-facade-golden.jpg" alt="" sizes="100vw" strength={10} className="aspect-[4/5] bg-[var(--line)] sm:aspect-[21/9]" priority />
+        {/* the group's own photograph (800 px wide): framed near its own size on wide screens, never stretched across the page */}
+        <div className="container-x grid-12 items-end gap-y-12">
+          <div className="col-span-4 lg:col-span-8" data-reveal="image">
+            <ParallaxImage src="/images/pages/about-team-site.jpg" alt="" sizes="(min-width: 1024px) 60vw, 100vw" strength={6} className="aspect-[3/2] bg-[var(--line)]" priority />
           </div>
-          <dl className="mt-12 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-2 md:grid-cols-3 lg:grid-cols-5">
+          <dl className="col-span-4 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-2 md:grid-cols-3 lg:col-span-4 lg:col-start-9 lg:grid-cols-1">
             {[
               { k: a.facts.founded, v: "2020" },
               { k: a.facts.offices, v: company.offices.map((o) => o.city).join(" · ") },
