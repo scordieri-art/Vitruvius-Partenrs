@@ -1172,14 +1172,14 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* Home, the chain on a split screen (components/home/Filiera.tsx). The stage holds still for
-     the run of the section; --t goes from 0 to n-1 with the scroll. Left: title, verbs filling in
-     turn (--f, the edge of the fill on the slope of the symbol), the words of the step. Right:
-     the photographs edge to edge, full height; each rises over the last like a curtain (--f),
-     settling from a slight zoom, while the ones below drift up; the step's fact is the caption. */
+  /* Home, the group as one stroke (components/home/Filiera.tsx). The stage holds still for
+     the run of the section; --t goes from 0 to n-1 with the scroll. Each verb fills (--f, 0 → 1)
+     as its turn comes, the edge of the fill on the slope of the symbol, and stays filled; the
+     current one is solid, the others pale or in outline. Each photograph wipes in over the last
+     along the same slope. */
   .vp-fil {
     position: relative;
-    height: calc(var(--n) * 70svh + 100svh);
+    height: calc(var(--n) * 60svh + 100svh);
   }
   .vp-fil__stage {
     --t: 0;
@@ -1187,101 +1187,16 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     top: 0;
     height: 100svh;
     display: flex;
-    flex-direction: column;
+    align-items: flex-start;
     overflow: hidden;
   }
-  /* phones and tablets: the photograph across the top, under the header */
-  .vp-fil__media {
-    position: relative;
-    flex: none;
-    height: clamp(11rem, 26svh, 20rem);
-    margin-top: var(--header-h);
-    overflow: hidden;
-    background: var(--color-navy);
-    color: var(--fg);
-  }
-  .vp-fil__pic {
-    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
-    position: absolute;
-    inset: 0;
-    /* rises from the bottom over the one before */
-    clip-path: inset(calc((1 - var(--f)) * 100%) 0 0 0);
-  }
-  .vp-fil__pic:first-child {
-    clip-path: none;
-  }
-  .vp-fil__pic img {
-    /* settles from a slight zoom as it rises; drifts up as the next one comes */
-    scale: calc(1.14 - var(--f) * 0.14);
-    translate: 0 calc(clamp(0, var(--t) - var(--i), 1) * -6%);
-  }
-  .vp-fil__media::after {
-    /* a navy veil at the foot, for the caption */
-    content: "";
-    position: absolute;
-    inset: 45% 0 0;
-    background: linear-gradient(to top, rgb(10 35 66 / 0.82), rgb(10 35 66 / 0));
-    pointer-events: none;
-  }
-  .vp-fil__count {
-    position: absolute;
-    top: 1rem;
-    right: var(--gutter-x);
-    z-index: 1;
-    color: var(--color-white);
-  }
-  .vp-fil__facts {
-    position: absolute;
-    left: var(--gutter-x);
-    right: var(--gutter-x);
-    bottom: clamp(0.9rem, 3svh, 2.25rem);
-    z-index: 1;
-    display: grid;
-  }
-  .vp-fil__fact {
-    grid-area: 1 / 1;
-    align-self: end;
-    opacity: 0;
-    translate: 0 0.6rem;
-    pointer-events: none;
-    transition:
-      opacity 300ms var(--ease-move),
-      translate 300ms var(--ease-move);
-  }
-  .vp-fil__fact[data-on],
-  .vp-fil__fact:focus-within {
-    opacity: 1;
-    translate: 0 0;
-    pointer-events: auto;
-    transition:
-      opacity 600ms var(--ease-enter) 200ms,
-      translate 700ms var(--ease-enter) 200ms;
-  }
-  .vp-fil__fig {
-    font-size: var(--t-m);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-  .vp-fil__factlabel {
-    max-width: 36rem;
-    color: color-mix(in srgb, var(--color-white) 82%, transparent);
-  }
-
   .vp-fil__grid {
-    flex: 1;
     width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    align-content: center;
-    row-gap: clamp(0.8rem, 2.2svh, 1.75rem);
-  }
-  .vp-fil__head .t-label {
-    margin-bottom: 0.75rem;
-  }
-  .vp-fil__title {
-    max-width: 20ch;
-    text-wrap: balance;
+    row-gap: clamp(1.25rem, 3svh, 2.25rem);
+    /* under the title on arrival; once held, air above and below the chain */
+    padding-top: clamp(2.5rem, 12svh, 7rem);
   }
   .vp-fil__verbs {
     display: grid;
@@ -1305,9 +1220,9 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-fil__word {
     position: relative;
     display: block;
-    font-size: clamp(2rem, 4.4svh, 2.6rem);
+    font-size: clamp(2.4rem, 0.6rem + 4.4vw, 5.4rem);
     font-weight: 300;
-    line-height: 1.04;
+    line-height: 1.02;
     letter-spacing: -0.04em;
     white-space: nowrap;
   }
@@ -1331,6 +1246,30 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-fil__verb:hover .vp-fil__outline {
     -webkit-text-stroke-width: 1.5px;
   }
+
+  /* the window: the photographs, each wiping in over the last along the slope */
+  .vp-fil__window {
+    --wh: clamp(10rem, 28svh, 18rem);
+    --lean: calc(var(--wh) * var(--slope));
+    position: relative;
+    height: var(--wh);
+    overflow: hidden;
+    background: var(--line);
+  }
+  .vp-fil__pic {
+    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, calc(var(--f) * (100% + var(--lean)) - var(--lean)) 0, calc(var(--f) * (100% + var(--lean))) 100%, 0 100%);
+  }
+  .vp-fil__pic:first-child {
+    clip-path: none;
+  }
+  .vp-fil__pic img {
+    scale: calc(1.12 - var(--f) * 0.12);
+  }
+
+  /* the words of the step in turn, all in the same cell */
   .vp-fil__steps {
     display: grid;
   }
@@ -1353,111 +1292,102 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       translate 700ms var(--ease-enter) 120ms;
   }
   .vp-fil__text {
-    max-width: 34ch;
+    max-width: 32ch;
     font-size: var(--t-body-l);
     font-weight: 300;
     line-height: 1.35;
   }
-  .vp-fil__cta {
-    margin-top: 1rem;
+  .vp-fil__proof {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    max-width: 30rem;
   }
-  /* phones and tablets: the photograph is small, its caption is the figure alone */
-  @media (max-width: 63.99rem) {
-    .vp-fil__factlabel {
-      display: none;
-    }
+  .vp-fil__fig {
+    font-size: var(--t-m);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
-  /* the smallest phones: no room for the title on the held stage (it stays for screen readers) */
-  @media (max-width: 63.99rem) and (max-height: 37rem) {
-    .vp-fil__head {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
-  }
-  /* short phones: the photograph and the type a size down */
+  /* short phones: smaller verbs and window, the fact without its caption */
   @media (max-width: 63.99rem) and (max-height: 44rem) {
-    .vp-fil__head .t-label {
-      display: none;
-    }
-    .vp-fil__media {
-      height: 26svh;
-    }
-    .vp-fil__fig {
-      font-size: var(--t-s);
-    }
-    .vp-fil__factlabel {
-      display: none;
+    .vp-fil__grid {
+      row-gap: 0.75rem;
     }
     .vp-fil__word {
-      font-size: 2rem;
+      font-size: clamp(2rem, 11svh, 2.5rem);
+    }
+    .vp-fil__window {
+      --wh: 20svh;
     }
     .vp-fil__text {
       font-size: var(--t-body);
     }
-  }
-  @media (min-width: 64rem) {
-    /* the photograph takes the right half, edge to edge, top to bottom */
-    .vp-fil__media {
-      position: absolute;
-      /* under the header, so the menu never sits on the photograph */
-      top: var(--header-h);
-      bottom: 0;
-      left: 50%;
-      right: 0;
-      height: auto;
-      margin: 0;
+    .vp-fil__proof {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
     }
-    .vp-fil__count {
-      top: 1.25rem;
+    .vp-fil__proof .t-small:last-child {
+      display: none;
+    }
+    .vp-fil__step .mt-6 {
+      margin-top: 0.9rem;
+    }
+  }
+  @media (max-width: 63.99rem) and (max-height: 37rem) {
+    .vp-fil__grid {
+      row-gap: 0.5rem;
+    }
+    .vp-fil__window {
+      --wh: 13svh;
     }
     .vp-fil__word {
-      font-size: clamp(2.6rem, 6.5svh, 4.6rem);
+      font-size: 2rem;
     }
-    .vp-fil__facts {
-      left: clamp(2rem, 3.5vw, 3.5rem);
-      bottom: clamp(1.5rem, 5svh, 3.5rem);
+    /* the smallest phones keep the words and the way in; the fact stays on the pages it links to */
+    .vp-fil__proof {
+      display: none;
     }
+  }
+  @media (max-width: 63.99rem) {
+    .vp-fil__proof .t-small:last-child {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
+  @media (min-width: 64rem) {
     .vp-fil__grid {
       grid-template-columns: repeat(12, minmax(0, 1fr));
       column-gap: var(--col-gap);
-      padding-top: var(--header-h);
+      row-gap: 0;
+      align-items: center;
     }
-    .vp-fil__grid > * {
+    .vp-fil__verbs {
       grid-column: 1 / span 5;
+      grid-row: 1;
+      align-self: start;
+      row-gap: 0.25rem;
     }
-    /* the title takes one column more: three lines instead of four */
-    .vp-fil__grid > .vp-fil__head {
-      grid-column: 1 / span 6;
+    .vp-fil__steps {
+      grid-column: 1 / span 5;
+      grid-row: 2;
+      align-self: start;
+      margin-top: clamp(2rem, 5svh, 3.5rem);
+    }
+    /* the photograph keeps a free column from the words and air above and below */
+    .vp-fil__window {
+      --wh: min(66svh, 42rem);
+      grid-column: 7 / span 6;
+      grid-row: 1 / span 2;
+      align-self: start;
     }
     .vp-fil__text {
       font-size: var(--t-s);
     }
   }
-  /* short laptops: the words a size down */
-  @media (min-width: 64rem) and (max-height: 50rem) {
-    .vp-fil__grid {
-      row-gap: 0.9rem;
-    }
-    .vp-fil__head .t-label {
-      margin-bottom: 0.4rem;
-    }
-    .vp-fil__text {
-      font-size: var(--t-body-l);
-    }
-    .vp-fil__cta {
-      margin-top: 0.5rem;
-    }
-    .vp-fil__verb .vp-fil__word {
-      font-size: clamp(2.4rem, 6svh, 4.6rem);
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .vp-fil__step,
-    .vp-fil__fact,
     .vp-fil__fill {
       transition: none;
     }
