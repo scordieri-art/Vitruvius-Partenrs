@@ -1558,6 +1558,159 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
+  /* Alternative chain, preview only (components/home/FilieraRows.tsx): three rows, the verbs very
+     large; the open row unfolds a full-width photograph along the slope of the symbol. */
+  .vp-rows {
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-rows__row {
+    border-top: 1px solid var(--line);
+  }
+  .vp-rows__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    column-gap: clamp(0.8rem, 2vw, 2rem);
+    width: 100%;
+    padding: clamp(0.9rem, 2.2vw, 1.75rem) 0;
+    text-align: left;
+    cursor: pointer;
+  }
+  .vp-rows__verb {
+    font-size: clamp(2.6rem, 0.4rem + 7vw, 8rem);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--fg);
+    transition: color 600ms var(--ease-move);
+  }
+  .vp-rows__row[data-on] .vp-rows__verb,
+  .vp-rows__head:hover .vp-rows__verb {
+    color: var(--fg);
+  }
+  .vp-rows__who {
+    display: none;
+    text-align: right;
+  }
+  .vp-rows__kind {
+    color: var(--fg-2);
+  }
+  /* plus that turns into minus */
+  .vp-rows__sign {
+    position: relative;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+  .vp-rows__sign::before,
+  .vp-rows__sign::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: currentColor;
+    transition: rotate 400ms var(--ease-move);
+  }
+  .vp-rows__sign::after {
+    rotate: 90deg;
+  }
+  .vp-rows__row[data-on] .vp-rows__sign::after {
+    rotate: 0deg;
+  }
+  .vp-rows__panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 700ms var(--ease-move),
+      visibility 0s 700ms;
+  }
+  .vp-rows__row[data-on] .vp-rows__panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows 900ms var(--ease-enter);
+  }
+  .vp-rows__inner {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .vp-rows__pic {
+    --lean: calc(100% * 0);
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--line);
+    /* revealed along the slope of the symbol */
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    transition: clip-path 1000ms var(--ease-enter);
+  }
+  .vp-rows__row[data-on] .vp-rows__pic {
+    clip-path: polygon(0 0, 130% 0, 100% 100%, 0 100%);
+    transition-delay: 150ms;
+  }
+  .vp-rows__pic img {
+    scale: 1.12;
+    transition: scale 1600ms var(--ease-enter);
+  }
+  .vp-rows__row[data-on] .vp-rows__pic img {
+    scale: 1;
+  }
+  .vp-rows__words {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.25rem 0 clamp(2rem, 4vw, 3rem);
+    opacity: 0;
+    translate: 0 0.75rem;
+    transition:
+      opacity 300ms var(--ease-move),
+      translate 300ms var(--ease-move);
+  }
+  .vp-rows__row[data-on] .vp-rows__words {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 700ms var(--ease-enter) 500ms,
+      translate 800ms var(--ease-enter) 500ms;
+  }
+  .vp-rows__text {
+    max-width: 30ch;
+    font-size: var(--t-s);
+    font-weight: 300;
+    line-height: 1.25;
+  }
+  .vp-rows__fig {
+    font-size: var(--t-m);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  @media (min-width: 64rem) {
+    .vp-rows__who {
+      display: block;
+    }
+    .vp-rows__pic {
+      aspect-ratio: auto;
+      height: min(50svh, 34rem);
+    }
+    .vp-rows__words {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto;
+      align-items: end;
+      column-gap: var(--col-gap);
+      padding-top: 1.75rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-rows__panel,
+    .vp-rows__row[data-on] .vp-rows__panel,
+    .vp-rows__pic,
+    .vp-rows__pic img,
+    .vp-rows__words {
+      transition: none;
+    }
+  }
+
   /* press: outlet names set as type, each linking to its article */
   /* phones and tablets: the names run on as a line of type (the topic stays for screen readers);
      wide screens: one column per outlet, with the operation it wrote about */
