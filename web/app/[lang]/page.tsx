@@ -16,12 +16,13 @@ import { getDictionary, liveLink } from "@/lib/content";
 import { href, type Locale } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
 
+/** Indicative colour photographs, one series in one treatment (public/images/home/CREDITS.md). */
 const IMG = {
-  hero: "/images/placeholder/facade-bw-tower-corner-03.jpg",
-  vp: "/images/placeholder/plans-pencil-drawing-04.jpg",
-  construction: "/images/placeholder/construction-tower-crane-01.jpg",
-  living: "/images/placeholder/interior-loft-linen-curtains-03.jpg",
-  contact: "/images/placeholder/facade-white-shutters-rhythm-05.jpg",
+  hero: "/images/home/home-hero-balconies.jpg",
+  vp: "/images/home/home-vp-rooftops.jpg",
+  construction: "/images/home/home-construction-scaffolding.jpg",
+  living: "/images/home/home-living-sunlit.jpg",
+  contact: "/images/home/home-contact-palazzo.jpg",
 } as const;
 
 /** Outlets that covered the group's operations, in the order of the operations. Names only, no logos. */
@@ -198,7 +199,7 @@ export default async function HomePage() {
         </ProjectRail>
       </section>
 
-      <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={`${href(lang, "contact")}?topic=property#write`} image={IMG.contact} />
+      <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={`${href(lang, "contact")}?topic=property#write`} image={IMG.contact} vivid />
     </RevealScope>
   );
 }
