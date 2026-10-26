@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
-import { GroupChain, type Step } from "@/components/home/GroupChain";
+import { Filiera, type Step } from "@/components/home/Filiera";
 import { Counters } from "@/components/home/Counters";
 import { ProjectRail } from "@/components/home/ProjectRail";
 import { ContactBand } from "@/components/home/ContactBand";
@@ -84,7 +84,7 @@ export default async function HomePage() {
       <Hero copy={h.hero} image={IMG.hero} />
 
       {/* How the group works */}
-      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)] pb-[clamp(4.5rem,9vw,8rem)]">
+      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)]">
         <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)]">
           <p className="t-label mb-5" data-reveal="fade">
             {h.lines.label}
@@ -93,7 +93,7 @@ export default async function HomePage() {
             {h.lines.title}
           </h2>
         </div>
-        <GroupChain steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
+        <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
       {/* Figures and press */}

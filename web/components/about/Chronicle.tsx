@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { TLink } from "@/components/layout/PageTransition";
+import { useScrollTime } from "@/lib/useScrollTime";
 
 type Link = { href: string; label: string };
 type Figure = { value: string; unit?: string; label: string; note?: string; source: Link };
@@ -36,48 +37,7 @@ export function Chronicle({ steps, chart, copy, label }: { steps: Step[]; chart:
   const n = steps.length;
   const years = steps.map((s) => s.year);
   const ix = (year: string) => years.indexOf(year);
-  const [active, setActive] = useState(0);
-  const wrap = useRef<HTMLDivElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-
-  // scroll → time: each year gets an equal share of the run, the cursor rests at both ends
-  useEffect(() => {
-    const el = wrap.current;
-    if (!el) return;
-    let raf = 0;
-    const update = () => {
-      raf = 0;
-      const r = el.getBoundingClientRect();
-      const run = r.height - window.innerHeight;
-      const p = run > 0 ? Math.min(Math.max(-r.top / run, 0), 1) : 0;
-      const t = Math.min(Math.max(p * n - 0.5, 0), n - 1);
-      stage.current?.style.setProperty("--t", t.toFixed(3));
-      setActive(Math.round(t));
-    };
-    const ask = () => {
-      if (!raf) raf = requestAnimationFrame(update);
-    };
-    update();
-    addEventListener("scroll", ask, { passive: true });
-    addEventListener("resize", ask);
-    return () => {
-      removeEventListener("scroll", ask);
-      removeEventListener("resize", ask);
-      cancelAnimationFrame(raf);
-    };
-  }, [n]);
-
-  // the page position where year i sits in the middle of its share
-  const go = (i: number) => {
-    const el = wrap.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY;
-    const y = top + ((i + 0.5) / n) * (el.offsetHeight - window.innerHeight);
-    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const lenis = (window as unknown as { __lenis?: { scrollTo: (y: number, o?: { immediate?: boolean }) => void } }).__lenis;
-    if (lenis) lenis.scrollTo(y, { immediate: reduce });
-    else window.scrollTo({ top: y, behavior: reduce ? "auto" : "smooth" });
-  };
+  const { wrap, stage, active, go } = useScrollTime(n);
 
   const max = Math.max(...chart.production.map((p) => p.value));
   const x = (i: number) => ((i + 0.5) / n) * 100;

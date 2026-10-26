@@ -1172,77 +1172,222 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* the group as a sequence: develop → build → add value, each with one proof.
-     Each step spans the seven rows of the list (subgrid), so verbs, sentences and
-     proofs line up across the three columns whatever their length. */
-  .vp-chain {
-    display: grid;
-    row-gap: clamp(3.5rem, 2.5rem + 4vw, 5rem);
+  /* Home, the group as one stroke (components/home/Filiera.tsx). The stage holds still for
+     the run of the section; --t goes from 0 to n-1 with the scroll. Each verb fills (--f, 0 → 1)
+     as its turn comes, the edge of the fill on the slope of the symbol, and stays filled; the
+     current one is solid, the others pale or in outline. Each photograph wipes in over the last
+     along the same slope. */
+  .vp-fil {
+    position: relative;
+    height: calc(var(--n) * 60svh + 100svh);
   }
-  .vp-chain__step {
-    display: flex;
-    flex-direction: column;
-    max-width: 40rem;
-  }
-  /* down the page on phones and tablets: the sequence arrow points down */
-  .vp-chain__arrow {
-    display: inline-block;
-    transform: rotate(90deg);
-  }
-  .vp-chain__step > :nth-last-child(2) {
-    margin-top: auto;
-  }
-  .vp-chain__head {
+  .vp-fil__stage {
+    --t: 0;
+    position: sticky;
+    top: 0;
+    height: 100svh;
     display: flex;
     align-items: center;
-    gap: 0.9rem;
-    margin-bottom: 1.25rem;
+    overflow: hidden;
   }
-  .vp-chain__rule {
-    flex: 1;
-    height: 1px;
-    background: var(--line);
+  .vp-fil__grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(1rem, 2.5svh, 2rem);
+    padding-top: var(--header-h);
   }
-  .vp-chain__img {
+  .vp-fil__verbs {
+    display: grid;
+    justify-items: start;
+  }
+  .vp-fil__verb {
+    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+  }
+  .vp-fil__num {
+    padding-top: 0.5em;
+    transition: color var(--dur-ui);
+  }
+  .vp-fil__verb[aria-current] .vp-fil__num {
+    color: var(--fg);
+  }
+  .vp-fil__word {
     position: relative;
-    aspect-ratio: 16 / 10;
+    display: block;
+    font-size: clamp(2.5rem, 0.6rem + 5.4vw, 6.4rem);
+    font-weight: 300;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    white-space: nowrap;
+  }
+  .vp-fil__outline {
+    color: transparent;
+    -webkit-text-stroke: 1px var(--fg);
+  }
+  /* the fill: its edge leans like the symbol, top behind, bottom ahead */
+  .vp-fil__fill {
+    --lean: 0.62em;
+    position: absolute;
+    inset: 0;
+    /* pale navy for the steps passed (3:1 and more on paper: large text), navy for the present */
+    color: color-mix(in srgb, var(--fg) 58%, var(--bg));
+    clip-path: polygon(0 -10%, calc(var(--f) * (100% + var(--lean)) - var(--lean)) -10%, calc(var(--f) * (100% + var(--lean))) 110%, 0 110%);
+    transition: color 500ms var(--ease-move);
+  }
+  .vp-fil__verb[aria-current] .vp-fil__fill {
+    color: var(--fg);
+  }
+  .vp-fil__verb:hover .vp-fil__outline {
+    -webkit-text-stroke-width: 1.5px;
+  }
+
+  /* the window: the photographs, each wiping in over the last along the slope */
+  .vp-fil__window {
+    --wh: clamp(10rem, 28svh, 18rem);
+    --lean: calc(var(--wh) * var(--slope));
+    position: relative;
+    height: var(--wh);
     overflow: hidden;
     background: var(--line);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 4rem 100%, 0 calc(100% - 4rem / var(--slope)));
   }
-  .vp-chain__verb {
-    margin-top: 1.5rem;
+  .vp-fil__pic {
+    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, calc(var(--f) * (100% + var(--lean)) - var(--lean)) 0, calc(var(--f) * (100% + var(--lean))) 100%, 0 100%);
+  }
+  .vp-fil__pic:first-child {
+    clip-path: none;
+  }
+  .vp-fil__pic img {
+    scale: calc(1.12 - var(--f) * 0.12);
+  }
+
+  /* the words of the step in turn, all in the same cell */
+  .vp-fil__steps {
+    display: grid;
+  }
+  .vp-fil__step {
+    grid-area: 1 / 1;
+    opacity: 0;
+    translate: 0 0.75rem;
+    pointer-events: none;
+    transition:
+      opacity 300ms var(--ease-move),
+      translate 300ms var(--ease-move);
+  }
+  .vp-fil__step[data-on],
+  .vp-fil__step:focus-within {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition:
+      opacity 600ms var(--ease-enter) 120ms,
+      translate 700ms var(--ease-enter) 120ms;
+  }
+  .vp-fil__text {
+    max-width: 32ch;
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+  .vp-fil__proof {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    max-width: 30rem;
+  }
+  .vp-fil__fig {
     font-size: var(--t-m);
     font-weight: 300;
-    line-height: 1.04;
-    letter-spacing: -0.025em;
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
-  .vp-chain__fig {
-    font-size: var(--t-s);
-    font-weight: 300;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
+  /* short phones: smaller verbs and window, the fact without its caption */
+  @media (max-width: 63.99rem) and (max-height: 44rem) {
+    .vp-fil__grid {
+      row-gap: 0.75rem;
+    }
+    .vp-fil__word {
+      font-size: clamp(2rem, 11svh, 2.5rem);
+    }
+    .vp-fil__window {
+      --wh: 20svh;
+    }
+    .vp-fil__text {
+      font-size: var(--t-body);
+    }
+    .vp-fil__proof {
+      margin-top: 0.9rem;
+      padding-top: 0.7rem;
+    }
+    .vp-fil__proof .t-small:last-child {
+      display: none;
+    }
+    .vp-fil__step .mt-6 {
+      margin-top: 0.9rem;
+    }
+  }
+  @media (max-width: 63.99rem) and (max-height: 37rem) {
+    .vp-fil__grid {
+      row-gap: 0.5rem;
+    }
+    .vp-fil__window {
+      --wh: 13svh;
+    }
+    .vp-fil__word {
+      font-size: 2rem;
+    }
+    /* the smallest phones keep the words and the way in; the fact stays on the pages it links to */
+    .vp-fil__proof {
+      display: none;
+    }
+  }
+  @media (max-width: 63.99rem) {
+    .vp-fil__proof .t-small:last-child {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
   }
   @media (min-width: 64rem) {
-    .vp-chain {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+    .vp-fil__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       column-gap: var(--col-gap);
       row-gap: 0;
+      align-items: center;
     }
-    .vp-chain__arrow {
-      transform: none;
+    .vp-fil__verbs {
+      grid-column: 1 / span 6;
+      grid-row: 1;
+      align-self: end;
+      row-gap: 0.15rem;
     }
-    .vp-chain__step {
-      display: grid;
-      grid-row: span 7;
-      grid-template-rows: subgrid;
-      align-content: start;
-      max-width: none;
+    .vp-fil__steps {
+      grid-column: 1 / span 5;
+      grid-row: 2;
+      align-self: start;
+      margin-top: clamp(1.5rem, 4svh, 3rem);
     }
-    .vp-chain__step > :nth-last-child(2) {
-      margin-top: 0;
+    .vp-fil__window {
+      --wh: min(70svh, 44rem);
+      grid-column: 7 / span 6;
+      grid-row: 1 / span 2;
     }
-    .vp-chain__img {
-      aspect-ratio: 4 / 5;
+    .vp-fil__text {
+      font-size: var(--t-s);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-fil__step,
+    .vp-fil__fill {
+      transition: none;
     }
   }
 
