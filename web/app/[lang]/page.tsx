@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
-import { FilieraRows } from "@/components/home/FilieraRows";
+import { Filiera } from "@/components/home/Filiera";
 import { HOME_IMG as IMG, homeSteps } from "@/content/home";
 import { Counters } from "@/components/home/Counters";
 import { OperationStack } from "@/components/home/OperationStack";
@@ -55,9 +55,9 @@ export default async function HomePage() {
     <RevealScope>
       <Hero copy={h.hero} image={IMG.hero} />
 
-      {/* How the group works: three rows that open */}
-      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)] pb-[clamp(4.5rem,9vw,8rem)]">
-        <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)]">
+      {/* How the group works */}
+      <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)]">
+        <div className="container-x">
           <p className="t-label mb-5" data-reveal="fade">
             {h.lines.label}
           </p>
@@ -65,7 +65,7 @@ export default async function HomePage() {
             {h.lines.title}
           </h2>
         </div>
-        <FilieraRows steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
+        <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
       {/* Figures and press */}
