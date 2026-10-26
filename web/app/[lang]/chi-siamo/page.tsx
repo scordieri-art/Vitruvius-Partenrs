@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
-import { Growth } from "@/components/about/Growth";
+import { Chronicle } from "@/components/about/Chronicle";
 import { Leadership } from "@/components/about/Leadership";
-import { Milestones } from "@/components/about/Milestones";
-import { TeamTabs } from "@/components/about/TeamTabs";
+import { TeamWall } from "@/components/about/TeamWall";
 import { PageHero } from "@/components/ui/PageHero";
-import { SafeImage } from "@/components/ui/SafeImage";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
 import { guamari, production, qualifications, top200 } from "@/content/evidence";
 import { projects } from "@/content/projects";
@@ -21,20 +19,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const groupAnchor: Record<string, string> = {
-  LEADERSHIP: "leadership",
   "PROJECT MANAGEMENT & TECHNICAL OFFICE": "technical-office",
   "REAL ESTATE DEPARTMENT": "real-estate",
   "CONDOVI - CONDO MANAGEMENT": "condo-management",
   "V&P CORPORATE TEAM": "corporate",
 };
-
-const initials = (name: string) =>
-  name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
 
 export default async function AboutPage() {
   const { lang, t } = await getDictionary();
@@ -60,7 +49,44 @@ export default async function AboutPage() {
     "2025": { href: caseHref("via-asinari-asti"), label: a.milestoneLinks.project },
     "2026": { href: caseHref("palazzo-ex-inps-genova"), label: a.milestoneLinks.project },
   };
-  const milestones = a.milestones.map((m) => ({ ...m, link: proof[m.year] }));
+  // each year's published figures, each with its source
+  const c = a.chronicle;
+  const source = (s: { news?: string; label: Record<string, string> }) => ({ label: s.label[lang], href: newsHref(lang, s.news!) });
+  const figuresOf = (year: string) => {
+    const out: { value: string; unit?: string; label: string; note?: string; source: { label: string; href: string } }[] = [];
+    const p = production.find((x) => x.year === year);
+    if (p) out.push({ value: p.display[lang], unit: c.million, label: c.productionFigure, note: p.change?.[lang], source: source(p.source) });
+    const ri = top200.points.findIndex((x) => x.year === year);
+    if (ri >= 0) {
+      const r = top200.points[ri];
+      const before = top200.points[ri - 1];
+      out.push({
+        value: `${r.rank}°`,
+        label: c.top200Figure,
+        note: before ? c.climb.replace("{n}", String(before.rank - r.rank)) : c.of.replace("{n}", String(top200.of)),
+        source: source(top200.source),
+      });
+    }
+    const gm = guamari.find((x) => x.year === year);
+    if (gm) out.push({ value: `${gm.rank}°`, label: c.guamariFigure, note: c.of.replace("{n}", String(gm.of)), source: source(gm.source) });
+    return out;
+  };
+  // the project of the year, where the step is one
+  const pictureOf: Record<string, string> = { "2025": "via-asinari-asti", "2026": "palazzo-ex-inps-genova" };
+  const steps = a.milestones.map((m) => {
+    const figures = figuresOf(m.year);
+    const link = proof[m.year];
+    const pr = projects.find((x) => x.slug.it === pictureOf[m.year]);
+    return {
+      ...m,
+      figures,
+      // the step's own link only when no figure already cites the same page
+      link: link && !figures.some((f) => f.source.href === link.href) ? link : undefined,
+      image: pr ? { src: pr.image?.src ?? pr.placeholder, alt: "" } : undefined,
+    };
+  });
+  const staff = team.filter((gr) => gr.key !== "LEADERSHIP");
+  const staffCount = staff.reduce((n, gr) => n + gr.people.length, 0);
   const credentials = [
     ...qualifications.map((q) => ({
       key: q.name,
@@ -121,82 +147,55 @@ export default async function AboutPage() {
         </div>
       </section>
 
-      {/* Milestones */}
-      <section data-theme="paper" aria-labelledby="milestones" className="py-[var(--section-y)]">
+      {/* Six years: the milestones and the figures with their sources, one story */}
+      <section data-theme="paper" aria-labelledby="milestones" className="pt-[var(--section-y)]">
         <div className="container-x">
           <p className="t-label mb-5" data-reveal="fade">
             {a.milestonesLabel}
           </p>
-          <h2 id="milestones" className="t-l mb-16 lg:mb-20" data-reveal="lines">
+          <h2 id="milestones" className="t-l" data-reveal="lines">
             {a.milestonesTitle}
           </h2>
-          <Milestones items={milestones} label={a.milestonesTitle} />
         </div>
+        <Chronicle
+          steps={steps}
+          label={a.milestonesTitle}
+          copy={{ production: c.production, ranking: c.ranking, source: c.source, years: c.years }}
+          chart={{
+            production: production.map((p) => ({ year: p.year, value: p.value, display: p.display[lang] })),
+            rank: top200.points,
+            of: top200.of,
+          }}
+        />
       </section>
 
-      {/* Growth, in two charts */}
-      <section data-theme="paper" aria-labelledby="growth-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
-        <div className="container-x">
-          <p className="t-label mb-5" data-reveal="fade">
-            {a.growthLabel}
-          </p>
-          <h2 id="growth-title" className="t-l mb-4" data-reveal="lines">
-            {a.growthTitle}
-          </h2>
-          <Growth lang={lang} copy={a.growth} />
-        </div>
-      </section>
-
-      {/* Team */}
-      <section data-theme="paper" aria-labelledby="team" className="border-t border-[var(--line)] py-[var(--section-y)]">
+      {/* The people who work in the group (the leaders are above) */}
+      <section data-theme="navy" aria-labelledby="team" className="py-[var(--section-y)]">
         <div className="container-x">
           <p className="t-label mb-5" data-reveal="fade">
             {a.teamLabel}
           </p>
-          <h2 id="team" className="t-l mb-12" data-reveal="lines">
+          <h2 id="team" className="t-l mb-12 lg:mb-16" data-reveal="lines">
             {a.teamTitle}
           </h2>
-          <TeamTabs
-            label={a.teamLabel}
-            tabs={team.map((gr) => ({
+          <TeamWall
+            teams={staff.map((gr) => ({
               key: groupAnchor[gr.key] ?? gr.key,
               label: a.groups[gr.key] ?? gr.key,
-              count: gr.people.length,
-              panel: (
-                <ul className="grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-10 sm:grid-cols-3 lg:grid-cols-5">
-                  {gr.people.map((p) => (
-                    <li key={p.name} className="group">
-                      <div className="relative aspect-[4/5] overflow-hidden bg-[var(--line)]">
-                        <span aria-hidden="true" className="t-m absolute inset-0 grid place-items-center text-[var(--fg-2)]">
-                          {initials(p.name)}
-                        </span>
-                        {p.photo ? (
-                          <SafeImage
-                            src={p.photo}
-                            alt=""
-                            data-kind="portrait"
-                            fill
-                            sizes="(min-width: 1024px) 20vw, (min-width: 640px) 30vw, 46vw"
-                            className="object-cover grayscale transition-[filter,transform] duration-700 group-hover:scale-[1.03] group-hover:grayscale-0"
-                          />
-                        ) : null}
-                      </div>
-                      <p className="t-body mt-3 leading-tight">{p.name}</p>
-                      <p className="t-label mt-1">
-                        {p.role}
-                        {p.unit ? ` · ${p.unit}` : ""}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              ),
+              count: String(gr.people.length),
+              people: gr.people,
             }))}
+            copy={{
+              all: a.teamAll,
+              summary: a.teamSummary.replace("{n}", String(staffCount)).replace("{d}", String(staff.length)),
+              careers: { href: href(lang, "careers"), label: a.teamCareers },
+            }}
           />
         </div>
       </section>
 
       {/* External checks */}
-      <section id="credentials" data-theme="paper" aria-labelledby="credentials-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
+      <section id="credentials" data-theme="paper" aria-labelledby="credentials-title" className="py-[var(--section-y)]">
         <div className="container-x grid-12 gap-y-12">
           <div className="col-span-4 lg:col-span-4">
             <p className="t-label mb-5">{a.credentialsLabel}</p>

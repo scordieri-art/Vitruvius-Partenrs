@@ -6,6 +6,7 @@ import newsIt from "@/content/generated/news-it.json";
 import newsEn from "@/content/generated/news-en.json";
 import jobsData from "@/content/generated/jobs.json";
 import teamData from "@/content/generated/team.json";
+import teamPhotos from "@/content/generated/team-photos.json";
 import { deadLinks } from "@/content/deadLinks";
 import { hasLocale, href, type Locale } from "./i18n";
 
@@ -72,7 +73,12 @@ export function newsCounterpart(lang: Locale, item: Pick<NewsItem, "slug" | "tra
 }
 
 export const getJobs = (): Job[] => jobsData as Job[];
-export const getTeam = (): TeamGroup[] => teamData as TeamGroup[];
+/** The team, each portrait served from this site (scripts/team-photos.mjs); no portrait, no photo. */
+export const getTeam = (): TeamGroup[] =>
+  (teamData as TeamGroup[]).map((g) => ({
+    ...g,
+    people: g.people.map((p) => ({ ...p, photo: (teamPhotos as Record<string, string>)[p.name] ?? null })),
+  }));
 
 /** Link to a news item given its Italian slug: the English translation when one exists. */
 export function newsHref(lang: Locale, itSlug: string): string {

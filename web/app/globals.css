@@ -992,189 +992,6 @@ figure:has(.vp-tag) .vp-pubcap {
   }
 }
 
-/* growth charts (Chi siamo): bars with the mark's cut on the top corner, and the ranking as a
-   slope with the scale upside down. Both share the plot height, so their baselines align. */
-.vp-bars,
-.vp-slope {
-  position: relative;
-  height: clamp(14rem, 24vw, 20rem);
-  margin-top: 6.5rem;
-  margin-bottom: 2.75rem;
-}
-.vp-bars {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: clamp(1rem, 3vw, 2.5rem);
-  border-bottom: 1px solid var(--fg);
-}
-.vp-bars__col {
-  position: relative;
-  height: 100%;
-  transition: opacity 300ms var(--ease-move);
-}
-.vp-bars:hover .vp-bars__col:not(:hover) {
-  opacity: 0.35;
-}
-.vp-bars__bar {
-  --c: clamp(8px, 0.9vw, 12px);
-  position: absolute;
-  inset: auto auto 0 0;
-  /* thin marks: the bar takes part of its column, the rest is air */
-  width: min(100%, clamp(3.25rem, 6.5vw, 6.5rem));
-  height: var(--h);
-  background: var(--fg);
-  transform-origin: bottom;
-  /* the top-right corner cut at the angle of the brand stroke */
-  clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% calc(var(--c) / var(--slope)), 100% 100%, 0 100%);
-}
-.vp-bars__value {
-  position: absolute;
-  left: 0;
-  bottom: calc(var(--h) + 0.75rem);
-}
-.vp-bars__year,
-.vp-slope__year {
-  position: absolute;
-  top: calc(100% + 0.75rem);
-}
-.vp-bars__year {
-  left: 0;
-}
-.vp-slope {
-  margin-left: 2.75rem;
-}
-/* stacked on small screens the ranking needs no headroom for labels above it */
-@media (max-width: 63.99rem) {
-  .vp-slope {
-    margin-top: 3rem;
-  }
-}
-.vp-slope__tick {
-  position: absolute;
-  left: -2.75rem;
-  right: 0;
-  display: grid;
-  grid-template-columns: 2rem 1fr;
-  column-gap: 0.75rem;
-  align-items: center;
-  line-height: 1;
-  transform: translateY(-50%);
-}
-.vp-slope__tick::after {
-  content: "";
-  height: 1px;
-  background: var(--line);
-}
-.vp-slope__line {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.vp-slope__line line {
-  stroke: var(--fg);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-.vp-slope__point {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-.vp-slope__mark {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 1.1rem;
-  width: auto;
-  transform: translate(-50%, -50%);
-}
-.vp-slope__value {
-  position: absolute;
-  white-space: nowrap;
-  line-height: 1;
-}
-/* the first value sits left of its mark, clear of the line that leaves it to the right;
-   the last one stands above its mark */
-.vp-slope__point[data-side="start"] .vp-slope__value {
-  right: 1.1rem;
-  top: 0;
-  transform: translateY(-50%);
-}
-.vp-slope__point[data-side="end"] .vp-slope__value {
-  bottom: 1rem;
-  left: 0;
-  transform: translateX(-50%);
-}
-/* above the line, left of its midpoint: the line runs lower there, and the label never
-   reaches the right edge of a narrow plot */
-.vp-slope__climb {
-  position: absolute;
-  white-space: nowrap;
-  transform: translate(calc(-100% - 0.6rem), calc(-100% - 0.5rem));
-}
-.vp-slope__year {
-  transform: translateX(-50%);
-}
-/* the marks grow in as the figure enters the screen; static where scroll timelines are missing */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .vp-chart {
-      view-timeline: --vp-chart block;
-    }
-    .vp-bars__bar,
-    .vp-bars__value,
-    .vp-slope__line,
-    .vp-slope__point,
-    .vp-slope__climb {
-      animation: vp-grow linear both;
-      animation-timeline: --vp-chart;
-      animation-range: entry 30% entry 90%;
-    }
-    .vp-bars__col:nth-child(2) .vp-bars__bar {
-      animation-range: entry 38% entry 95%;
-    }
-    .vp-bars__col:nth-child(3) .vp-bars__bar {
-      animation-range: entry 46% entry 100%;
-    }
-    .vp-bars__value,
-    .vp-slope__climb {
-      animation-name: vp-appear;
-      animation-range: entry 75% entry 100%;
-    }
-    .vp-slope__line {
-      animation-name: vp-draw;
-    }
-    .vp-slope__point {
-      animation-name: vp-appear;
-      animation-range: entry 30% entry 45%;
-    }
-    .vp-slope__point + .vp-slope__point {
-      animation-range: entry 85% entry 100%;
-    }
-  }
-}
-@keyframes vp-grow {
-  from {
-    transform: scaleY(0);
-  }
-}
-@keyframes vp-appear {
-  from {
-    opacity: 0;
-  }
-}
-/* the line draws from the first year to the last (a dash offset is unreliable with non-scaling strokes) */
-@keyframes vp-draw {
-  from {
-    clip-path: inset(-10% 70% -10% 0);
-  }
-  to {
-    clip-path: inset(-10% 0 -10% 0);
-  }
-}
-
 /* Pre-hide elements that animate in (only when JS + motion are available) */
 /* opacity, not visibility: what waits for its entrance stays in the accessibility tree, so a
    screen reader finds every heading before it has been scrolled to */
@@ -1837,142 +1654,558 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* Chi siamo, six years as a staircase: one step a year, rising left to right. Each step
-     sits --rise lower than the next; its tread runs the full column, its riser climbs from
-     the previous tread. When the stair comes into view ([data-filled], see RevealScope "fill")
-     risers and treads draw in turn, the brand stroke on each tread fills, the words follow. */
-  .vp-stair {
-    --rise: clamp(1.75rem, 2.4vw, 2.6rem);
-    --pad: clamp(0.75rem, 1.5vw, 1.75rem);
-    --step: 300ms;
-    position: relative;
+  /* Chi siamo, the people of the group (components/about/TeamWall.tsx), on navy. Wide screens:
+     each person a stroke at the slope of the symbol (box = visible width --w plus the run),
+     the strokes overlapping by the run along a row and each row set one run further right, so
+     the wall is one large stroke. The free corners hold the team filter (top right) and the
+     caption (bottom left). Phones: a row of portraits to swipe for each team. */
+  .vp-team__filters,
+  .vp-wall,
+  .vp-team__who {
+    display: none;
+  }
+  .vp-wall__initials {
+    position: absolute;
+    inset: 0;
     display: grid;
-    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-    padding-top: 2.25rem; /* room for the stroke standing on the highest tread */
+    place-items: center;
+    font-size: var(--t-s);
+    font-weight: 300;
+    color: var(--fg-2);
   }
-  .vp-stair__step {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: calc((var(--n) - 1 - var(--i)) * var(--rise));
-    padding-right: var(--pad);
+  .vp-team__name {
+    font-size: var(--t-s);
+    font-weight: 300;
+    line-height: 1.15;
   }
-  .vp-stair__tread {
+  .vp-team__list {
+    /* the readable list stays for screen readers on small screens, where the row shows the names */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .vp-team__credits {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 3rem;
+    margin-top: 3rem;
+  }
+  .vp-team__row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(40vw, 11rem);
+    column-gap: var(--col-gap);
+    margin: 1rem calc(var(--gutter-x) * -1) 0;
+    padding-inline: var(--gutter-x);
+    scroll-padding-inline: var(--gutter-x);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .vp-team__row::-webkit-scrollbar {
+    display: none;
+  }
+  .vp-team__card {
+    scroll-snap-align: start;
+  }
+  .vp-team__photo {
     position: relative;
     display: block;
-    align-self: stretch;
-    height: 1.5rem;
-    margin-right: calc(var(--pad) * -1);
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--color-white) 8%, var(--color-navy));
+    clip-path: polygon(0 0, calc(100% - 1rem) 0, 100% calc(1rem / var(--slope)), 100% 100%, 0 100%);
   }
-  .vp-stair__tread::after,
-  .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    background: var(--fg);
+
+  @media (min-width: 64rem) {
+    .vp-team {
+      container-type: inline-size;
+    }
+    .vp-team__stage {
+      position: relative;
+    }
+    .vp-wall {
+      --gap: 0.25rem;
+      --w: calc((100cqi - (var(--cols) - 1) * var(--gap) - var(--rows) * var(--gap) * var(--slope)) / (var(--cols) + var(--rows) * 1.25 * var(--slope)));
+      --h: calc(var(--w) * 1.25);
+      --run: calc(var(--h) * var(--slope));
+      display: grid;
+      row-gap: var(--gap);
+    }
+    .vp-wall__row {
+      display: flex;
+      column-gap: var(--gap);
+      margin-left: calc(var(--r) * (var(--h) + var(--gap)) * var(--slope));
+    }
+    .vp-wall__tile {
+      position: relative;
+      flex: none;
+      width: calc(var(--w) + var(--run));
+      height: var(--h);
+      margin-right: calc(var(--run) * -1);
+      pointer-events: none;
+      transition: opacity 500ms var(--ease-move);
+    }
+    .vp-wall__cut {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      clip-path: polygon(0 0, calc(100% - var(--run)) 0, 100% 100%, var(--run) 100%);
+      background: color-mix(in srgb, var(--color-white) 8%, var(--color-navy));
+      pointer-events: auto;
+      transition:
+        opacity 700ms var(--ease-enter) calc((var(--r) * 2 + var(--c)) * 28ms),
+        translate 900ms var(--ease-enter) calc((var(--r) * 2 + var(--c)) * 28ms);
+    }
+    html.js-motion .vp-wall:not([data-seen]) .vp-wall__cut {
+      opacity: 0;
+      translate: calc(var(--run) * -0.4) 1.25rem;
+    }
+    /* the picture centred on the stroke at face height */
+    .vp-wall__img {
+      position: absolute;
+      inset: 0 0 0 calc(var(--run) * -0.3);
+    }
+    .vp-wall__img img {
+      filter: grayscale(1) contrast(1.05) brightness(0.92);
+      transition: filter 500ms var(--ease-move);
+    }
+    .vp-wall__cut::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--color-navy);
+      opacity: 0.42;
+      transition: opacity 500ms var(--ease-move);
+    }
+    .vp-wall__tile[data-on] .vp-wall__img img,
+    .vp-wall[data-team] .vp-wall__tile[data-lit] .vp-wall__img img {
+      filter: none;
+    }
+    .vp-wall__tile[data-on] .vp-wall__cut::after,
+    .vp-wall[data-team] .vp-wall__tile[data-lit] .vp-wall__cut::after {
+      opacity: 0;
+    }
+    .vp-wall[data-team] .vp-wall__tile:not([data-lit]):not(.vp-wall__tile--open) {
+      opacity: 0.22;
+    }
+    /* the places still to fill: outline strokes */
+    .vp-wall__tile--open svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+    .vp-wall__tile--open polygon {
+      fill: none;
+      stroke: color-mix(in srgb, var(--fg) 45%, transparent);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+    }
+    /* top right, the corner the slope leaves free: the teams */
+    .vp-team__filters {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+    .vp-team__filter {
+      padding: 0.2rem 0;
+      color: var(--fg-2);
+      cursor: pointer;
+      transition: color var(--dur-ui);
+    }
+    .vp-team__filter:hover,
+    .vp-team__filter[aria-pressed="true"] {
+      color: var(--fg);
+    }
+    .vp-team__filter[aria-pressed="true"] {
+      text-decoration: underline;
+      text-underline-offset: 0.3em;
+      text-decoration-thickness: 1px;
+    }
+    /* bottom left, the other free corner: who this is, or how many we are */
+    .vp-team__caption {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      display: grid;
+      width: calc(var(--rows) * 1.25 * var(--slope) * (100cqi / (var(--cols) + var(--rows) * 1.25 * var(--slope))) - 4rem);
+      pointer-events: none;
+    }
+    .vp-team__who,
+    .vp-team__summary {
+      grid-area: 1 / 1;
+      align-self: end;
+      transition: opacity 300ms var(--ease-move);
+    }
+    .vp-team__who {
+      display: block;
+      opacity: 0;
+    }
+    .vp-team__who[data-on] {
+      opacity: 1;
+    }
+    .vp-team__summary {
+      pointer-events: auto;
+    }
+    .vp-team__summary[data-off] {
+      opacity: 0;
+    }
+    .vp-team__credits {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      margin-top: 5rem;
+    }
+    .vp-team__team {
+      border-top: 1px solid var(--line);
+      padding-top: 1.25rem;
+      transition: opacity 400ms var(--ease-move);
+    }
+    .vp-team__team[data-dim] {
+      opacity: 0.4;
+    }
+    .vp-team__list {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+      white-space: normal;
+    }
+    .vp-team__credit {
+      padding: 0.15rem 0;
+      line-height: 1.35;
+    }
+    .vp-team__credit:hover .t-small {
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+      text-decoration-thickness: 1px;
+    }
+    .vp-team__row {
+      display: none;
+    }
   }
-  .vp-stair__tread::after {
-    right: 0;
+  @media (prefers-reduced-motion: reduce) {
+    .vp-wall__cut,
+    .vp-wall__tile,
+    .vp-wall__img img,
+    .vp-wall__cut::after {
+      transition: none;
+    }
+  }
+
+  /* Chi siamo, six years in figures (components/about/Chronicle.tsx). The stage holds still for
+     the run of the section and the scroll moves time: --t goes from 0 (first year) to n-1, set
+     by the component. Each year's step and figures take turns on the stage; in the chart a bar
+     or point fills as time reaches its year (--on, 0 → 1), the ranking line draws between its
+     two years, the cursor stands at the present. Outline turns into solid, never the reverse. */
+  .vp-chron {
+    position: relative;
+    height: calc(var(--n) * 50svh + 100svh);
+  }
+  .vp-chron__stage {
+    --t: 0;
+    position: sticky;
     top: 0;
-    height: 2px;
-    transform-origin: left;
-    transition: transform 420ms var(--ease-move) calc(var(--i) * var(--step) + 180ms);
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
   }
-  .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
-    top: 0;
-    width: 2px;
-    height: calc(var(--rise) + 2px);
-    transform-origin: bottom;
-    transition: transform 200ms var(--ease-move) calc(var(--i) * var(--step));
+  .vp-chron__grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 1.25rem;
+    padding-top: var(--header-h);
   }
-  .vp-stair__mark {
-    position: absolute;
-    left: 0;
-    bottom: calc(100% + 0.45rem);
-    height: 1.15rem;
-    color: var(--fg);
+  .vp-chron__year {
+    display: flex;
+    font-size: clamp(4.5rem, 1rem + 13vw, 15rem);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    margin-left: -0.05em;
   }
-  .vp-stair .vp-mark polygon {
-    transition-delay: calc(var(--d, 0) * var(--step) + 560ms);
+  .vp-chron__digit {
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
   }
-  .vp-stair__year {
-    font-size: clamp(2rem, 3.2vw, 3.4rem);
+  .vp-chron__strip {
+    display: flex;
+    flex-direction: column;
+    translate: 0 calc(var(--d) * -1em);
+    transition: translate 800ms var(--ease-move);
+  }
+  .vp-chron__strip > span {
+    height: 1em;
+  }
+  /* steps and readouts: all in the same cell, the one of the present in view */
+  .vp-chron__steps,
+  .vp-chron__readouts {
+    display: grid;
+  }
+  .vp-chron__step,
+  .vp-chron__readout {
+    grid-area: 1 / 1;
+    opacity: 0;
+    translate: 0 0.75rem;
+    pointer-events: none;
+    transition:
+      opacity 350ms var(--ease-move),
+      translate 350ms var(--ease-move);
+  }
+  .vp-chron__step[data-on],
+  .vp-chron__step:focus-within,
+  .vp-chron__readout[data-on] {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition:
+      opacity 600ms var(--ease-enter) 150ms,
+      translate 700ms var(--ease-enter) 150ms;
+  }
+  .vp-chron__text {
+    max-width: 28ch;
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+  .vp-chron__right {
+    display: grid;
+    row-gap: 1.5rem;
+  }
+  .vp-chron__readout {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem 1.5rem;
+    min-height: 6.5rem;
+  }
+  .vp-chron__figure {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+  .vp-chron__value {
+    font-size: var(--t-m);
     font-weight: 300;
     line-height: 1;
     letter-spacing: -0.03em;
   }
-  .vp-stair__text {
-    max-width: 24ch;
-    font-size: var(--t-small);
-    line-height: 1.5;
+  .vp-chron__unit {
+    font-size: 0.42em;
+    letter-spacing: 0;
   }
-  @media (min-width: 80rem) {
-    .vp-stair__text {
-      font-size: var(--t-body);
-    }
+  .vp-chron__note {
+    color: var(--fg-2);
   }
-  .vp-stair__step > :not(.vp-stair__tread) {
-    transition:
-      opacity 700ms var(--ease-enter) calc(var(--i) * var(--step) + 420ms),
-      translate 700ms var(--ease-enter) calc(var(--i) * var(--step) + 420ms);
+  /* the project of the year, cut on the slope of the symbol */
+  .vp-chron__picture {
+    position: relative;
+    display: block;
+    width: min(100%, 24rem);
+    height: 9rem;
+    background: var(--line);
+    clip-path: polygon(0 0, calc(100% - 9rem * var(--slope)) 0, 100% 100%, calc(9rem * var(--slope)) 100%);
   }
-  html.js-motion .vp-stair:not([data-filled]) .vp-stair__tread::after {
-    transform: scaleX(0);
+  .vp-chron__picture img {
+    scale: 1.08;
+    transition: scale 1400ms var(--ease-enter);
   }
-  html.js-motion .vp-stair:not([data-filled]) .vp-stair__tread::before {
-    transform: scaleY(0);
+  .vp-chron__readout[data-on] .vp-chron__picture img {
+    scale: 1;
   }
-  html.js-motion .vp-stair:not([data-filled]) .vp-stair__step > :not(.vp-stair__tread) {
-    opacity: 0;
-    translate: 0 0.5rem;
+
+  /* the chart: production over the ranking, one time axis (the rail) under both */
+  .vp-chron__chart {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1.3fr auto 1fr;
+    height: clamp(10rem, 26svh, 22rem);
   }
-  /* phones and tablets: the stair stands up into a rail down the page */
+  .vp-chron__track-title {
+    padding-bottom: 0.25rem;
+  }
+  .vp-chron__track-title + .vp-chron__bars + .vp-chron__track-title {
+    padding-top: 0.75rem;
+  }
+  .vp-chron__bars {
+    position: relative;
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-chron__bar,
+  .vp-chron__point {
+    --on: clamp(0, calc((var(--t) - var(--i)) * 3 + 1), 1);
+  }
+  .vp-chron__bar {
+    position: absolute;
+    bottom: 0;
+    width: calc(100% / var(--n) * 0.46);
+    height: calc(var(--h) * 78%);
+    translate: -50% 0;
+    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    border-bottom: 0;
+  }
+  .vp-chron__barfill {
+    position: absolute;
+    inset: -1px -1px 0;
+    background: var(--fg);
+    transform-origin: bottom;
+    scale: 1 var(--on);
+  }
+  .vp-chron__barvalue,
+  .vp-chron__pointvalue {
+    position: absolute;
+    opacity: var(--on);
+    white-space: nowrap;
+  }
+  .vp-chron__barvalue {
+    bottom: 100%;
+    left: 50%;
+    translate: -50% -0.3rem;
+  }
+  .vp-chron__rank {
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+  .vp-chron__rank svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .vp-chron__rankline {
+    stroke: var(--fg);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  /* the line draws as time runs from its first year to its second (a clip, not a dash offset:
+     dashes are unreliable with non-scaling strokes) */
+  .vp-chron__rank svg {
+    --draw: clamp(0, calc((var(--t) - var(--a)) / (var(--b) - var(--a))), 1);
+    clip-path: inset(-1rem calc(100% - (var(--xa) + (var(--xb) - var(--xa)) * var(--draw)) * 1%) -1rem 0);
+  }
+  .vp-chron__point {
+    position: absolute;
+    width: 0.8rem;
+    height: 0.8rem;
+    translate: -50% -50%;
+    border: 2px solid var(--fg);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--fg) calc(var(--on) * 100%), var(--bg));
+  }
+  .vp-chron__pointvalue {
+    left: calc(100% + 0.5rem);
+    top: 50%;
+    translate: 0 -50%;
+  }
+  /* the first point's value sits left of it, clear of the line that leaves it to the right */
+  .vp-chron__point[data-first] .vp-chron__pointvalue {
+    left: auto;
+    right: calc(100% + 0.5rem);
+  }
+  .vp-chron__scale {
+    position: absolute;
+    right: 0;
+    translate: 0 -50%;
+    color: var(--fg-2);
+  }
+  .vp-chron__cursor {
+    position: absolute;
+    top: 1.6rem;
+    bottom: 0;
+    left: calc((var(--t) + 0.5) / var(--n) * 100%);
+    width: 1px;
+    background: var(--fg);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  /* the rail: the time axis of the chart and the way to any year */
+  .vp-chron__rail {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    border-top: 1px solid var(--line);
+  }
+  .vp-chron__progress {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    height: 2px;
+    width: calc((var(--t) + 0.5) / var(--n) * 100%);
+    background: var(--fg);
+    pointer-events: none;
+  }
+  .vp-chron__tick {
+    min-height: 2.75rem;
+    padding-top: 0.6rem;
+    text-align: center;
+    cursor: pointer;
+    transition: color var(--dur-ui);
+  }
+  .vp-chron__tick:hover,
+  .vp-chron__tick[aria-current] {
+    color: var(--fg);
+  }
   @media (max-width: 63.99rem) {
-    .vp-stair {
-      --step: 160ms;
-      grid-template-columns: minmax(0, 1fr);
-      padding-top: 0;
-    }
-    .vp-stair__step {
-      padding: 0 0 2.75rem 2.75rem;
-    }
-    .vp-stair__step:last-child {
-      padding-bottom: 0;
-    }
-    .vp-stair__tread {
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 1.4rem;
-      height: auto;
-      margin: 0;
-    }
-    .vp-stair__tread::after {
+    .vp-chron__picture {
       display: none;
     }
-    .vp-stair__step .vp-stair__tread::before,
-    .vp-stair__step + .vp-stair__step .vp-stair__tread::before {
-      content: "";
-      position: absolute;
-      left: 0.6rem;
-      top: 1.75rem;
-      bottom: 0.25rem;
-      width: 2px;
-      height: auto;
-      background: var(--fg);
-      transform-origin: top;
+  }
+  @media (max-width: 30rem) {
+    .vp-chron__tick {
+      font-size: 0.75rem;
     }
-    .vp-stair__step:last-child .vp-stair__tread::before {
-      display: none;
+  }
+  @media (min-width: 64rem) {
+    .vp-chron__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      row-gap: 0;
+      align-items: end;
     }
-    .vp-stair__mark {
-      left: 0;
-      top: 0.35rem;
-      bottom: auto;
+    .vp-chron__left {
+      grid-column: 1 / span 5;
+      grid-row: 1 / span 2;
+      align-self: center;
     }
-    .vp-stair__text {
-      max-width: 34ch;
-      font-size: var(--t-body);
+    .vp-chron__right {
+      grid-column: 7 / span 6;
+      display: grid;
+      row-gap: 2.5rem;
+    }
+    .vp-chron__rail {
+      grid-column: 7 / span 6;
+    }
+    .vp-chron__text {
+      font-size: var(--t-s);
+    }
+    .vp-chron__readout {
+      min-height: 9rem;
+      gap: 1rem 3rem;
+    }
+    .vp-chron__value {
+      font-size: var(--t-l);
+    }
+    .vp-chron__chart {
+      height: clamp(14rem, 32svh, 22rem);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-chron__strip,
+    .vp-chron__step,
+    .vp-chron__readout,
+    .vp-chron__picture img {
+      transition: none;
     }
   }
 }
