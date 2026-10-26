@@ -1172,87 +1172,142 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* Home, the chain as a journey (components/home/Filiera.tsx). The stage, title included,
-     holds still for the run of the section; --t goes from 0 to n-1 with the scroll and carries
-     the panels sideways, one panel width (--pw) plus the gap per step, the next panel in view
-     on the right. Photographs whole and large, drifting a little against the movement; each
-     verb fills (--f, 0 → 1) as its panel arrives, the edge of the fill on the slope of the
-     symbol. The rail fills with the journey. */
+  /* Home, the chain on a split screen (components/home/Filiera.tsx). The stage holds still for
+     the run of the section; --t goes from 0 to n-1 with the scroll. Left: title, verbs filling in
+     turn (--f, the edge of the fill on the slope of the symbol), the words of the step. Right:
+     the photographs edge to edge, full height; each rises over the last like a curtain (--f),
+     settling from a slight zoom, while the ones below drift up; the step's fact is the caption. */
   .vp-fil {
     position: relative;
-    height: calc(var(--n) * 80svh + 100svh);
+    height: calc(var(--n) * 70svh + 100svh);
   }
   .vp-fil__stage {
     --t: 0;
-    --pw: 86vw;
-    --gap: 1.25rem;
     position: sticky;
     top: 0;
     height: 100svh;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding-top: var(--header-h);
     overflow: hidden;
   }
-  .vp-fil__head {
-    width: 100%;
-    margin-bottom: clamp(0.9rem, 2.6svh, 2rem);
-  }
-  .vp-fil__title {
-    max-width: 26ch;
-    font-size: var(--t-s);
-    font-weight: 300;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-  }
-  .vp-fil__track {
-    display: flex;
-    gap: var(--gap);
-    padding-left: var(--gutter-x);
-    translate: calc(var(--t) * -1 * (var(--pw) + var(--gap))) 0;
-    will-change: translate;
-  }
-  .vp-fil__panel {
-    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
+  /* phones and tablets: the photograph across the top, under the header */
+  .vp-fil__media {
+    position: relative;
     flex: none;
-    width: var(--pw);
+    height: clamp(11rem, 26svh, 20rem);
+    margin-top: var(--header-h);
+    overflow: hidden;
+    background: var(--color-navy);
+    color: var(--fg);
+  }
+  .vp-fil__pic {
+    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
+    position: absolute;
+    inset: 0;
+    /* rises from the bottom over the one before */
+    clip-path: inset(calc((1 - var(--f)) * 100%) 0 0 0);
+  }
+  .vp-fil__pic:first-child {
+    clip-path: none;
+  }
+  .vp-fil__pic img {
+    /* settles from a slight zoom as it rises; drifts up as the next one comes */
+    scale: calc(1.14 - var(--f) * 0.14);
+    translate: 0 calc(clamp(0, var(--t) - var(--i), 1) * -6%);
+  }
+  .vp-fil__media::after {
+    /* a navy veil at the foot, for the caption */
+    content: "";
+    position: absolute;
+    inset: 45% 0 0;
+    background: linear-gradient(to top, rgb(10 35 66 / 0.82), rgb(10 35 66 / 0));
+    pointer-events: none;
+  }
+  .vp-fil__count {
+    position: absolute;
+    top: 1rem;
+    right: var(--gutter-x);
+    z-index: 1;
+    color: var(--color-white);
+  }
+  .vp-fil__facts {
+    position: absolute;
+    left: var(--gutter-x);
+    right: var(--gutter-x);
+    bottom: clamp(0.9rem, 3svh, 2.25rem);
+    z-index: 1;
+    display: grid;
+  }
+  .vp-fil__fact {
+    grid-area: 1 / 1;
+    align-self: end;
+    opacity: 0;
+    translate: 0 0.6rem;
+    pointer-events: none;
+    transition:
+      opacity 300ms var(--ease-move),
+      translate 300ms var(--ease-move);
+  }
+  .vp-fil__fact[data-on],
+  .vp-fil__fact:focus-within {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition:
+      opacity 600ms var(--ease-enter) 200ms,
+      translate 700ms var(--ease-enter) 200ms;
+  }
+  .vp-fil__fig {
+    font-size: var(--t-m);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .vp-fil__factlabel {
+    max-width: 36rem;
+    color: color-mix(in srgb, var(--color-white) 82%, transparent);
+  }
+
+  .vp-fil__grid {
+    flex: 1;
+    width: 100%;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
+    align-content: center;
+    row-gap: clamp(0.8rem, 2.2svh, 1.75rem);
   }
-  .vp-fil__photo {
-    position: relative;
-    height: clamp(11rem, 28svh, 20rem);
-    overflow: hidden;
-    background: var(--line);
+  .vp-fil__head .t-label {
+    margin-bottom: 0.75rem;
   }
-  /* the photograph drifts against the movement */
-  .vp-fil__photo img {
-    scale: 1.12;
-    translate: calc((var(--t) - var(--i)) * 5%) 0;
+  .vp-fil__title {
+    max-width: 20ch;
+    text-wrap: balance;
   }
-  .vp-fil__body {
-    transition: opacity 500ms var(--ease-move);
-  }
-  .vp-fil__panel:not([data-on]):not(:focus-within) .vp-fil__body {
-    opacity: 0.35;
+  .vp-fil__verbs {
+    display: grid;
+    justify-items: start;
   }
   .vp-fil__verb {
+    --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
     display: flex;
     align-items: flex-start;
-    gap: 0.7rem;
+    gap: 0.8rem;
+    text-align: left;
+    cursor: pointer;
   }
   .vp-fil__num {
-    padding-top: 0.45em;
+    padding-top: 0.5em;
+    transition: color var(--dur-ui);
+  }
+  .vp-fil__verb[aria-current] .vp-fil__num {
+    color: var(--fg);
   }
   .vp-fil__word {
     position: relative;
     display: block;
-    font-size: clamp(2.3rem, 0.6rem + 4.4vw, 5.25rem);
+    font-size: clamp(2rem, 4.4svh, 2.6rem);
     font-weight: 300;
-    line-height: 1;
+    line-height: 1.04;
     letter-spacing: -0.04em;
     white-space: nowrap;
   }
@@ -1265,8 +1320,37 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     --lean: 0.62em;
     position: absolute;
     inset: 0;
-    color: var(--fg);
+    /* pale navy for the steps passed (3:1 and more on paper: large text), navy for the present */
+    color: color-mix(in srgb, var(--fg) 58%, var(--bg));
     clip-path: polygon(0 -10%, calc(var(--f) * (100% + var(--lean)) - var(--lean)) -10%, calc(var(--f) * (100% + var(--lean))) 110%, 0 110%);
+    transition: color 500ms var(--ease-move);
+  }
+  .vp-fil__verb[aria-current] .vp-fil__fill {
+    color: var(--fg);
+  }
+  .vp-fil__verb:hover .vp-fil__outline {
+    -webkit-text-stroke-width: 1.5px;
+  }
+  .vp-fil__steps {
+    display: grid;
+  }
+  .vp-fil__step {
+    grid-area: 1 / 1;
+    opacity: 0;
+    translate: 0 0.75rem;
+    pointer-events: none;
+    transition:
+      opacity 300ms var(--ease-move),
+      translate 300ms var(--ease-move);
+  }
+  .vp-fil__step[data-on],
+  .vp-fil__step:focus-within {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition:
+      opacity 600ms var(--ease-enter) 120ms,
+      translate 700ms var(--ease-enter) 120ms;
   }
   .vp-fil__text {
     max-width: 34ch;
@@ -1274,114 +1358,107 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     font-weight: 300;
     line-height: 1.35;
   }
-  .vp-fil__proof {
-    margin-top: 1rem;
-    padding-top: 0.9rem;
-    border-top: 1px solid var(--line);
-    max-width: 30rem;
-  }
-  .vp-fil__fig {
-    font-size: var(--t-m);
-    font-weight: 300;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
   .vp-fil__cta {
     margin-top: 1rem;
   }
-  /* the rail */
-  .vp-fil__rail {
-    position: relative;
-    display: grid;
-    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
-    margin-top: clamp(1rem, 3svh, 2.25rem);
-    border-top: 1px solid var(--line);
-  }
-  .vp-fil__progress {
-    position: absolute;
-    top: -1px;
-    left: 0;
-    height: 2px;
-    width: calc((var(--t) + 1) / var(--n) * 100%);
-    background: var(--fg);
-    pointer-events: none;
-  }
-  .vp-fil__stop {
-    min-height: 2.75rem;
-    padding-top: 0.6rem;
-    text-align: left;
-    cursor: pointer;
-    transition: color var(--dur-ui);
-  }
-  .vp-fil__stop:hover,
-  .vp-fil__stop[aria-current] {
-    color: var(--fg);
-  }
+  /* phones and tablets: the photograph is small, its caption is the figure alone */
   @media (max-width: 63.99rem) {
-    .vp-fil__proof .t-small:last-child {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+    .vp-fil__factlabel {
+      display: none;
     }
   }
-  /* short phones: everything a size down, the fact without its caption */
+  /* the smallest phones: no room for the title on the held stage (it stays for screen readers) */
+  @media (max-width: 63.99rem) and (max-height: 37rem) {
+    .vp-fil__head {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+  /* short phones: the photograph and the type a size down */
   @media (max-width: 63.99rem) and (max-height: 44rem) {
     .vp-fil__head .t-label {
       display: none;
     }
-    .vp-fil__title {
-      font-size: var(--t-body-l);
+    .vp-fil__media {
+      height: 26svh;
     }
-    .vp-fil__photo {
-      height: 24svh;
+    .vp-fil__fig {
+      font-size: var(--t-s);
+    }
+    .vp-fil__factlabel {
+      display: none;
     }
     .vp-fil__word {
-      font-size: 2.1rem;
+      font-size: 2rem;
     }
     .vp-fil__text {
       font-size: var(--t-body);
     }
-    .vp-fil__proof .t-small:last-child {
-      display: none;
-    }
-    .vp-fil__rail {
-      margin-top: 0.5rem;
-    }
-  }
-  /* the smallest phones keep the photograph, the words and the way in */
-  @media (max-width: 63.99rem) and (max-height: 37rem) {
-    .vp-fil__title,
-    .vp-fil__proof {
-      display: none;
-    }
-    .vp-fil__photo {
-      height: 22svh;
-    }
   }
   @media (min-width: 64rem) {
-    .vp-fil__stage {
-      --pw: 78vw;
-      --gap: 4vw;
+    /* the photograph takes the right half, edge to edge, top to bottom */
+    .vp-fil__media {
+      position: absolute;
+      /* under the header, so the menu never sits on the photograph */
+      top: var(--header-h);
+      bottom: 0;
+      left: 50%;
+      right: 0;
+      height: auto;
+      margin: 0;
     }
-    .vp-fil__title {
-      font-size: var(--t-m);
-      line-height: 1.08;
+    .vp-fil__count {
+      top: 1.25rem;
     }
-    .vp-fil__panel {
-      grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-      column-gap: clamp(2rem, 3.5vw, 4rem);
-      align-items: end;
+    .vp-fil__word {
+      font-size: clamp(2.6rem, 6.5svh, 4.6rem);
     }
-    .vp-fil__photo {
-      height: min(58svh, 38rem);
+    .vp-fil__facts {
+      left: clamp(2rem, 3.5vw, 3.5rem);
+      bottom: clamp(1.5rem, 5svh, 3.5rem);
+    }
+    .vp-fil__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      padding-top: var(--header-h);
+    }
+    .vp-fil__grid > * {
+      grid-column: 1 / span 5;
+    }
+    /* the title takes one column more: three lines instead of four */
+    .vp-fil__grid > .vp-fil__head {
+      grid-column: 1 / span 6;
     }
     .vp-fil__text {
       font-size: var(--t-s);
     }
   }
+  /* short laptops: the words a size down */
+  @media (min-width: 64rem) and (max-height: 50rem) {
+    .vp-fil__grid {
+      row-gap: 0.9rem;
+    }
+    .vp-fil__head .t-label {
+      margin-bottom: 0.4rem;
+    }
+    .vp-fil__text {
+      font-size: var(--t-body-l);
+    }
+    .vp-fil__cta {
+      margin-top: 0.5rem;
+    }
+    .vp-fil__verb .vp-fil__word {
+      font-size: clamp(2.4rem, 6svh, 4.6rem);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
-    .vp-fil__body {
+    .vp-fil__step,
+    .vp-fil__fact,
+    .vp-fil__fill {
       transition: none;
     }
   }
