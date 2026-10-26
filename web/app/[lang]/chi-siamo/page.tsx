@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Growth } from "@/components/about/Growth";
+import { Leadership } from "@/components/about/Leadership";
 import { Milestones } from "@/components/about/Milestones";
 import { TeamTabs } from "@/components/about/TeamTabs";
-import { Mark } from "@/components/marks/Mark";
 import { PageHero } from "@/components/ui/PageHero";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
@@ -112,30 +112,11 @@ export default async function AboutPage() {
           <h2 id="leadership-title" className="t-l" data-reveal="lines">
             {a.leadershipTitle}
           </h2>
-          <div className="mt-16 grid gap-x-[var(--col-gap)] gap-y-14 lg:mt-20 lg:grid-cols-3">
-            {columns.map(({ e, people: ps }) => (
-              <div key={e.key} className="flex flex-col border-t border-[var(--line)] pt-6" data-reveal="fade">
-                <p className="t-label">{e.kind}</p>
-                <p className="t-m mt-2">{e.name}</p>
-                <ul className="mt-8 grid gap-4">
-                  {ps.map((p) => (
-                    <li key={p.name} className="flex items-baseline gap-3">
-                      <Mark className="translate-y-[0.06em]" />
-                      <span>
-                        <span className="t-body block">{p.name}</span>
-                        <span className="t-label block">{p.role}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                {e.href ? (
-                  <a href={e.href} target="_blank" rel="noopener noreferrer" className="vp-ulink t-small mt-8 self-start">
-                    {e.linkLabel} <span aria-hidden="true">↗</span>
-                    <span className="sr-only"> ({t.ui.externalNew})</span>
-                  </a>
-                ) : null}
-              </div>
-            ))}
+          <div className="mt-16 lg:mt-20">
+            <Leadership
+              groups={columns.map(({ e, people: ps }) => ({ key: e.key, name: e.name, kind: e.kind, href: e.href || undefined, linkLabel: e.linkLabel, people: ps }))}
+              externalNote={t.ui.externalNew}
+            />
           </div>
         </div>
       </section>
