@@ -6,7 +6,7 @@ Per rigenerare: copiare gli originali in una cartella e lanciare `python3 -I too
 
 ### `about-team-site.jpg` — Chi siamo, apertura
 - **Soggetto:** foto del gruppo, fornita dal gruppo: tre persone in giacca in un edificio da riqualificare.
-- **Origine:** materiale del gruppo (non stock), 800 × 534 px; trattata come le altre foto su richiesta del gruppo. Originale in `assets/group/about-team-site.jpg`. Per l'uso a tutta larghezza serve un file più grande (almeno 2400 px).
+- **Origine:** materiale del gruppo (non stock), 800 × 534 px, originale in `assets/group/original/about-team-site.jpg`. Allargata ai lati con il riempimento generativo di Adobe (Photoshop «Generative Expand», 240 px per lato) fino al formato 21:9 della pagina, portata a 1920 px e trattata come le altre foto. Le tre persone e l'ambiente centrale sono quelli dello scatto; i bordi sono ricostruiti. Con un file originale più grande (almeno 2400 px) si rifà da quello.
 
 ### `careers-team-plans.jpg` — Lavora con noi, apertura
 - **Soggetto:** tre tecnici studiano un disegno di progetto in cantiere.
