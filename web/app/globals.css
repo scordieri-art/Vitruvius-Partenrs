@@ -1693,6 +1693,16 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     row-gap: 3rem;
     margin-top: 3rem;
   }
+  /* on phones the line is the team's heading over its row */
+  .vp-team__toggle {
+    font-size: var(--t-label);
+    line-height: 1.4;
+    color: var(--fg-2);
+    text-align: left;
+  }
+  .vp-team__more {
+    display: none;
+  }
   .vp-team__row {
     display: grid;
     grid-auto-flow: column;
@@ -1859,30 +1869,77 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     .vp-team__summary[data-off] {
       opacity: 0;
     }
+    /* one line per team; the chosen one unfolds its names in four columns */
     .vp-team__credits {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: var(--col-gap);
-      margin-top: 5rem;
+      row-gap: 0;
+      margin-top: 4.5rem;
     }
     .vp-team__team {
       border-top: 1px solid var(--line);
-      padding-top: 1.25rem;
-      transition: opacity 400ms var(--ease-move);
     }
-    .vp-team__team[data-dim] {
-      opacity: 0.4;
+    .vp-team__team:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+    .vp-team__toggle {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 2rem;
+      padding: 1.35rem 0;
+      font-size: var(--t-s);
+      font-weight: 300;
+      line-height: 1.2;
+      color: var(--fg);
+      text-align: left;
+      cursor: pointer;
+    }
+    .vp-team__more {
+      display: inline;
+      color: var(--fg-2);
+      transition: color var(--dur-ui);
+    }
+    .vp-team__toggle:hover .vp-team__more,
+    .vp-team__team[data-open] .vp-team__more {
+      color: var(--fg);
+    }
+    .vp-team__panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      visibility: hidden;
+      transition:
+        grid-template-rows 550ms var(--ease-move),
+        visibility 0s 550ms;
+    }
+    .vp-team__team[data-open] .vp-team__panel {
+      grid-template-rows: 1fr;
+      visibility: visible;
+      transition: grid-template-rows 700ms var(--ease-enter);
     }
     .vp-team__list {
       position: static;
       width: auto;
       height: auto;
-      overflow: visible;
+      min-height: 0;
+      overflow: hidden;
       clip-path: none;
       white-space: normal;
+      columns: 4;
+      column-gap: var(--col-gap);
+    }
+    .vp-team__list::after {
+      /* room under the last names, inside the fold */
+      content: "";
+      display: block;
+      height: 2rem;
     }
     .vp-team__credit {
-      padding: 0.15rem 0;
+      break-inside: avoid;
+      padding: 0.35rem 0;
       line-height: 1.35;
+    }
+    .vp-team__credit .t-label {
+      display: block;
     }
     .vp-team__credit:hover .t-small {
       text-decoration: underline;
@@ -1894,6 +1951,8 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
   @media (prefers-reduced-motion: reduce) {
+    .vp-team__panel,
+    .vp-team__team[data-open] .vp-team__panel,
     .vp-wall__cut,
     .vp-wall__tile,
     .vp-wall__img img,

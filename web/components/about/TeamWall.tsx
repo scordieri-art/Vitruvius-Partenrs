@@ -6,7 +6,7 @@ import { TLink } from "@/components/layout/PageTransition";
 
 type Person = { name: string; role: string; unit?: string | null; photo?: string | null };
 type Team = { key: string; label: string; count: string; people: Person[] };
-type Copy = { all: string; summary: string; careers: { href: string; label: string } };
+type Copy = { all: string; summary: string; show: string; hide: string; careers: { href: string; label: string } };
 
 const COLS = 12;
 // the run of a stroke as a share of its box: the box is the visible width w plus the run,
@@ -29,14 +29,18 @@ const roleOf = (p: Person) => (p.unit ? `${p.role} · ${p.unit}` : p.role);
  * is the mark. Portraits in navy duotone; pointing at one brings it into colour and names it in
  * the corner the slope leaves free; choosing a team lights its people and dims the rest. The
  * slots left after the last person are outline strokes, the places still to fill, next to the
- * link to the open positions. Under the wall, the names as credits, team by team: the readable
- * list (the wall repeats it for the eye). On phones each team is a row of portraits to swipe.
+ * link to the open positions. Under the wall, one line per team: opening it (or choosing the team
+ * above) lights the team in the wall and unfolds its names and roles. Pointing at a team above
+ * only previews it in the wall. On phones each team is a row of portraits to swipe.
  */
 export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
   const people = teams.flatMap((t, ti) => t.people.map((p) => ({ ...p, team: ti })));
   const slots = Math.ceil((people.length + 1) / COLS) * COLS;
   const rows = slots / COLS;
+  // team: the one chosen (its names unfold below); peek: the one pointed at in the filter
   const [team, setTeam] = useState<number | null>(null);
+  const [peek, setPeek] = useState<number | null | undefined>(undefined);
+  const lit = peek !== undefined ? peek : team;
   const [person, setPerson] = useState<number | null>(null);
   const [seen, setSeen] = useState(false);
   const wall = useRef<HTMLDivElement>(null);
@@ -64,7 +68,7 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
     <div className="vp-team" style={{ "--cols": COLS, "--rows": rows } as CSSProperties}>
       <div className="vp-team__stage">
         {/* wide screens: choose a team */}
-        <div className="vp-team__filters" role="group" aria-label={copy.summary}>
+        <div className="vp-team__filters" role="group" aria-label={copy.summary} onPointerLeave={() => setPeek(undefined)}>
           {[null, ...teams.map((_, i) => i)].map((i) => (
             <button
               key={i ?? "all"}
@@ -72,7 +76,7 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
               className="vp-team__filter t-small"
               aria-pressed={team === i}
               onClick={() => setTeam(i)}
-              onPointerEnter={() => setTeam(i)}
+              onPointerEnter={() => setPeek(i)}
             >
               {i === null ? copy.all : teams[i].label}
               <span className="t-label t-num"> {i === null ? people.length : teams[i].people.length}</span>
@@ -81,7 +85,7 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
         </div>
 
         {/* the wall: a visual echo of the credits below */}
-        <div ref={wall} className="vp-wall" data-seen={seen ? "" : undefined} data-team={team ?? undefined} aria-hidden="true" onPointerLeave={() => setPerson(null)}>
+        <div ref={wall} className="vp-wall" data-seen={seen ? "" : undefined} data-team={lit ?? undefined} aria-hidden="true" onPointerLeave={() => setPerson(null)}>
           {Array.from({ length: rows }, (_, r) => (
             <div key={r} className="vp-wall__row" style={{ "--r": r } as CSSProperties}>
               {Array.from({ length: COLS }, (_, c) => {
@@ -102,7 +106,7 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
                     className="vp-wall__tile"
                     style={style}
                     data-on={person === i ? "" : undefined}
-                    data-lit={team === null || team === p.team ? "" : undefined}
+                    data-lit={lit === null || lit === p.team ? "" : undefined}
                     onPointerEnter={() => setPerson(i)}
                   >
                     <span className="vp-wall__cut">
@@ -136,27 +140,33 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
             </TLink>
           </div>
         </div>
-
       </div>
 
-      {/* the credits, team by team */}
+      {/* one line per team, its names unfolding */}
       <div className="vp-team__credits">
         {teams.map((t, ti) => (
-          <section key={t.key} id={t.key} className="vp-team__team" aria-labelledby={`team-${t.key}`} data-dim={team !== null && team !== ti ? "" : undefined}>
-            <h3 id={`team-${t.key}`} className="t-label vp-team__teamname">
-              {t.label} <span className="t-num">· {t.count}</span>
+          <section key={t.key} id={t.key} className="vp-team__team" aria-labelledby={`team-${t.key}`} data-open={team === ti ? "" : undefined}>
+            <h3 id={`team-${t.key}`} className="vp-team__teamname">
+              <button type="button" className="vp-team__toggle" aria-expanded={team === ti} aria-controls={`names-${t.key}`} onClick={() => setTeam(team === ti ? null : ti)}>
+                <span>
+                  {t.label} <span className="t-num">· {t.count}</span>
+                </span>
+                <span className="vp-team__more t-small">{team === ti ? `${copy.hide} −` : `${copy.show} +`}</span>
+              </button>
             </h3>
-            <ul className="vp-team__list mt-4">
-              {t.people.map((p) => {
-                const i = people.findIndex((x) => x.name === p.name);
-                return (
-                  <li key={p.name} className="vp-team__credit" onPointerEnter={() => setPerson(i)} onPointerLeave={() => setPerson(null)}>
-                    <span className="t-small">{p.name}</span>
-                    <span className="t-label"> {roleOf(p)}</span>
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="vp-team__panel" id={`names-${t.key}`}>
+              <ul className="vp-team__list">
+                {t.people.map((p) => {
+                  const i = people.findIndex((x) => x.name === p.name);
+                  return (
+                    <li key={p.name} className="vp-team__credit" onPointerEnter={() => setPerson(i)} onPointerLeave={() => setPerson(null)}>
+                      <span className="t-small">{p.name}</span>
+                      <span className="t-label"> {roleOf(p)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
             {/* phones and tablets: the team's portraits to swipe */}
             <ul className="vp-team__row" aria-hidden="true">
               {t.people.map((p) => (

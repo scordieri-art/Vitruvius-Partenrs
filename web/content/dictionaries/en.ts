@@ -247,6 +247,8 @@ const en: Dictionary = {
     },
     teamAll: "All",
     teamSummary: "{n} people in {d} teams.",
+    teamShow: "See the names",
+    teamHide: "Close",
     teamCareers: "Open positions",
     credentialsLabel: "Qualifications and rankings",
     credentialsTitle: "External checks.",

@@ -240,6 +240,8 @@ const it = {
     },
     teamAll: "Tutti",
     teamSummary: "{n} persone in {d} squadre.",
+    teamShow: "Vedi i nomi",
+    teamHide: "Chiudi",
     teamCareers: "Le posizioni aperte",
     credentialsLabel: "Qualifiche e classifiche",
     credentialsTitle: "Le verifiche esterne.",

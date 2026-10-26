@@ -187,6 +187,8 @@ export default async function AboutPage() {
             }))}
             copy={{
               all: a.teamAll,
+              show: a.teamShow,
+              hide: a.teamHide,
               summary: a.teamSummary.replace("{n}", String(staffCount)).replace("{d}", String(staff.length)),
               careers: { href: href(lang, "careers"), label: a.teamCareers },
             }}
