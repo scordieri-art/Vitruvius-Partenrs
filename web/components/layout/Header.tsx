@@ -33,6 +33,8 @@ export function Header({
   const navigate = useTransitionNavigate();
   const [dark, setDark] = useState(false);
   const [hidden, setHidden] = useState(false);
+  // at the very top of the page (the home page shows the logo large there)
+  const [top, setTop] = useState(true);
   const [open, setOpen] = useState(false);
   const [altHref, setAltHref] = useState(lang === "it" ? "/en" : "/");
   const header = useRef<HTMLElement>(null);
@@ -62,6 +64,7 @@ export function Header({
       const themed = els.find((el) => !header.current?.contains(el) && el.closest("[data-theme]"));
       const theme = themed?.closest<HTMLElement>("[data-theme]")?.dataset.theme;
       setDark(theme === "navy" || theme === "ink");
+      setTop(y < 40);
       if (!open) {
         if (y > 120 && y > last + 2) setHidden(true);
         else if (y < last - 2) setHidden(false);
@@ -118,6 +121,7 @@ export function Header({
   const isActive = (href: string) => hydrated && href !== homeHref && pathname.startsWith(href);
   const onLatest = hydrated && pathname.startsWith(latest.href);
   const onDark = dark || open;
+  const bigLogo = hydrated && pathname === homeHref && top && !open;
 
   return (
     <>
@@ -140,7 +144,11 @@ export function Header({
       >
         <div className="container-x flex h-[var(--header-h)] items-center justify-between pt-[env(safe-area-inset-top,0px)]">
           <TLink href={homeHref} aria-label={`Vitruvius & Partners — ${labels.home}`} className="relative z-10 block py-3" transitionLabel="Vitruvius & Partners">
-            <Logo variant={onDark ? "white" : "color"} className="h-auto w-[min(220px,58vw)]" decorative />
+            <Logo
+              variant={onDark ? "white" : "color"}
+              className={`h-auto transition-[width] duration-500 ease-[var(--ease-move)] ${bigLogo ? "w-[min(380px,calc(100vw-2*var(--gutter-x)-7.5rem))] lg:w-[min(380px,calc(100vw-2*var(--gutter-x)-38rem))]" : "w-[min(220px,58vw)]"}`}
+              decorative
+            />
           </TLink>
 
           <nav aria-label={labels.mainNav} className="hidden items-center gap-8 lg:flex">

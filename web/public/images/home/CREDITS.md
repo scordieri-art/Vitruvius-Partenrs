@@ -22,8 +22,8 @@ La serie è scelta su un filo comune: sole caldo, intonaci ocra e terracotta, un
 - **Autore / fonte:** heino eisner — https://unsplash.com/photos/ew8VnpgX9UI
 
 ### `home-vp-rooftops.jpg` — Sviluppare (Vitruvius & Partners)
-- **Soggetto:** tetti in coppi e campanili di una città italiana, dall'alto.
-- **Autore / fonte:** Simon Hurry — https://unsplash.com/photos/t7RADIlnhsI
+- **Soggetto:** tetti e palazzi di Vignola (Modena) dall'alto, cielo azzurro; la sorgente è ritagliata in alto per togliere parte del cielo.
+- **Autore / fonte:** Bernardo Ferrari — https://unsplash.com/photos/8voIGiwgGJ4
 
 ### `home-construction-scaffolding.jpg` — Costruire (Vitruvius Construction)
 - **Soggetto:** ponteggio su una facciata residenziale in lavorazione, cielo azzurro.
