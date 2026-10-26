@@ -1399,18 +1399,348 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     will-change: transform;
   }
 
-  /* news archive rows: reading size on phones, display size on wide screens */
-  .vp-newsrow__title {
-    font-size: var(--t-body-l);
-    font-weight: 300;
-    line-height: 1.35;
-    letter-spacing: -0.008em;
+  /* News, the archive as a cabinet (components/sections/NewsCabinet.tsx): one drawer a year.
+     Above each front, the tabs of its index cards show a little of themselves, one per article,
+     and lift out when the drawer is pointed at; the open drawer turns navy and its cards rise
+     into a grid ruled in navy, one after another. */
+  .vp-cab__tools {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .vp-cab__right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem 1.5rem;
+  }
+  .vp-cab__right .vp-search {
+    flex: 1 1 14rem;
+  }
+  .vp-cab__random {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.1rem;
+    border: 1px solid var(--fg);
+    color: var(--fg);
+    cursor: pointer;
+    transition:
+      background-color var(--dur-ui),
+      color var(--dur-ui);
+  }
+  .vp-cab__random:hover {
+    background: var(--fg);
+    color: var(--bg);
+  }
+  .vp-cab__random:disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .vp-cab__dice svg {
+    display: block;
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    transition: rotate 600ms var(--ease-move);
+  }
+  .vp-cab__random:hover .vp-cab__dice svg,
+  .vp-cab__random:active .vp-cab__dice svg {
+    rotate: 180deg;
   }
   @media (min-width: 64rem) {
-    .vp-newsrow__title {
+    .vp-cab__tools {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .vp-cab__right {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .vp-drawer {
+    --zone: 1.6rem;
+    position: relative;
+    padding-top: var(--zone);
+  }
+  .vp-drawer + .vp-drawer {
+    margin-top: -1px;
+  }
+  /* the cards' tabs: a sliver at rest, lifted when the drawer is pointed at */
+  .vp-drawer__tabs {
+    position: absolute;
+    left: 1rem;
+    right: 1rem;
+    top: 0;
+    height: var(--zone);
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .vp-drawer__tab {
+    --t: 1.35rem;
+    position: absolute;
+    bottom: 0;
+    left: var(--x);
+    width: clamp(2.2rem, 6%, 4.5rem);
+    height: var(--t);
+    background: color-mix(in srgb, var(--fg) 16%, var(--bg));
+    clip-path: polygon(0 0, calc(100% - var(--t) * var(--slope)) 0, 100% 100%, 0 100%);
+    translate: 0 calc(100% - 0.3rem);
+    transition: translate 420ms var(--ease-move) calc(var(--i) * 18ms);
+  }
+  .vp-drawer__tab:nth-child(3n + 1) {
+    --t: 1.15rem;
+  }
+  .vp-drawer__tab:nth-child(4n + 2) {
+    --t: 1.5rem;
+  }
+  .vp-drawer__tab:not([data-in]),
+  .vp-drawer[data-open] .vp-drawer__tab {
+    translate: 0 110%;
+  }
+  .vp-drawer:not([data-open]):not([data-empty]):hover .vp-drawer__tab[data-in],
+  .vp-drawer:not([data-open]):has(.vp-drawer__front:focus-visible) .vp-drawer__tab[data-in] {
+    translate: 0 0;
+  }
+
+  /* the front: a ruled panel with a label holder, the brand stroke for a pull, the count */
+  .vp-drawer__front {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    min-height: clamp(6rem, 9vw, 8.5rem);
+    padding: 0 clamp(1rem, 2.5vw, 2rem);
+    text-align: left;
+    background: var(--surface);
+    color: var(--fg);
+    border: 1px solid var(--fg);
+    cursor: pointer;
+    transition:
+      background-color 500ms var(--ease-move),
+      color 500ms var(--ease-move),
+      box-shadow 500ms var(--ease-move),
+      scale 500ms var(--ease-move);
+  }
+  .vp-drawer__front::before {
+    content: "";
+    position: absolute;
+    inset: 0.45rem;
+    border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+    pointer-events: none;
+  }
+  .vp-drawer:not([data-open]):not([data-empty]) .vp-drawer__front:hover {
+    scale: 1.004;
+    box-shadow: 0 1.4rem 1.6rem -1.2rem rgb(10 35 66 / 0.35);
+  }
+  /* pulled: the front comes a little towards the visitor, then settles */
+  .vp-drawer[data-open] .vp-drawer__front {
+    animation: vp-drawer-pull 700ms var(--ease-move);
+  }
+  @keyframes vp-drawer-pull {
+    40% {
+      scale: 1.012;
+      translate: 0 0.35rem;
+    }
+  }
+  .vp-drawer[data-open] .vp-drawer__front {
+    --fg-2: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    background: var(--color-navy);
+    color: var(--color-white);
+    box-shadow: 0 1.6rem 2rem -1.4rem rgb(10 35 66 / 0.45);
+  }
+  .vp-drawer[data-empty] .vp-drawer__front {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .vp-drawer__holder {
+    display: grid;
+    justify-items: start;
+    gap: 0.2rem;
+  }
+  .vp-drawer__year {
+    font-size: var(--t-l);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+  }
+  .vp-drawer__pull {
+    display: none;
+    width: clamp(4rem, 7vw, 6.5rem);
+    height: 0.8rem;
+    background: currentColor;
+    clip-path: polygon(0 0, calc(100% - 0.8rem * var(--slope)) 0, 100% 100%, calc(0.8rem * var(--slope)) 100%);
+    transition: translate 500ms var(--ease-move);
+  }
+  .vp-drawer__front:hover .vp-drawer__pull {
+    translate: 0 0.2rem;
+  }
+  .vp-drawer__meta {
+    display: grid;
+    justify-items: end;
+    gap: 0.3rem;
+    text-align: right;
+  }
+  @media (min-width: 40rem) {
+    .vp-drawer__front {
+      grid-template-columns: 1fr auto 1fr;
+    }
+    .vp-drawer__pull {
+      display: block;
+    }
+  }
+
+  /* the inside: cards in a grid ruled in navy, rising in turn when the drawer opens */
+  .vp-drawer__body {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition:
+      grid-template-rows 600ms var(--ease-move),
+      visibility 0s 600ms;
+  }
+  .vp-drawer[data-open] .vp-drawer__body {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows 800ms var(--ease-enter);
+  }
+  /* a box ruled in navy: each card draws its right and bottom rule, the box closes the edges */
+  .vp-drawer__cards {
+    min-height: 0;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border: 1px solid var(--fg);
+    border-top: 0;
+  }
+  .vp-drawer[data-open] .vp-drawer__cards {
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .vp-card {
+    box-shadow:
+      1px 0 0 var(--fg),
+      0 1px 0 var(--fg);
+  }
+  .vp-drawer[data-open] .vp-card {
+    animation: vp-card-rise 750ms var(--ease-enter) both;
+    animation-delay: calc(150ms + var(--i) * 70ms);
+  }
+  .vp-card__link {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    height: 100%;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    transition: background-color var(--dur-ui);
+  }
+  .vp-card__link:hover {
+    background: color-mix(in srgb, var(--fg) 4%, var(--bg));
+  }
+  .vp-card__pic {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--line);
+  }
+  .vp-card__tag {
+    justify-self: start;
+    margin-top: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border: 1px solid currentColor;
+    color: var(--fg);
+  }
+  .vp-card__title {
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+  .vp-card__foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.4rem;
+  }
+  .vp-card[data-picked] .vp-card__link {
+    animation: vp-card-pick 2.4s var(--ease-move);
+  }
+  @keyframes vp-card-rise {
+    from {
+      opacity: 0;
+      translate: 0 2.5rem;
+    }
+  }
+  @keyframes vp-card-pick {
+    0%,
+    60% {
+      background: color-mix(in srgb, var(--fg) 12%, var(--bg));
+      box-shadow: inset 0 0 0 2px var(--fg);
+    }
+  }
+  @media (min-width: 40rem) {
+    .vp-drawer__cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .vp-drawer__cards[data-lead2="2"] > .vp-card:first-child {
+      grid-column: span 2;
+    }
+  }
+  @media (min-width: 64rem) {
+    .vp-drawer__cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .vp-drawer__cards[data-lead2="2"] > .vp-card:first-child {
+      grid-column: auto;
+    }
+    .vp-drawer__cards[data-lead3="2"] > .vp-card:first-child {
+      grid-column: span 2;
+    }
+    .vp-drawer__cards[data-lead3="3"] > .vp-card:first-child {
+      grid-column: span 3;
+    }
+    /* the wide first card: picture beside the words */
+    .vp-drawer__cards:is([data-lead3="2"], [data-lead3="3"]) > .vp-card:first-child .vp-card__link {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      grid-template-rows: auto auto 1fr auto;
+      column-gap: clamp(1.5rem, 3vw, 3rem);
+    }
+    .vp-drawer__cards:is([data-lead3="2"], [data-lead3="3"]) > .vp-card:first-child .vp-card__pic {
+      grid-row: 1 / -1;
+      aspect-ratio: 16 / 10;
+    }
+    .vp-drawer__cards:is([data-lead3="2"], [data-lead3="3"]) > .vp-card:first-child .vp-card__title {
       font-size: var(--t-s);
+    }
+    .vp-card__title {
+      font-size: clamp(1.3rem, 0.9rem + 0.7vw, 1.7rem);
       line-height: 1.2;
-      letter-spacing: -0.012em;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-drawer__tab,
+    .vp-drawer__front,
+    .vp-drawer__body,
+    .vp-drawer[data-open] .vp-drawer__body {
+      transition: none;
+    }
+    .vp-drawer[data-open] .vp-card,
+    .vp-drawer[data-open] .vp-drawer__front,
+    .vp-card[data-picked] .vp-card__link {
+      animation: none;
+    }
+    .vp-card[data-picked] .vp-card__link {
+      box-shadow: inset 0 0 0 2px var(--fg);
     }
   }
 

@@ -267,11 +267,12 @@ const it = {
   newsPage: {
     label: "News & Press",
     title: "Notizie, rassegna stampa, iniziative.",
-    count: (n: number) => `${n} articoli`,
+    count: (n: number) => (n === 1 ? "1 articolo" : `${n} articoli`),
     related: "Altre news",
     years: "Anni",
     latest: "In evidenza",
     archive: "Archivio",
+    cabinet: { drawer: "Cassetto", open: "Apri", close: "Chiudi", random: "Pesca a caso" },
     filters: {
       label: "Filtra le news",
       all: "Tutte",

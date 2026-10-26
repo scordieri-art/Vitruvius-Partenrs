@@ -274,10 +274,11 @@ const en: Dictionary = {
   newsPage: {
     label: "News & Press",
     title: "News, press coverage, initiatives.",
-    count: (n: number) => `${n} articles`,
+    count: (n: number) => (n === 1 ? "1 article" : `${n} articles`),
     related: "More news",
     latest: "Latest",
     archive: "Archive",
+    cabinet: { drawer: "Drawer", open: "Open", close: "Close", random: "Pick one at random" },
     filters: {
       label: "Filter the news",
       all: "All",
