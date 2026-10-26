@@ -4,7 +4,7 @@ import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
 import { Filiera, type Step } from "@/components/home/Filiera";
 import { Counters } from "@/components/home/Counters";
-import { ProjectRail } from "@/components/home/ProjectRail";
+import { OperationStack } from "@/components/home/OperationStack";
 import { ContactBand } from "@/components/home/ContactBand";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
@@ -145,58 +145,98 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Projects */}
+      {/* Projects: a stack of dossiers */}
       <section id="progetti" data-theme="paper" aria-labelledby="projects-title" className="py-[var(--section-y)]">
-        <ProjectRail
-          intro={
-            <div className="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
-              <div>
-                <p className="t-label mb-5 flex justify-between gap-6" data-reveal="fade">
-                  <span>{h.projects.label}</span>
-                  <span className="lg:hidden" aria-hidden="true">
-                    {h.projects.swipe} →
+        <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)] flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+          <div>
+            <p className="t-label mb-5" data-reveal="fade">
+              {h.projects.label}
+            </p>
+            <h2 id="projects-title" className="t-l max-w-[14ch]" data-reveal="lines">
+              {h.projects.title}
+            </h2>
+          </div>
+          <div className="flex flex-col items-start gap-2 lg:items-end" data-reveal="fade">
+            <p className="t-body-l hidden text-[var(--fg-2)] lg:block">{h.projects.lead}</p>
+            <Cta href={href(lang, "projects")} transitionLabel={t.meta.titles.projects}>
+              {h.projects.cta}
+            </Cta>
+          </div>
+        </div>
+        <OperationStack label={h.projects.title}>
+          {projects.map((p, i) => (
+            <TLink
+              key={p.slug.it}
+              href={href(lang, "projects", p.slug[lang])}
+              transitionLabel={p.name}
+              className="vp-op group"
+              morph={!lowRes(p)}
+              data-theme="navy"
+            >
+              {/* the tab: what stays in view when the next dossier covers this one */}
+              <p className="vp-op__tab t-label t-num">
+                <span>
+                  {String(i + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}
+                  <span className="vp-op__tabname" aria-hidden="true">
+                    {" "}
+                    · {p.name}
                   </span>
-                </p>
-                <h2 id="projects-title" className="t-l max-w-[14ch]" data-reveal="lines">
-                  {h.projects.title}
-                </h2>
-              </div>
-              <div className="flex flex-col items-start gap-2 lg:items-end" data-reveal="fade">
-                <p className="t-body-l hidden text-[var(--fg-2)] lg:block">{h.projects.lead}</p>
-                <Cta href={href(lang, "projects")} transitionLabel={t.meta.titles.projects}>
-                  {h.projects.cta}
-                </Cta>
-              </div>
-            </div>
-          }
-        >
-          {projects.map((p) => (
-            <TLink key={p.slug.it} href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className="vp-card group block" morph={!lowRes(p)}>
-              <ProjectImage
-                p={p}
-                lang={lang}
-                label={h.projects.placeholder}
-                sizes="(min-width: 1024px) 31vw, 78vw"
-                className="aspect-[4/3] lg:aspect-[4/5]"
-                imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
-                hoverLabel={h.projects.open}
-              />
-              <div className="mt-5 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="t-label flex items-center gap-2">
-                    <Mark className="text-[var(--fg)]" />
-                    {p.status[lang]} · <span className="t-num">{p.year}</span>
-                  </p>
-                  <h3 className="t-m mt-3">{p.name}</h3>
-                  <p className="t-body mt-1 text-[var(--fg-2)]">{p.place[lang]}</p>
-                </div>
-                <span aria-hidden="true" className="vp-go mt-8">
-                  →
                 </span>
+                <span>
+                  {p.place[lang]} · {p.year}
+                </span>
+              </p>
+              <div className="vp-op__pic">
+                <ProjectImage
+                  p={p}
+                  lang={lang}
+                  label={h.projects.placeholder}
+                  sizes="(min-width: 1024px) 46vw, 92vw"
+                  className="h-full"
+                  imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
+                />
+              </div>
+              <div className="vp-op__body">
+                <h3 className="vp-op__name">{p.name}</h3>
+                <p className="vp-op__role t-body-l">{p.role[lang]}</p>
+                {p.figures.length ? (
+                  <dl className="vp-op__figs">
+                    {p.figures.slice(0, 2).map((f) => (
+                      <div key={f.label[lang]}>
+                        <dt className="t-small vp-op__figlabel">{f.label[lang]}</dt>
+                        <dd className="flex items-baseline gap-2">
+                          <Mark kind={f.kind === "documented" ? "solid" : "outline"} />
+                          <span className="vp-op__fig t-num">{f.value}</span>
+                          <span className="t-small">{f.unit[lang]}</span>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : p.quote ? (
+                  <blockquote className="vp-op__quote">
+                    <p>“{p.quote.text[lang]}”</p>
+                    <footer className="t-small mt-2 vp-op__figlabel">
+                      {p.quote.author}, {p.quote.role[lang]}
+                    </footer>
+                  </blockquote>
+                ) : null}
+                {/* where the operation stands: done phases solid, the next ones outlined */}
+                <ol className="vp-op__stages" aria-label={t.cases.stages}>
+                  {p.stages.map((st) => (
+                    <li key={st.label[lang]} data-done={st.done ? "" : undefined}>
+                      <Mark kind={st.done ? "solid" : "outline"} />
+                      <span className="t-small">{st.label[lang]}</span>
+                      <span className="t-label t-num">{st.when[lang]}</span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="vp-op__go t-small">
+                  {h.projects.open} <span aria-hidden="true" className="vp-go">→</span>
+                </p>
               </div>
             </TLink>
           ))}
-        </ProjectRail>
+        </OperationStack>
       </section>
 
       <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={`${href(lang, "contact")}?topic=property#write`} image={IMG.contact} vivid />

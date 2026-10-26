@@ -1393,6 +1393,171 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
+  /* Home, the operations as a stack of dossiers (components/home/OperationStack.tsx). Each
+     dossier sticks a step lower than the one before, so the top of every one stays in view like
+     the tab of a folder, and the next slides over it; the one being covered steps back (--cover).
+     Inside: the photograph, and beside it where and when, the name, the group's role, two
+     figures (solid mark: documented, outline: declared objective) or the quote, and where the
+     operation stands, phase by phase (done solid, next outlined). */
+  .vp-ops {
+    --tab: 3.25rem;
+    display: grid;
+    row-gap: clamp(2rem, 6svh, 4rem);
+  }
+  .vp-ops__item {
+    --cover: 0;
+    position: sticky;
+    top: calc(var(--header-h) + 1rem + var(--i) * var(--tab));
+  }
+  .vp-op {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+    background: var(--color-navy);
+    color: var(--color-white);
+    box-shadow: 0 -1.2rem 2.4rem -1.6rem rgb(10 35 66 / 0.55);
+    transform-origin: 50% 0;
+    scale: calc(1 - var(--cover) * 0.05);
+    filter: brightness(calc(1 - var(--cover) * 0.35));
+  }
+  .vp-op__pic {
+    position: relative;
+    height: clamp(11rem, 30svh, 18rem);
+    overflow: hidden;
+  }
+  .vp-op__body {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    padding: 1.1rem clamp(1.1rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+  /* the tab: what stays in view when the next dossier covers this one */
+  .vp-op__tab {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: var(--tab);
+    align-items: center;
+    padding: 0 clamp(1.1rem, 3vw, 2.5rem);
+    color: color-mix(in srgb, var(--color-white) 75%, transparent);
+  }
+  /* the name joins the tab once the dossier is covered */
+  .vp-op__tabname {
+    opacity: clamp(0, (var(--cover) - 0.5) * 4, 1);
+    color: var(--color-white);
+  }
+  .vp-op__name {
+    font-size: var(--t-l);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  .vp-op__role {
+    max-width: 30ch;
+    font-weight: 300;
+    color: color-mix(in srgb, var(--color-white) 85%, transparent);
+  }
+  .vp-op__figs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 0.2);
+  }
+  .vp-op__figlabel {
+    color: color-mix(in srgb, var(--color-white) 72%, transparent);
+  }
+  .vp-op__fig {
+    font-size: var(--t-m);
+    font-weight: 300;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .vp-op__quote {
+    max-width: 40ch;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 0.2);
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+  .vp-op__stages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.75rem;
+  }
+  .vp-op__stages li {
+    display: grid;
+    grid-template-columns: auto auto;
+    column-gap: 0.5rem;
+    align-items: baseline;
+  }
+  .vp-op__stages .t-label {
+    grid-column: 2;
+    color: color-mix(in srgb, var(--color-white) 70%, transparent);
+  }
+  .vp-op__stages li:not([data-done]) .t-small {
+    color: color-mix(in srgb, var(--color-white) 78%, transparent);
+  }
+  .vp-op__go {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+  .vp-op:focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 4px;
+  }
+  /* phones: only the essentials on the dossier, the rest is on the project page */
+  @media (max-width: 39.99rem) {
+    .vp-ops {
+      --tab: 2.5rem;
+    }
+    .vp-op__role,
+    .vp-op__quote,
+    .vp-op__figs > :nth-child(n + 2),
+    .vp-op__stages li:nth-child(n + 3) {
+      display: none;
+    }
+  }
+  @media (min-width: 64rem) {
+    .vp-ops {
+      --tab: 4.25rem;
+    }
+    .vp-op {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      height: min(72svh, 40rem);
+    }
+    .vp-op__tab {
+      grid-column: 1;
+      grid-row: 1;
+      padding: 0 clamp(1.75rem, 3.5vw, 3.5rem);
+    }
+    .vp-op__pic {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      height: auto;
+    }
+    .vp-op__body {
+      grid-column: 1;
+      grid-row: 2;
+      align-content: space-between;
+      padding: 0.25rem clamp(1.75rem, 3.5vw, 3.5rem) clamp(1.75rem, 3.5vw, 3rem);
+    }
+    .vp-op__name {
+      font-size: var(--t-xl);
+      line-height: 0.95;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .vp-op {
+      scale: 1;
+      filter: none;
+    }
+  }
+
   /* press: outlet names set as type, each linking to its article */
   /* phones and tablets: the names run on as a line of type (the topic stays for screen readers);
      wide screens: one column per outlet, with the operation it wrote about */
@@ -1516,35 +1681,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
 }
 
 @layer components {
-  /* project rail: pinned and slid sideways by the scroll (wide screens, five or more cards) */
-  .vp-rail {
-    position: relative;
-  }
-  .vp-rail__track {
-    position: relative;
-    display: flex;
-    gap: var(--col-gap);
-    padding-inline: var(--gutter-x);
-  }
-  .vp-rail__intro {
-    flex: 0 0 24vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding-right: 2vw;
-  }
-  .vp-rail .vp-card {
-    flex: 0 0 min(32vw, 52svh);
-  }
-  .vp-rail--pinned {
-    display: flex;
-    align-items: center;
-    height: 100svh;
-    overflow: hidden;
-  }
-  .vp-rail--pinned .vp-rail__track {
-    will-change: transform;
-  }
 
   /* News, the archive as a cabinet (components/sections/NewsCabinet.tsx): one drawer a year.
      Above each front, the tabs of its index cards show a little of themselves, one per article,
