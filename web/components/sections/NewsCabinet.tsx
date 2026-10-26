@@ -219,6 +219,9 @@ export function NewsCabinet({ cards, labels, countLabel, countOne }: { cards: Ne
                               src={c.image}
                               alt=""
                               fill
+                              // the first covers of the drawer open on arrival are in view at once: no lazy wait
+                              loading={yi === 0 && i < 2 ? "eager" : undefined}
+                              fetchPriority={yi === 0 && i === 0 ? "high" : undefined}
                               sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 90vw"
                               className="object-cover transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.04]"
                             />

@@ -109,7 +109,7 @@ export default async function AboutPage() {
       <section data-theme="paper" aria-label={a.label}>
         <div className="container-x">
           <div data-reveal="image">
-            <ParallaxImage src="/images/placeholder/texture-grey-triangular-panels-01.jpg" alt="" sizes="100vw" strength={10} className="aspect-[4/5] bg-[var(--line)] sm:aspect-[21/9]" />
+            <ParallaxImage src="/images/pages/about-facade-golden.jpg" alt="" sizes="100vw" strength={10} className="aspect-[4/5] bg-[var(--line)] sm:aspect-[21/9]" priority />
           </div>
           <dl className="mt-12 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-2 md:grid-cols-3 lg:grid-cols-5">
             {[

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import Image from "next/image";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
@@ -158,15 +160,26 @@ export default async function HomePage() {
                   {p.place[lang]} · {p.year}
                 </span>
               </p>
-              <div className="vp-op__pic">
-                <ProjectImage
-                  p={p}
-                  lang={lang}
-                  label={h.projects.placeholder}
-                  sizes="(min-width: 1024px) 46vw, 92vw"
-                  className="h-full"
-                  imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
-                />
+              <div className="vp-op__pic" data-small={lowRes(p) ? "" : undefined}>
+                {/* a picture published small is shown at its own size, never stretched: a blurred copy fills the rest */}
+                {lowRes(p) && p.image ? (
+                  <span className="vp-op__backdrop" aria-hidden="true">
+                    <Image src={p.image.src} alt="" fill sizes="20vw" className="object-cover" />
+                  </span>
+                ) : null}
+                <div
+                  className="vp-op__frame"
+                  style={lowRes(p) && p.image ? ({ "--w": `${p.image.width}px`, "--ar": `${p.image.width} / ${p.image.height}` } as CSSProperties) : undefined}
+                >
+                  <ProjectImage
+                    p={p}
+                    lang={lang}
+                    label={h.projects.placeholder}
+                    sizes="(min-width: 1024px) 46vw, 92vw"
+                    className="h-full"
+                    imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
+                  />
+                </div>
               </div>
               <div className="vp-op__body">
                 <h3 className="vp-op__name">{p.name}</h3>

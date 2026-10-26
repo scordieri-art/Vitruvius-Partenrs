@@ -81,7 +81,7 @@ const it = {
     },
     careers: {
       label: "Lavora con noi",
-      title: "Un contesto giovane, dinamico e stimolante.",
+      title: "Dal disegno al cantiere, con noi.",
       cta: "Tutte le posizioni",
       count: (n: number) => (n === 1 ? "1 posizione aperta" : `${n} posizioni aperte`),
     },
@@ -308,7 +308,7 @@ const it = {
     },
     newsTitle: "Dal gruppo.",
     label: "Lavora con noi",
-    title: "Un contesto giovane, dinamico e stimolante.",
+    title: "Dal disegno al cantiere, con noi.",
     lead: "Lavorare in Vitruvius & Partners significa far parte di un contesto attento alle esigenze dei propri dipendenti, così come dei propri clienti, in un’ottica di costante crescita e continuo miglioramento.",
     linkedin: "Seguici su LinkedIn e resta aggiornato",
     openLabel: "Posizioni aperte",
@@ -355,7 +355,7 @@ const it = {
   },
   contactPage: {
     label: "Contatti",
-    title: "Dalla sede al territorio.",
+    title: "Due sedi, una sola risposta.",
     lead: "Scrivici per informazioni sui servizi del gruppo.",
     offices: "Sedi",
     write: "Scrivici",

@@ -88,7 +88,7 @@ const en: Dictionary = {
     },
     careers: {
       label: "Careers",
-      title: "A young, dynamic and stimulating environment.",
+      title: "From the drawing to the site, with us.",
       cta: "All positions",
       count: (n: number) => (n === 1 ? "1 open position" : `${n} open positions`),
     },
@@ -315,7 +315,7 @@ const en: Dictionary = {
     linkedinTitle: "Follow us on LinkedIn and stay updated.",
     newsTitle: "From the group.",
     label: "Careers",
-    title: "A young, dynamic and stimulating environment.",
+    title: "From the drawing to the site, with us.",
     lead: "Working at Vitruvius & Partners means being part of an environment attentive to the needs of its employees, as well as its clients, with a view to constant growth and continuous improvement.",
     linkedin: "Follow us on LinkedIn to stay updated",
     openLabel: "Open positions",
@@ -362,7 +362,7 @@ const en: Dictionary = {
   },
   contactPage: {
     label: "Contact",
-    title: "From headquarters to the territory.",
+    title: "Two offices, one answer.",
     lead: "Write to us for information about the group’s services.",
     offices: "Offices",
     write: "Write to us",

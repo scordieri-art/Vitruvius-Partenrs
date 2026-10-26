@@ -61,14 +61,14 @@ export default async function CareersPage() {
             ) : null}
           </div>
           <div className="col-span-4 lg:col-span-4 lg:col-start-9" data-reveal="image">
-            <ParallaxImage src="/images/placeholder/careers-plans-hands-02.jpg" alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/5] bg-[var(--line)]" priority />
+            <ParallaxImage src="/images/pages/careers-team-plans.jpg" alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/5] bg-[var(--line)]" priority />
           </div>
         </div>
       </section>
 
       {/* The team, over a photograph of a site */}
       <section data-theme="ink" aria-label={c.facts.people} className="relative overflow-hidden">
-        <ParallaxImage src="/images/placeholder/careers-team-site-01.jpg" alt="" sizes="100vw" strength={10} className="absolute inset-0" />
+        <ParallaxImage src="/images/pages/careers-site-team.jpg" alt="" sizes="100vw" strength={10} className="absolute inset-0" />
         <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(to_top,rgb(15_23_42/0.85),rgb(15_23_42/0.25)_60%,rgb(15_23_42/0.1))]" />
         <div className="relative container-x flex min-h-[max(80svh,32rem)] flex-col justify-end pb-[clamp(3rem,8vh,6rem)]">
           <dl className="grid grid-cols-3 gap-x-[var(--col-gap)] gap-y-8 border-t border-white/25 pt-8">

@@ -992,6 +992,19 @@ figure:has(.vp-tag) .vp-pubcap {
   }
 }
 
+/* page openings: a soft rise in CSS alone, so the first words never wait for the scripts */
+@media (prefers-reduced-motion: no-preference) {
+  .vp-rise {
+    animation: vp-rise 800ms var(--ease-enter) both;
+  }
+}
+@keyframes vp-rise {
+  from {
+    opacity: 0.01;
+    translate: 0 0.9rem;
+  }
+}
+
 /* Pre-hide elements that animate in (only when JS + motion are available) */
 /* opacity, not visibility: what waits for its entrance stays in the accessibility tree, so a
    screen reader finds every heading before it has been scrolled to */
@@ -1179,7 +1192,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
      along the same slope. */
   .vp-fil {
     position: relative;
-    height: calc(var(--n) * 60svh + 100svh);
+    height: calc(var(--n) * 45svh + 100svh);
   }
   .vp-fil__stage {
     --t: 0;
@@ -1424,6 +1437,25 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     position: relative;
     height: clamp(11rem, 30svh, 18rem);
     overflow: hidden;
+  }
+  .vp-op__frame {
+    position: absolute;
+    inset: 0;
+  }
+  .vp-op__backdrop {
+    position: absolute;
+    inset: -2rem;
+    filter: blur(28px) brightness(0.7) saturate(1.1);
+  }
+  /* published small: at its own size (at most), centred over the blurred copy */
+  .vp-op__pic[data-small] .vp-op__frame {
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    width: min(var(--w), 86%);
+    aspect-ratio: var(--ar);
+    translate: -50% -50%;
+    box-shadow: 0 1.5rem 3rem -1.5rem rgb(0 0 0 / 0.6);
   }
   .vp-op__body {
     display: grid;
@@ -2581,7 +2613,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
      two years, the cursor stands at the present. Outline turns into solid, never the reverse. */
   .vp-chron {
     position: relative;
-    height: calc(var(--n) * 50svh + 100svh);
+    height: calc(var(--n) * 28svh + 100svh);
   }
   .vp-chron__stage {
     --t: 0;

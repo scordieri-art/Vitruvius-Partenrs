@@ -95,7 +95,8 @@ export default async function ProjectsIndex() {
         title={t.home.contact.title}
         cta={t.home.contact.cta}
         href={`${href(lang, "contact")}?topic=property#write`}
-        image="/images/placeholder/facade-white-shutters-rhythm-05.jpg"
+        image="/images/home/home-contact-palazzo.jpg"
+        vivid
       />
     </RevealScope>
   );
