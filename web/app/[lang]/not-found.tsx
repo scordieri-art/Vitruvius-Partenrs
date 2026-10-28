@@ -1,4 +1,5 @@
 import { Cta } from "@/components/ui/Cta";
+import { Rise } from "@/components/ui/Rise";
 import { dictionaryFor } from "@/lib/content";
 
 // Rendered for unknown paths inside a locale. Uses Italian copy with English below.
@@ -8,7 +9,9 @@ export default function NotFound() {
   return (
     <section data-theme="paper" className="container-x flex min-h-[80svh] flex-col justify-end pb-24 pt-40">
       <p className="t-label mb-6">404</p>
-      <h1 className="t-xl max-w-[16ch]">{it.notFound.title}</h1>
+      <h1 className="t-xl max-w-[16ch]">
+        <Rise>{it.notFound.title}</Rise>
+      </h1>
       <p className="t-body-l mt-6 max-w-[40ch] text-[var(--fg-2)]">
         {it.notFound.text}
         <br />

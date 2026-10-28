@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rise } from "@/components/ui/Rise";
 import { notFound } from "next/navigation";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { ContactBand } from "@/components/home/ContactBand";
@@ -66,8 +67,8 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                     {p.status[lang]} · <span className="t-num">{p.year}</span>
                   </span>
                 </p>
-                <h1 className="t-hero max-w-[12ch]" data-reveal="lines">
-                  {p.name}
+                <h1 className="t-hero max-w-[12ch]">
+                  <Rise>{p.name}</Rise>
                 </h1>
                 <p className="t-body-l mt-5 text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
                   {p.address[lang]}
@@ -109,8 +110,8 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                     {p.status[lang]} · <span className="t-num">{p.year}</span>
                   </span>
                 </p>
-                <h1 className="t-hero max-w-[12ch]" data-reveal="lines">
-                  {p.name}
+                <h1 className="t-hero max-w-[12ch]">
+                  <Rise>{p.name}</Rise>
                 </h1>
                 <p className="t-body-l mt-5 text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
                   {p.address[lang]}

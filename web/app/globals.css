@@ -1242,19 +1242,42 @@ figure:has(.vp-tag) .vp-pubcap {
     translate: 0 0.9rem;
   }
 }
-/* the home's opening: label, then the title's lines (in its own rule), then the lead and the
-   two ways on; through the page transition, once the plane has uncovered the page. Out of the
-   layers, like .vp-rise itself, so the delays are not reset by its shorthand */
+/* page openings: label, title, lead and the ways on, in sequence. A title rises from its mask
+   (components/ui/Rise.tsx). Out of the layers, like .vp-rise itself, so the delays are not reset
+   by its shorthand */
+.vp-rise-mask {
+  display: block;
+  overflow: clip;
+  padding-block: 0.16em 0.22em;
+  margin-block: -0.16em -0.22em;
+}
+.vp-rise-in {
+  display: block;
+}
 @media (prefers-reduced-motion: no-preference) {
+  html.js-motion .vp-rise-in {
+    animation: vp-title-rise 1.05s var(--ease-enter) 0.08s both;
+  }
+  .vp-rise--late {
+    animation-delay: 0.22s;
+  }
   .vp-hero .vp-hero__lead {
     animation-delay: 0.4s;
   }
   .vp-hero .vp-hero__ctas {
     animation-delay: 0.5s;
   }
-  html[data-vp-transition] .vp-hero .vp-rise {
-    animation-delay: 0.62s;
+}
+@keyframes vp-title-rise {
+  from {
+    transform: translateY(150%);
   }
+}
+/* arriving through the page transition: the openings wait at their first frame until the plane
+   has uncovered the page (the attribute goes then), and play from there: never a jump */
+html[data-vp-transition] :is(.vp-rise, .vp-rise-in, .vp-hero__word, .vp-hero__mass) {
+  /* a state over every entrance's own shorthand, wherever it is declared */
+  animation-play-state: paused !important;
 }
 
 /* Pre-hide elements that animate in (only when JS + motion are available) */
@@ -2164,10 +2187,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     html.js-motion .vp-hero__word {
       animation: vp-hero-line 1.05s var(--ease-enter) both;
       animation-delay: calc(0.18s + var(--i) * 0.09s);
-    }
-    /* arriving through the page transition: once the plane has uncovered the page */
-    html[data-vp-transition] .vp-hero__word {
-      animation-delay: calc(0.72s + var(--i) * 0.09s);
     }
   }
   @keyframes vp-hero-line {
@@ -3655,9 +3674,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
 @media (min-width: 64rem) {
   html.js-motion .vp-hero__mass {
     animation: vp-hero-open 1.5s var(--ease-move) 0.15s both;
-  }
-  html[data-vp-transition] .vp-hero__mass {
-    animation-delay: 0.7s;
   }
 }
 @keyframes vp-hero-open {

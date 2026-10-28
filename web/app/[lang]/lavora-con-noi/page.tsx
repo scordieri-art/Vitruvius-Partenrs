@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rise } from "@/components/ui/Rise";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { JobList } from "@/components/careers/JobList";
 import { Cta } from "@/components/ui/Cta";
@@ -46,8 +47,8 @@ export default async function CareersPage() {
             <p className="t-label mb-8" data-reveal="fade">
               {c.label}
             </p>
-            <h1 id="careers-title" className="t-xl max-w-[14ch]" data-reveal="lines">
-              {c.title}
+            <h1 id="careers-title" className="t-xl max-w-[14ch]">
+              <Rise>{c.title}</Rise>
             </h1>
             <p className="t-body-l mt-10 max-w-[44ch] text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
               {c.lead}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rise } from "@/components/ui/Rise";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { notFound } from "next/navigation";
 import { TLink } from "@/components/layout/PageTransition";
@@ -71,8 +72,10 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
             <span aria-hidden="true" className="h-px w-10 bg-current opacity-40" />
             <span>{c.openLabel}</span>
           </p>
-          <h1 className="t-xl max-w-[16ch]" data-reveal="lines">
-            <DashTitle text={job.title} />
+          <h1 className="t-xl max-w-[16ch]">
+            <Rise>
+              <DashTitle text={job.title} />
+            </Rise>
           </h1>
           <div className="mt-12 flex flex-col items-start gap-10 border-t border-[var(--line)] pt-8 lg:flex-row lg:items-end lg:justify-between" data-reveal="fade" data-reveal-delay="0.2">
             <dl className="grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-6 sm:grid-cols-3 sm:gap-x-12">

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rise } from "@/components/ui/Rise";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { ContactForm } from "@/components/forms/ContactForm";
@@ -36,8 +37,8 @@ export default async function ContactPage() {
           <p className="t-label mb-8" data-reveal="fade">
             {c.label}
           </p>
-          <h1 id="contact-title" className="t-xl max-w-[14ch]" data-reveal="lines">
-            {c.title}
+          <h1 id="contact-title" className="t-xl max-w-[14ch]">
+            <Rise>{c.title}</Rise>
           </h1>
           <div className="grid-12 mt-10 gap-y-8 lg:mt-14 lg:items-end">
             <p className="t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5" data-reveal="fade" data-reveal-delay="0.2">

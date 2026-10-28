@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rise } from "@/components/ui/Rise";
 import { siteUrl } from "@/lib/site";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { SafeImage } from "@/components/ui/SafeImage";
@@ -80,8 +81,8 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
               <time dateTime={item.date}>{formatDate(item.date, lang)}</time>
               {press ? <span className="text-[var(--fg)]">· {press.outlet}</span> : null}
             </p>
-            <h1 className={`${title.length > 90 ? "t-m max-w-[30ch]" : "t-l max-w-[22ch]"} [text-wrap:balance]`} data-reveal="lines">
-              {title}
+            <h1 className={`${title.length > 90 ? "t-m max-w-[30ch]" : "t-l max-w-[22ch]"} [text-wrap:balance]`}>
+              <Rise>{title}</Rise>
             </h1>
             {item.lede ? (
               <div className="grid-12 mt-10 lg:mt-12">
