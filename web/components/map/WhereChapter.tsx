@@ -10,6 +10,7 @@ import type { MarkSpec, Scene, Shot } from "./gl/scene";
 
 /** A stop of the chapter: the places it is about (none: all Italy), its name on the rail, its caption. */
 export type ChapterStep = { key: string; focus: string[]; rail: string; caption: ReactNode };
+type Gl = "wait" | "on" | "off";
 
 // heights of the model (scene.ts H): where a label stands on it
 const GROUND = { it: 7, op: 15 } as const;
@@ -23,11 +24,11 @@ const MEDIA = "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
  * it — Italy, then the two offices, then each operation, then all the places with their list.
  * Each place's mark rises from the model when the camera first reaches it, and stays.
  *
- * The captions are an ordered list (one stop shown at a time, all of them read by screen
- * readers, a focused link brings its stop on screen); the rail jumps to any stop. Phones,
- * reduced motion, no scripts and no WebGL keep the slab with its list (`fallback`), decided in
- * CSS so the page never changes height once drawn. The 3D code and the cartography load only
- * when the chapter is near.
+ * Phones, reduced motion, no scripts and no WebGL keep the slab with its list (`fallback`),
+ * decided in CSS so the page never changes height once drawn: the chapter's place is held by an
+ * empty block of its height, and its parts are made only on a screen that shows it (a window
+ * widened into a desktop makes them then). The 3D code and the cartography load only when the
+ * chapter is near.
  */
 export function WhereChapter({
   pins,
@@ -42,14 +43,43 @@ export function WhereChapter({
   fallback: ReactNode;
   stopsLabel: string;
 }) {
+  const [on, setOn] = useState(false);
+  const [gl, setGl] = useState<Gl>("wait");
+
+  useEffect(() => {
+    const mq = matchMedia(MEDIA);
+    const check = () => {
+      if (mq.matches && document.documentElement.classList.contains("js-motion")) setOn(true);
+    };
+    check();
+    mq.addEventListener("change", check);
+    return () => mq.removeEventListener("change", check);
+  }, []);
+
+  return (
+    <div className="vp-gl" data-gl={gl}>
+      <div className="vp-gl__head container-x">{head}</div>
+      {on ? (
+        <ChapterRun pins={pins} steps={steps} stopsLabel={stopsLabel} gl={gl} setGl={setGl} />
+      ) : (
+        <div className="vp-gl__run" style={{ "--n": steps.length } as CSSProperties} />
+      )}
+      <div className="vp-gl__fallback">{fallback}</div>
+    </div>
+  );
+}
+
+/**
+ * The chapter itself. The captions are an ordered list (one stop shown at a time, all of them
+ * read by screen readers, a focused link brings its stop on screen); the rail jumps to any stop.
+ */
+function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; steps: ChapterStep[]; stopsLabel: string; gl: Gl; setGl: (g: Gl) => void }) {
   const n = steps.length;
-  const root = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const flagEls = useRef<(HTMLSpanElement | null)[]>([]);
   const cityEls = useRef<(HTMLSpanElement | null)[]>([]);
   const scene = useRef<Scene | null>(null);
   const time = useRef<[number, number]>([0, 0]);
-  const [gl, setGl] = useState<"wait" | "on" | "off">("wait");
   const [hover, setHover] = useState<string | null>(null);
   const { wrap, stage, active, go } = useScrollTime(n, (t, enter) => {
     time.current = [t, enter];
@@ -101,17 +131,13 @@ export function WhereChapter({
     scene.current?.light(lit);
   });
 
-  // the chapter only where the CSS shows it (a window widened into a desktop starts it then);
-  // no WebGL: the slab, decided when the chapter is near, so a page that never gets there asks nothing of the GPU
+  // load when the chapter is a screen and a half away; draw only while it is on screen.
+  // No WebGL: the slab, decided only then, so a page that never gets here asks nothing of the GPU
   useEffect(() => {
-    const el = root.current, cv = canvas.current;
+    const el = wrap.current, cv = canvas.current;
     if (!el || !cv) return;
-    const mq = matchMedia(MEDIA);
     let s: Scene | null = null;
     let dead = false;
-    let near: IntersectionObserver | null = null;
-    let seen: IntersectionObserver | null = null;
-    let ro: ResizeObserver | null = null;
     const start = async () => {
       try {
         const [{ createScene }, svg] = await Promise.all([import("./gl/scene"), fetch("/map/italia.svg").then((r) => r.text())]);
@@ -154,32 +180,25 @@ export function WhereChapter({
         if (!dead) setGl("off");
       }
     };
-    // load when the chapter is a screen and a half away; draw only while it is on screen
-    const arm = () => {
-      if (near || !mq.matches || !document.documentElement.classList.contains("js-motion")) return;
-      near = new IntersectionObserver(
-        (es) => {
-          if (es.some((e) => e.isIntersecting)) {
-            near?.disconnect();
-            start();
-          }
-        },
-        { rootMargin: "150% 0px" },
-      );
-      near.observe(el);
-      seen = new IntersectionObserver((es) => scene.current?.visible(es.some((e) => e.isIntersecting)));
-      seen.observe(el);
-      ro = new ResizeObserver(() => scene.current?.resize());
-      ro.observe(cv);
-    };
-    arm();
-    mq.addEventListener("change", arm);
+    const near = new IntersectionObserver(
+      (es) => {
+        if (es.some((e) => e.isIntersecting)) {
+          near.disconnect();
+          start();
+        }
+      },
+      { rootMargin: "150% 0px" },
+    );
+    near.observe(el);
+    const seen = new IntersectionObserver((es) => scene.current?.visible(es.some((e) => e.isIntersecting)));
+    seen.observe(el);
+    const ro = new ResizeObserver(() => scene.current?.resize());
+    ro.observe(cv);
     return () => {
       dead = true;
-      mq.removeEventListener("change", arm);
-      near?.disconnect();
-      seen?.disconnect();
-      ro?.disconnect();
+      near.disconnect();
+      seen.disconnect();
+      ro.disconnect();
       s?.destroy();
       scene.current = null;
     };
@@ -194,11 +213,11 @@ export function WhereChapter({
   };
 
   return (
-    <div ref={root} className="vp-gl" data-gl={gl}>
-      <div className="vp-gl__head container-x">{head}</div>
-      <div ref={wrap} className="vp-gl__run" style={{ "--n": n } as CSSProperties}>
-        <div ref={stage} className="vp-gl__stage">
-          <canvas ref={canvas} className="vp-gl__canvas" aria-hidden="true" />
+    <div ref={wrap} className="vp-gl__run" style={{ "--n": n } as CSSProperties}>
+      <div ref={stage} className="vp-gl__stage">
+        <canvas ref={canvas} className="vp-gl__canvas" aria-hidden="true" />
+        {/* the labels on the model, once there is a model to stand on */}
+        {gl === "on" ? (
           <div className="vp-gl__labels" aria-hidden="true">
             {cities.map((c, i) => (
               <span key={c.name} ref={(e) => void (cityEls.current[i] = e)} className="vp-gl__city" data-high={c.high ? "" : undefined}>
@@ -222,24 +241,23 @@ export function WhereChapter({
               </span>
             ))}
           </div>
-          <ol className="vp-gl__steps" onPointerOver={onOver} onPointerLeave={() => setHover(null)} onFocus={onOver} onBlur={() => setHover(null)}>
-            {steps.map((s, i) => (
-              <li key={s.key} className="vp-gl__step" data-on={i === active ? "" : undefined} onFocus={() => i !== active && go(i)}>
-                {s.caption}
-              </li>
-            ))}
-          </ol>
-          <div className="vp-gl__rail" role="group" aria-label={stopsLabel}>
-            {steps.map((s, i) => (
-              <button key={s.key} type="button" className="vp-gl__tick t-label" aria-current={i === active ? "step" : undefined} onClick={() => go(i)}>
-                {s.rail}
-              </button>
-            ))}
-            <span className="vp-gl__progress" aria-hidden="true" />
-          </div>
+        ) : null}
+        <ol className="vp-gl__steps" onPointerOver={onOver} onPointerLeave={() => setHover(null)} onFocus={onOver} onBlur={() => setHover(null)}>
+          {steps.map((s, i) => (
+            <li key={s.key} className="vp-gl__step" data-on={i === active ? "" : undefined} onFocus={() => i !== active && go(i)}>
+              {s.caption}
+            </li>
+          ))}
+        </ol>
+        <div className="vp-gl__rail" role="group" aria-label={stopsLabel}>
+          {steps.map((s, i) => (
+            <button key={s.key} type="button" className="vp-gl__tick t-label" aria-current={i === active ? "step" : undefined} onClick={() => go(i)}>
+              {s.rail}
+            </button>
+          ))}
+          <span className="vp-gl__progress" aria-hidden="true" />
         </div>
       </div>
-      <div className="vp-gl__fallback">{fallback}</div>
     </div>
   );
 }
