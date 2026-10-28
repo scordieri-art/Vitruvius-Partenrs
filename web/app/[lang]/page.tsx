@@ -235,6 +235,22 @@ export default async function HomePage() {
               </div>
             </TLink>
           ))}
+          {/* the last card closes the stack: all the projects, on their page */}
+          <TLink href={href(lang, "projects")} transitionLabel={t.meta.titles.projects} className="vp-op vp-op--all group" data-cursor={t.ui.open}>
+            <p className="vp-op__tab t-label t-num">
+              <span>
+                {String(projects.length + 1).padStart(2, "0")} / {String(projects.length + 1).padStart(2, "0")}
+              </span>
+              <span>{projects.map((p) => p.place[lang].replace(/\s*\(.*\)$/, "")).join(" · ")}</span>
+            </p>
+            <span className="vp-op__all">
+              <Mark kind="outline" className="vp-op__allmark" />
+              <span className="vp-op__name">{h.projects.cta}</span>
+              <span className="vp-op__go t-small">
+                {h.projects.lead} <span aria-hidden="true" className="vp-go">→</span>
+              </span>
+            </span>
+          </TLink>
         </OperationStack>
       </section>
 

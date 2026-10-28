@@ -1778,6 +1778,38 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     outline: 2px solid var(--color-navy);
     outline-offset: 4px;
   }
+  /* the last card: all the projects, white over the navy dossiers; its mark fills when pointed at */
+  .vp-op--all {
+    background: var(--color-white);
+    color: var(--color-navy);
+    box-shadow:
+      inset 0 0 0 1px var(--color-hairline),
+      0 -1.2rem 2.4rem -1.6rem rgb(10 35 66 / 0.35);
+  }
+  .vp-op--all .vp-op__tab {
+    color: color-mix(in srgb, var(--color-navy) 72%, transparent);
+  }
+  .vp-op__all {
+    position: relative;
+    display: grid;
+    align-content: end;
+    gap: 1rem;
+    min-height: clamp(13rem, 36svh, 22rem);
+    padding: 0 clamp(1.1rem, 3vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .vp-op__allmark {
+    position: absolute;
+    top: 0;
+    right: clamp(1.1rem, 3vw, 2.5rem);
+    height: clamp(5.5rem, 16vw, 13rem);
+  }
+  .vp-op__allmark polygon {
+    transition: fill 520ms var(--ease-move);
+  }
+  .vp-op--all:hover .vp-op__allmark polygon,
+  .vp-op--all:focus-visible .vp-op__allmark polygon {
+    fill: currentColor;
+  }
   /* phones: only the essentials on the dossier, the rest is on the project page */
   @media (max-width: 39.99rem) {
     .vp-ops {
@@ -1818,6 +1850,13 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     .vp-op__name {
       font-size: var(--t-xl);
       line-height: 0.95;
+    }
+    .vp-op--all {
+      grid-template-columns: minmax(0, 1fr);
+      height: auto;
+    }
+    .vp-op__all {
+      padding: 0 clamp(1.75rem, 3.5vw, 3.5rem) clamp(1.75rem, 3.5vw, 3rem);
     }
   }
   @media (prefers-reduced-motion: reduce) {
