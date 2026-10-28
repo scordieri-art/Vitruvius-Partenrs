@@ -47,13 +47,13 @@ export default async function ProjectsIndex() {
                 className={framed ? "w-full" : first ? "aspect-[4/5] sm:aspect-[16/9]" : "aspect-[4/5]"}
                 style={framed ? { aspectRatio: `${p.image!.width} / ${p.image!.height}` } : undefined}
                 imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.03]"
-                hoverLabel={t.home.projects.open}
               />
             );
             return (
               <li key={p.slug.it} id={`p-${p.slug[lang]}`} className={first ? "col-span-4 lg:col-span-12" : i === 1 ? "col-span-4 lg:col-span-6" : "col-span-4 lg:col-span-5 lg:col-start-8 lg:mt-[clamp(6rem,14vw,14rem)]"}>
                 <TLink href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className={`group ${framed ? "grid-12 gap-y-6 lg:items-end" : "block"}`} morph={!lowRes(p)}>
-                  <div data-reveal="image" className={framed ? "col-span-4 lg:col-span-7" : undefined} style={framed ? { maxWidth: `${Math.round(p.image!.width * 1.25)}px` } : undefined}>
+                  {/* pointed at with a mouse: the picture comes a little closer and «Apri» follows the pointer */}
+                  <div data-reveal="image" data-cursor={t.ui.open} className={framed ? "col-span-4 lg:col-span-7" : undefined} style={framed ? { maxWidth: `${Math.round(p.image!.width * 1.25)}px` } : undefined}>
                     {caseLink}
                   </div>
                   <div className={`${framed ? "col-span-4 lg:col-span-5 lg:col-start-8" : "mt-6"} flex items-start justify-between gap-6`}>
@@ -77,8 +77,8 @@ export default async function ProjectsIndex() {
         </ul>
       </section>
 
-      {/* Where the group works: offices and operations on the map, tilted into depth by the scroll */}
-      <section data-theme="paper" aria-labelledby="map-title" className="border-t border-[var(--line)] py-[var(--section-y)]">
+      {/* Where the group works: the white model on navy, as on the home page, tilted into depth by the scroll */}
+      <section data-theme="navy" aria-labelledby="map-title" className="vp-where py-[var(--section-y)]">
         <div className="container-x">
           <p className="t-label mb-5" data-reveal="fade">
             {pp.map.label}

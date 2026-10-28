@@ -3497,41 +3497,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* image hover: a navy band sweeps in on the slope of the symbol, with a label */
-  .vp-sweep {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    display: flex;
-    align-items: flex-end;
-    padding: clamp(1rem, 2vw, 1.5rem);
-    background: rgb(10 35 66 / 0.88);
-    color: var(--color-white);
-    clip-path: polygon(0 0, -6rem 0, 0 100%, 0 100%);
-    transition: clip-path 700ms var(--ease-move);
-    pointer-events: none;
-  }
-  .vp-sweep__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    opacity: 0;
-    transform: translateY(0.75rem);
-    transition: opacity 400ms var(--ease-enter) 0ms, transform 500ms var(--ease-enter) 0ms;
-  }
-  @media (hover: hover) {
-    .group:hover .vp-sweep,
-    .group:focus-visible .vp-sweep {
-      clip-path: polygon(0 0, 100% 0, calc(100% + 6rem) 100%, 0 100%);
-    }
-    .group:hover .vp-sweep__label,
-    .group:focus-visible .vp-sweep__label {
-      opacity: 1;
-      transform: none;
-      transition-delay: 260ms;
-    }
-  }
-
   /* hero scroll cue: the line runs a few times after load, then rests */
   .vp-scrollcue {
     flex-direction: column;

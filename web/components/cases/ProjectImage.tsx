@@ -18,7 +18,6 @@ export function ProjectImage({
   className = "",
   imgClassName = "",
   tagClassName = "right-3 top-3",
-  hoverLabel,
   style,
 }: {
   p: Project;
@@ -29,8 +28,6 @@ export function ProjectImage({
   className?: string;
   imgClassName?: string;
   tagClassName?: string;
-  /** shown on a navy band that sweeps in on hover of the enclosing .group link */
-  hoverLabel?: string;
   style?: CSSProperties;
 }) {
   return (
@@ -61,13 +58,6 @@ export function ProjectImage({
           <span className={`vp-tag absolute z-[1] ${tagClassName}`}>{label}</span>
         </>
       )}
-      {hoverLabel ? (
-        <span className="vp-sweep" aria-hidden="true">
-          <span className="vp-sweep__label t-s">
-            {hoverLabel} <span aria-hidden="true">→</span>
-          </span>
-        </span>
-      ) : null}
     </div>
   );
 }
