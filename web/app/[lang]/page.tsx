@@ -13,7 +13,8 @@ import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
 import { Cta } from "@/components/ui/Cta";
 import { ItalyMap } from "@/components/map/ItalyMap";
-import { mapPlaces } from "@/components/map/mapPlaces";
+import { chapterSteps, mapPins, mapPlaces } from "@/components/map/mapPlaces";
+import { WhereChapter } from "@/components/map/WhereChapter";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { lowRes, projects } from "@/content/projects";
 import { getDictionary, liveLink } from "@/lib/content";
@@ -118,19 +119,29 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Where the group works: the offices and the operations on the model, with their list */}
-      <section data-theme="navy" aria-labelledby="where-title" className="vp-where mt-[var(--section-y)] py-[var(--section-y)]">
-        <div className="container-x">
-          <SectionLabel n={4} className="mb-5">
-            {t.projectsPage.map.label}
-          </SectionLabel>
-          <h2 id="where-title" className="t-l max-w-[18ch] [text-wrap:balance]" data-reveal="lines">
-            {t.projectsPage.map.title}
-          </h2>
-          <div className="mt-[clamp(2.5rem,6vw,5rem)]">
-            <ItalyMap places={mapPlaces(lang, t)} caption={t.projectsPage.map.caption} label={t.projectsPage.map.aria} />
-          </div>
-        </div>
+      {/* Where the group works: on a desktop a chapter of its own, the camera travelling over the
+          model from the offices to each operation (WebGL); elsewhere the model with its list */}
+      <section data-theme="navy" aria-labelledby="where-title" className="vp-where mt-[var(--section-y)]">
+        <WhereChapter
+          pins={mapPins(lang)}
+          steps={chapterSteps(lang, t)}
+          stopsLabel={t.projectsPage.map.chapter.stops}
+          head={
+            <>
+              <SectionLabel n={4} className="mb-5">
+                {t.projectsPage.map.label}
+              </SectionLabel>
+              <h2 id="where-title" className="t-l max-w-[18ch] [text-wrap:balance]" data-reveal="lines">
+                {t.projectsPage.map.title}
+              </h2>
+            </>
+          }
+          fallback={
+            <div className="container-x mt-[clamp(2.5rem,6vw,5rem)]">
+              <ItalyMap places={mapPlaces(lang, t)} caption={t.projectsPage.map.caption} label={t.projectsPage.map.aria} />
+            </div>
+          }
+        />
       </section>
 
       {/* Projects: a stack of dossiers */}

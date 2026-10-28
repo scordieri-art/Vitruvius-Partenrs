@@ -275,6 +275,7 @@ const en: Dictionary = {
       caption: "The group’s offices and published operations, their regions raised. Cartography: Natural Earth.",
       aria: "Map of Italy with the offices and operations of Vitruvius & Partners",
       here: "This operation",
+      chapter: { italy: "Italy", offices: "The offices", all: "All places", stops: "Map stops", project: "The project" },
     },
   },
   newsPage: {

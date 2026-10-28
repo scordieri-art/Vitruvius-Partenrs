@@ -977,6 +977,224 @@
     min-height: 44px;
   }
 
+  /* ---------------------------------------------------------------
+     «Dove operiamo», the home chapter (components/map/WhereChapter.tsx). By default (phones,
+     reduced motion, no scripts, no WebGL) the heading and the slab with its list, in flow.
+     --------------------------------------------------------------- */
+  .vp-gl {
+    position: relative;
+  }
+  .vp-gl__head {
+    padding-top: var(--section-y);
+  }
+  .vp-gl__fallback {
+    padding-bottom: var(--section-y);
+  }
+  .vp-gl__run {
+    display: none;
+  }
+  /* on a desktop with motion: the page holds the model while the camera travels; the heading
+     opens the chapter over it, then scrolls away */
+  @media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+    html.js-motion .vp-gl:not([data-gl="off"]) .vp-gl__run {
+      display: block;
+      height: calc(var(--n) * 58svh + 100svh);
+    }
+    html.js-motion .vp-gl:not([data-gl="off"]) .vp-gl__fallback {
+      display: none;
+    }
+    html.js-motion .vp-gl:not([data-gl="off"]) > .vp-gl__head {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 3;
+      padding-top: calc(var(--header-h) + clamp(2rem, 6svh, 4.5rem));
+      pointer-events: none;
+    }
+  }
+  .vp-gl__stage {
+    --t: 0;
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+  .vp-gl__canvas,
+  .vp-gl__labels {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 900ms var(--ease-enter);
+  }
+  .vp-gl__canvas {
+    display: block;
+  }
+  .vp-gl[data-gl="on"] :is(.vp-gl__canvas, .vp-gl__labels) {
+    opacity: 1;
+  }
+  .vp-gl__labels {
+    z-index: 1;
+    pointer-events: none;
+  }
+  /* the opening: a shade on the left keeps the heading clear of the model, gone once the camera moves */
+  .vp-gl__stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--color-navy) 0%, var(--color-navy) 22%, transparent 52%);
+    opacity: clamp(0, 1 - var(--t) * 1.6, 1);
+  }
+  /* labels on the model: placed every frame by the scene (a transform from the top left) */
+  .vp-gl__flag,
+  .vp-gl__city {
+    position: absolute;
+    left: 0;
+    top: 0;
+    will-change: transform;
+  }
+  /* a place's flag: comes once its mark has risen; the places outside the stop step back */
+  .vp-gl__flag {
+    opacity: 0;
+    transition: opacity 500ms var(--ease-enter);
+  }
+  .vp-gl__flag[data-up] {
+    opacity: 1;
+    transition-delay: 650ms;
+  }
+  .vp-gl__flag[data-up][data-dim] {
+    opacity: 0.38;
+    transition-delay: 0ms;
+  }
+  .vp-gl__tag {
+    position: absolute;
+    left: -0.2rem;
+    bottom: calc(0.55rem + var(--stack, 0) * 2.1rem);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem 0.42rem 0.55rem;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    color: var(--color-navy);
+    background: var(--color-white);
+    box-shadow: 0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 0.45);
+  }
+  .vp-gl__tag .vp-mark {
+    height: 0.7rem;
+  }
+  .vp-gl__city > span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    translate: -0.15rem -50%;
+    white-space: nowrap;
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+    color: color-mix(in srgb, var(--color-navy) 62%, var(--color-white));
+  }
+  .vp-gl__city > span::before {
+    content: "";
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+  .vp-gl__city[data-high] > span {
+    color: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+  }
+  /* the captions: one stop at a time, on a navy card with the corner cut on the slope */
+  .vp-gl__steps {
+    position: absolute;
+    z-index: 2;
+    left: max(var(--gutter-x), env(safe-area-inset-left, 0px));
+    bottom: clamp(5.5rem, 13svh, 8.5rem);
+    width: min(27rem, 33vw);
+    display: grid;
+  }
+  .vp-gl__step {
+    grid-area: 1 / 1;
+    align-self: end;
+    opacity: 0;
+    translate: 0 1rem;
+    pointer-events: none;
+    transition:
+      opacity 350ms var(--ease-move),
+      translate 350ms var(--ease-move);
+  }
+  .vp-gl__step[data-on],
+  .vp-gl__step:focus-within {
+    opacity: 1;
+    translate: 0 0;
+    pointer-events: auto;
+    transition:
+      opacity 600ms var(--ease-enter) 220ms,
+      translate 700ms var(--ease-enter) 220ms;
+  }
+  .vp-gl__card {
+    --c: 1.4rem;
+    padding: 1.6rem 2.2rem 1.8rem 1.8rem;
+    color: var(--fg);
+    background: var(--color-navy);
+    clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% calc(var(--c) / var(--slope)), 100% 100%, 0 100%);
+  }
+  .vp-gl__card--list {
+    padding-bottom: 1.2rem;
+  }
+  .vp-gl__places {
+    display: grid;
+    gap: 1.1rem;
+    margin-top: 1.1rem;
+  }
+  .vp-gl__places .vp-mark {
+    height: 0.62em;
+  }
+  /* the rail: every stop, the way to jump to it, and how far the chapter has gone */
+  .vp-gl__rail {
+    --c: 0.9rem;
+    position: absolute;
+    z-index: 2;
+    right: max(var(--gutter-x), env(safe-area-inset-right, 0px));
+    bottom: clamp(2rem, 5svh, 3rem);
+    display: flex;
+    gap: 1.5rem;
+    padding: 0.35rem 1.1rem 0.35rem calc(1.1rem + var(--c));
+    background: var(--color-navy);
+    clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .vp-gl__tick {
+    min-height: 44px;
+    color: var(--fg-2);
+    transition: color var(--dur-ui) var(--ease-move);
+  }
+  .vp-gl__tick:hover,
+  .vp-gl__tick[aria-current] {
+    color: var(--fg);
+  }
+  .vp-gl__progress {
+    position: absolute;
+    left: calc(1.1rem + var(--c));
+    right: 1.1rem;
+    bottom: 0.45rem;
+    height: 1px;
+    background: var(--line);
+  }
+  .vp-gl__progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--fg);
+    transform-origin: left;
+    scale: calc(var(--t) / max(1, var(--n) - 1)) 1;
+  }
+
   /* 404: a navy plane cut on the symbol's slope fills the right of the page */
   .vp-404__plane {
     position: absolute;

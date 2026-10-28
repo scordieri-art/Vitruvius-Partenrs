@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import map from "@/content/geo/map.json";
 import { Mark } from "@/components/marks/Mark";
 import { MapStage } from "./MapStage";
+import { LATS, LONS, placeXY, projectKm as project, SHEET as V } from "./geo";
 
 /**
  * The map as an architect's model: a white sheet with the graticule, the neighbouring countries
@@ -15,10 +16,6 @@ import { MapStage } from "./MapStage";
  * downloads it once and caches it, and the page HTML stays light.
  */
 const SRC = "/map/italia.svg";
-const V = map.view; // km, y south
-const LAT0 = (42 * Math.PI) / 180;
-const R = 6371;
-const project = (lat: number, lon: number) => [R * (((lon - 12.5) * Math.PI) / 180) * Math.cos(LAT0), -R * (((lat - 42) * Math.PI) / 180)];
 type View = { x: number; y: number; w: number; h: number };
 
 /** A view `scale` times closer, centred on a point and kept inside the sheet. */
@@ -27,10 +24,6 @@ export const viewAround = (x: number, y: number, scale: number): View => {
   return { x: Math.min(Math.max(x - w / 2, V.x), V.x + V.w - w), y: Math.min(Math.max(y - h / 2, V.y), V.y + V.h - h), w, h };
 };
 const vb = (v: View) => `${v.x.toFixed(1)} ${v.y.toFixed(1)} ${v.w.toFixed(1)} ${v.h.toFixed(1)}`;
-
-// graticule every two degrees, as printed on the sheet
-const LONS = [8, 10, 12, 14, 16, 18];
-const LATS = [38, 40, 42, 44, 46];
 
 // heights of the model, px: Italy's block, then the raised regions on top of it
 const IT_SIDES = [2, 4, 6];
@@ -55,8 +48,7 @@ export type MapPlace = MapPin & {
   item: ReactNode;
 };
 
-/** A place in sheet units (km, y south). */
-export const placeXY = (p: { lat: number; lon: number }) => project(p.lat, p.lon);
+export { placeXY };
 
 const Layer = ({ ids, z, className, view }: { ids: string[]; z: number; className: string; view: string }) => (
   <svg className={`vp-map__layer vp-map__cut ${className}`} viewBox={view} aria-hidden="true" focusable="false" style={{ "--z": `${z}px` } as CSSProperties}>
