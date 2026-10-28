@@ -7,6 +7,7 @@ import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import { PreloadFonts } from "@/components/layout/PreloadFonts";
 import { company } from "@/content/site";
+import { FONT_KIT } from "@/lib/fonts";
 import { projects } from "@/content/projects";
 import { dictionaryFor } from "@/lib/content";
 import { hasLocale, href, locales, type RouteKey } from "@/lib/i18n";
@@ -57,8 +58,15 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
       <head>
         <link rel="preconnect" href="https://use.typekit.net" crossOrigin="" />
         <link rel="preconnect" href="https://p.typekit.net" crossOrigin="" />
-        {/* Adobe Fonts web kit "zgd5zbh": Aktiv Grotesk Light 300, Regular 400, Bold 700 */}
-        <link rel="stylesheet" href="https://use.typekit.net/zgd5zbh.css" />
+        {/* Adobe Fonts web kit "zgd5zbh": Aktiv Grotesk Light 300, Regular 400, Bold 700. Attached by a
+            script, not by a plain link: a stylesheet on another server would hold the page's first
+            paint (by more than a second on phones). The text shows at once in the fallback face and
+            takes Aktiv Grotesk as soon as the kit arrives; its fonts are already on their way
+            (PreloadFonts). The kit, with Adobe's page-view stylesheet, still loads on every page. */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var l=document.createElement("link");l.rel="stylesheet";l.href="${FONT_KIT}";document.head.appendChild(l)})()` }} />
+        <noscript>
+          <link rel="stylesheet" href={FONT_KIT} />
+        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html:
