@@ -11,7 +11,8 @@ export type Step = {
   key: string;
   verb: string;
   name: string;
-  kind: string;
+  /** the company's own logo; f: its optical size, 1 for the most compact */
+  logo: { src: string; w: number; h: number; f: number };
   text: string;
   image: string;
   href: string;
@@ -21,14 +22,16 @@ export type Step = {
 };
 
 /**
- * The group as one stroke: develop → build → add value. The section holds still while the
- * page scrolls and the scroll runs the chain. The three verbs stand large, in outline; each
- * fills in navy as its turn comes, the fill wiping in along the slope of the symbol, and stays
- * filled: the chain adds up (outline turns into solid, never the reverse). Beside them, a
- * window cut on the same slope: each step's photograph wipes in over the last along the same
- * line. Under the verbs, who does it, what it does, one published fact and the way in. The
- * verbs are also the way to jump to a step. Every step's words are in the list for screen
- * readers; the window repeats them for the eye.
+ * The group as one stroke: develop → build → add value, and who does each. The section holds
+ * still while the page scrolls and the scroll runs the chain. The three verbs stand large, in
+ * outline, each with the logo of the company that does it, in its own colours. Each verb fills
+ * in navy as its turn comes, the fill wiping in along the slope of the symbol, and the same
+ * stroke runs on along the rule under the row to the logo, which comes into full colour: the
+ * verb is signed. What is filled stays filled: the chain adds up (outline turns into solid,
+ * never the reverse). Beside them, a window: each step's photograph wipes in over the last
+ * along the same line. Under the verbs, what the company does, one published fact and the way
+ * in. The verbs are also the way to jump to a step. Every step's words are in the list for
+ * screen readers; the window repeats them for the eye.
  */
 export function Filiera({ steps, externalNote, label }: { steps: Step[]; externalNote: string; label: string }) {
   const n = steps.length;
@@ -58,6 +61,10 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
                     {s.verb}
                   </span>
                 </span>
+                {/* who does it: the company's logo */}
+                <span className="vp-fil__logo" style={{ "--lf": s.logo.f } as CSSProperties}>
+                  <Image src={s.logo.src} alt={s.name} width={s.logo.w} height={s.logo.h} unoptimized={s.logo.src.endsWith(".svg")} sizes="16rem" />
+                </span>
               </button>
             ))}
           </div>
@@ -75,11 +82,10 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
           <ol className="vp-fil__steps" aria-label={label}>
             {steps.map((s, i) => (
               <li key={s.key} className="vp-fil__step" data-on={i === active ? "" : undefined} onFocus={() => i !== active && go(i)}>
-                <h3 className="sr-only">{s.verb}</h3>
-                <p className="t-body">
-                  {s.name} <span className="text-[var(--fg-2)]">· {s.kind}</span>
-                </p>
-                <p className="vp-fil__text mt-3">{s.text}</p>
+                <h3 className="sr-only">
+                  {s.verb}: {s.name}
+                </h3>
+                <p className="vp-fil__text">{s.text}</p>
                 <div className="vp-fil__proof mt-6">
                   <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <Mark className="text-[var(--fg)]" />

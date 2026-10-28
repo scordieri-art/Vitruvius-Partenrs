@@ -23,19 +23,52 @@ const proofHref = (lang: Locale, link: string) => {
   return href(lang, "about", undefined, hash);
 };
 
-/** The three steps of the group, as the home page tells them (Filiera and its preview variants). */
+/**
+ * The companies' own logos, in their own colours, beside the verbs. Vitruvius Construction
+ * publishes its logo in white only: here in the blue of its site (#2F5597). Axis Real Estate:
+ * the logo file supplied by the group. `f` evens out their optical size (a long one-line logo
+ * is drawn lower than a compact one).
+ */
+const LOGOS = {
+  vp: { src: "/brand/vp-logo-orizzontale.svg", w: 831, h: 71, f: 0.45 },
+  construction: { src: "/brand/gruppo/vitruvius-construction.png", w: 1200, h: 238, f: 0.72 },
+  axis: { src: "/brand/gruppo/axis-real-estate.svg", w: 470, h: 154, f: 0.94 },
+} as const;
+
+/**
+ * The three steps of the group, as the home page tells them: develop (Vitruvius & Partners),
+ * build (Vitruvius Construction), add value (Axis Real Estate, in the place of the group's
+ * Living line on this page only).
+ */
 export function homeSteps(lang: Locale): Step[] {
   const t = dictionaryFor(lang);
-  return t.group.entities.map((e) => ({
-    key: e.key,
-    verb: e.verb,
-    name: e.name,
-    kind: e.kind,
-    text: e.text,
-    image: HOME_IMG[e.key as "vp" | "construction" | "living"],
-    href: e.href || href(lang, "about"),
-    linkLabel: e.linkLabel,
-    external: !!e.href,
-    proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
-  }));
+  return t.group.entities.map((e) => {
+    if (e.key === "living") {
+      const a = t.home.lines.axis;
+      return {
+        key: "axis",
+        verb: e.verb,
+        name: a.name,
+        logo: LOGOS.axis,
+        text: a.text,
+        image: HOME_IMG.living,
+        href: a.href,
+        linkLabel: a.linkLabel,
+        external: true,
+        proof: a.proof,
+      };
+    }
+    return {
+      key: e.key,
+      verb: e.verb,
+      name: e.name,
+      logo: LOGOS[e.key as "vp" | "construction"],
+      text: e.text,
+      image: HOME_IMG[e.key as "vp" | "construction"],
+      href: e.href || href(lang, "about"),
+      linkLabel: e.linkLabel,
+      external: !!e.href,
+      proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
+    };
+  });
 }

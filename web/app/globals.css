@@ -1188,8 +1188,9 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   /* Home, the group as one stroke (components/home/Filiera.tsx). The stage holds still for
      the run of the section; --t goes from 0 to n-1 with the scroll. Each verb fills (--f, 0 → 1)
      as its turn comes, the edge of the fill on the slope of the symbol, and stays filled; the
-     current one is solid, the others pale or in outline. Each photograph wipes in over the last
-     along the same slope. */
+     current one is solid, the others pale or in outline. The same stroke runs on along the rule
+     under the row to the company's logo, which comes into colour. Each photograph wipes in over
+     the last along the slope. */
   .vp-fil {
     position: relative;
     height: calc(var(--n) * 45svh + 100svh);
@@ -1211,19 +1212,50 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     /* under the title on arrival; once held, air above and below the chain */
     padding-top: clamp(2.5rem, 12svh, 7rem);
   }
+  /* a ruled table: number, verb, logo; the logos line up in one column */
   .vp-fil__verbs {
+    /* the size of the verbs (on phones, small enough to leave the logos room); the logos follow it */
+    --vs: clamp(2.4rem, 0.6rem + 4.4vw, 5.4rem);
+    --v: min(var(--vs), 7.8vw);
     display: grid;
-    justify-items: start;
+    grid-template-columns: auto max-content max-content;
+    justify-content: start;
+    column-gap: 0.8rem;
   }
   .vp-fil__verb {
     --f: clamp(0, (var(--t) - var(--i)) / 0.6 + 1, 1);
-    display: flex;
-    align-items: flex-start;
-    gap: 0.8rem;
+    /* the end of the run: the stroke reaching the logo */
+    --g: clamp(0, (var(--f) - 0.8) * 5, 1);
+    position: relative;
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: last baseline;
+    padding-block: calc(var(--v) * 0.1) calc(var(--v) * 0.2);
     text-align: left;
     cursor: pointer;
   }
+  /* the rule under the row: a hairline, and over it the stroke running on from the verb to its logo */
+  .vp-fil__verb::before,
+  .vp-fil__verb::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 1px;
+    background: var(--line);
+  }
+  .vp-fil__verb::after {
+    background: color-mix(in srgb, var(--fg) 58%, var(--bg));
+    transform-origin: 0 50%;
+    scale: var(--f) 1;
+    transition: background-color 500ms var(--ease-move);
+  }
+  .vp-fil__verb[aria-current]::after {
+    height: 2px;
+    background: var(--fg);
+  }
   .vp-fil__num {
+    align-self: start;
     padding-top: 0.5em;
     transition: color var(--dur-ui);
   }
@@ -1233,7 +1265,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-fil__word {
     position: relative;
     display: block;
-    font-size: clamp(2.4rem, 0.6rem + 4.4vw, 5.4rem);
+    font-size: var(--v);
     font-weight: 300;
     line-height: 1.02;
     letter-spacing: -0.04em;
@@ -1258,6 +1290,35 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   }
   .vp-fil__verb:hover .vp-fil__outline {
     -webkit-text-stroke-width: 1.5px;
+  }
+  /* the logo of the company that does it, sitting on the line of the verb: grey and pale until
+     the stroke reaches it, then in its own colours; once reached it stays in colour, quieter */
+  .vp-fil__logo {
+    /* the logo unit: the height of the most compact logo; --lf evens out the others */
+    --lu: var(--v);
+    display: block;
+    /* its foot on the baseline of the verb (0.156 of the verb's size above the foot of its line) */
+    align-self: end;
+    margin-left: clamp(0.5rem, 2vw, 2.75rem);
+    padding-bottom: calc(var(--v) * 0.156);
+    line-height: 0;
+    filter: grayscale(calc(1 - var(--g)));
+    opacity: calc(0.45 + 0.3 * var(--g));
+    transition:
+      filter 400ms var(--ease-move),
+      opacity 400ms var(--ease-move);
+  }
+  .vp-fil__logo img {
+    display: inline-block;
+    height: calc(var(--lu) * var(--lf));
+    width: auto;
+    max-width: none;
+  }
+  .vp-fil__verb[aria-current] .vp-fil__logo {
+    opacity: calc(0.45 + 0.55 * var(--g));
+  }
+  .vp-fil__verb:hover .vp-fil__logo {
+    opacity: 1;
   }
 
   /* the window: the photographs, each wiping in over the last along the slope */
@@ -1311,8 +1372,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     line-height: 1.35;
   }
   .vp-fil__proof {
-    border-top: 1px solid var(--line);
-    padding-top: 1rem;
     max-width: 30rem;
   }
   .vp-fil__fig {
@@ -1321,13 +1380,22 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     line-height: 1;
     letter-spacing: -0.02em;
   }
+  /* the narrowest phones: the verb and its logo, without the numbers */
+  @media (max-width: 22.4rem) {
+    .vp-fil__verbs {
+      grid-template-columns: max-content max-content;
+    }
+    .vp-fil__num {
+      display: none;
+    }
+  }
   /* short phones: smaller verbs and window, the fact without its caption */
   @media (max-width: 63.99rem) and (max-height: 44rem) {
     .vp-fil__grid {
       row-gap: 0.75rem;
     }
-    .vp-fil__word {
-      font-size: clamp(2rem, 11svh, 2.5rem);
+    .vp-fil__verbs {
+      --vs: clamp(2rem, 11svh, 2.5rem);
     }
     .vp-fil__window {
       --wh: 20svh;
@@ -1337,7 +1405,6 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
     .vp-fil__proof {
       margin-top: 0.9rem;
-      padding-top: 0.7rem;
     }
     .vp-fil__proof .t-small:last-child {
       display: none;
@@ -1353,8 +1420,8 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     .vp-fil__window {
       --wh: 13svh;
     }
-    .vp-fil__word {
-      font-size: 2rem;
+    .vp-fil__verbs {
+      --vs: 2rem;
     }
     /* the smallest phones keep the words and the way in; the fact stays on the pages it links to */
     .vp-fil__proof {
@@ -1377,10 +1444,13 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       align-items: center;
     }
     .vp-fil__verbs {
-      grid-column: 1 / span 5;
+      grid-column: 1 / span 6;
       grid-row: 1;
       align-self: start;
-      row-gap: 0.25rem;
+    }
+    /* beside the photograph: smaller, so the table keeps its distance from it */
+    .vp-fil__logo {
+      --lu: calc(var(--v) * 0.5);
     }
     .vp-fil__steps {
       grid-column: 1 / span 5;
@@ -1399,9 +1469,17 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       font-size: var(--t-s);
     }
   }
+  /* wide screens: room for larger logos */
+  @media (min-width: 80rem) {
+    .vp-fil__logo {
+      --lu: calc(var(--v) * 0.62);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .vp-fil__step,
-    .vp-fil__fill {
+    .vp-fil__fill,
+    .vp-fil__verb::after,
+    .vp-fil__logo {
       transition: none;
     }
   }

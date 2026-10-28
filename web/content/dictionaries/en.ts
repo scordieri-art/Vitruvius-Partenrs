@@ -68,6 +68,13 @@ const en: Dictionary = {
       label: "The group",
       title: "An integrated group across the entire real estate value chain.",
       swipe: "Swipe",
+      axis: {
+        name: "Axis Real Estate",
+        text: "Asset manager of residential projects, following them from design to completion.",
+        proof: { value: "Westhaven", unit: "Milan", label: "It leads the development and is the asset manager" },
+        href: "https://westhavenmilano.com/",
+        linkLabel: "westhavenmilano.com",
+      },
     },
     press: {
       label: "In the press",
