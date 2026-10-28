@@ -2,8 +2,9 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { sendApplication, type FormState } from "@/lib/actions";
-import { Consent, Field, Honeypot, MailFallback, Submit, useSubmitKeepingValues } from "./Fields";
+import { Consent, ErrorSummary, Field, firstInvalid, focusField, Honeypot, MailFallback, Sent, Submit, useLiveErrors, useSubmitKeepingValues } from "./Fields";
 import { company } from "@/content/site";
+import { EMAIL, PHONE } from "./patterns";
 
 type Labels = {
   failed: string;
@@ -25,47 +26,82 @@ type Labels = {
   sending: string;
   success: string;
   error: string;
+  consentShort: string;
+  sentTitle: string;
   required: string;
   invalidEmail: string;
   invalidPhone: string;
   invalidFile: string;
 };
 
+/**
+ * An application: who, how to reach them, the CV. A failed attempt lists what to correct above the
+ * form and takes the focus to the first field; each error goes as soon as its field is right.
+ * A sent application gives way to a confirmation.
+ */
 export function ApplicationForm({ job, labels }: { job: string; labels: Labels }) {
   const [state, action, pending] = useActionState<FormState, FormData>(sendApplication, { ok: false });
   const [fileName, setFileName] = useState("");
   const form = useRef<HTMLFormElement>(null);
   const status = useRef<HTMLParagraphElement>(null);
   const onSubmit = useSubmitKeepingValues(action);
+  const live = useLiveErrors(state.errors);
+  const errors = live.errors;
   const msg = (k?: string) =>
     k === "email" ? labels.invalidEmail : k === "phone" ? labels.invalidPhone : k === "file" ? labels.invalidFile : k ? labels.required : undefined;
 
-  // clear the chosen file name after a successful submission (adjusted during render)
-  const [seen, setSeen] = useState(state);
-  if (seen !== state) {
-    setSeen(state);
-    if (state.ok) setFileName("");
-  }
-
   useEffect(() => {
-    if (state.ok) form.current?.reset();
-    if (state.ok || state.errors || state.failed) status.current?.focus();
+    if (state.errors) focusField(firstInvalid(form.current));
+    else if (state.failed) status.current?.focus();
   }, [state]);
 
+  const fields = [
+    { name: "name", id: "a-name", label: labels.name },
+    { name: "birth", id: "a-birth", label: labels.birth },
+    { name: "phone", id: "a-phone", label: labels.phone },
+    { name: "email", id: "a-email", label: labels.email },
+    { name: "address", id: "a-address", label: labels.address },
+    { name: "cv", id: "a-cv", label: labels.cv },
+    { name: "consent", id: "a-consent", label: labels.consentShort },
+  ];
+  const wrong = fields.flatMap((f) => (errors?.[f.name] ? [{ id: f.id, label: f.label, message: msg(errors[f.name]) ?? "" }] : []));
+
+  if (state.ok)
+    return (
+      <div>
+        <h2 id="apply-title" className="t-m">
+          {labels.title}
+        </h2>
+        <div className="mt-10">
+          <Sent title={labels.sentTitle} text={labels.success} />
+        </div>
+      </div>
+    );
+
   return (
-    <form ref={form} action={action} onSubmit={onSubmit} noValidate className="relative grid gap-10" aria-labelledby="apply-title">
+    <form
+      ref={form}
+      action={action}
+      onSubmit={onSubmit}
+      onInput={live.onInput}
+      onBlur={live.onBlur}
+      noValidate
+      className="relative grid gap-10"
+      aria-labelledby="apply-title"
+    >
       <Honeypot />
       <input type="hidden" name="job" value={job} />
       <h2 id="apply-title" className="t-m">{labels.title}</h2>
+      <ErrorSummary title={labels.error} items={wrong} />
       <div className="grid gap-10 sm:grid-cols-2">
-        <Field id="a-name" name="name" label={labels.name} autoComplete="name" required error={msg(state.errors?.name)} />
-        <Field id="a-birth" name="birth" type="date" label={labels.birth} autoComplete="bday" required error={msg(state.errors?.birth)} />
-        <Field id="a-phone" name="phone" type="tel" label={labels.phone} autoComplete="tel" inputMode="tel" required error={msg(state.errors?.phone)} />
-        <Field id="a-email" name="email" type="email" label={labels.email} autoComplete="email" required error={msg(state.errors?.email)} />
+        <Field id="a-name" name="name" label={labels.name} autoComplete="name" required error={msg(errors?.name)} />
+        <Field id="a-birth" name="birth" type="date" label={labels.birth} autoComplete="bday" required error={msg(errors?.birth)} />
+        <Field id="a-phone" name="phone" type="tel" label={labels.phone} autoComplete="tel" inputMode="tel" pattern={PHONE} required error={msg(errors?.phone)} />
+        <Field id="a-email" name="email" type="email" label={labels.email} autoComplete="email" pattern={EMAIL} required error={msg(errors?.email)} />
       </div>
-      <Field id="a-address" name="address" label={labels.address} autoComplete="address-level2" required error={msg(state.errors?.address)} />
+      <Field id="a-address" name="address" label={labels.address} autoComplete="address-level2" required error={msg(errors?.address)} />
 
-      <div>
+      <div className="vp-field">
         <span className="t-label block" id="a-cv-label">
           {labels.cv} <span aria-hidden="true">*</span>
         </span>
@@ -81,20 +117,21 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
           accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
           className="sr-only"
           aria-labelledby="a-cv-label"
-          aria-describedby={`a-cv-hint${state.errors?.cv ? " a-cv-error" : ""}`}
+          aria-describedby={`a-cv-hint${errors?.cv ? " a-cv-error" : ""}`}
+          aria-invalid={!!errors?.cv}
           onChange={(e) => setFileName(e.currentTarget.files?.[0]?.name ?? "")}
         />
         <p id="a-cv-hint" className="t-label mt-2">{labels.cvHint}</p>
-        {state.errors?.cv ? (
-          <p id="a-cv-error" className="t-small mt-2">— {msg(state.errors.cv)}</p>
+        {errors?.cv ? (
+          <p id="a-cv-error" className="t-small mt-2">— {msg(errors.cv)}</p>
         ) : null}
       </div>
 
-      <Consent id="a-consent" label={labels.consent} error={msg(state.errors?.consent)} />
+      <Consent id="a-consent" label={labels.consent} error={msg(errors?.consent)} />
       <div className="flex flex-wrap items-center justify-between gap-6">
         <Submit pending={pending} label={labels.submit} pendingLabel={labels.sending} />
         <p ref={status} tabIndex={-1} role="status" aria-live="polite" className="t-small outline-none">
-          {state.ok ? labels.success : state.failed ? labels.failed : state.errors ? labels.error : ""}
+          {state.failed ? labels.failed : ""}
           {state.failed ? " " : null}
           {state.failed ? <MailFallback form={form} to={company.email} subject={`${labels.mailSubject}: ${job}`} label={labels.mailFallback} note={labels.mailNote} /> : null}
         </p>

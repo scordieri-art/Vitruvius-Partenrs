@@ -9,8 +9,10 @@ import {
   type InputHTMLAttributes,
   type RefObject,
   type ReactNode,
+  type SyntheticEvent,
   type TextareaHTMLAttributes,
 } from "react";
+import type { FormState } from "@/lib/actions";
 
 /**
  * React 19 clears a form after every action, errors included: a visitor who misses one
@@ -28,6 +30,105 @@ export function useSubmitKeepingValues(action: (data: FormData) => void) {
 }
 import { ButtonBody } from "@/components/ui/Button";
 import { Mark } from "@/components/marks/Mark";
+
+type Errors = NonNullable<FormState["errors"]>;
+type Verdict = Errors[string] | "ok";
+
+/** What the browser's own checks say of a field, on the rules the server applies. */
+function verdict(el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement): Verdict {
+  if (el.type === "radio") return el.form?.querySelector(`input[name="${el.name}"]:checked`) ? "ok" : "required";
+  if (el.type === "checkbox") return (el as HTMLInputElement).checked ? "ok" : "required";
+  if (el.validity.valueMissing) return "required";
+  if (el.validity.valid) return "ok";
+  return el.type === "email" ? "email" : el.type === "tel" ? "phone" : el.type === "file" ? "file" : "required";
+}
+
+/**
+ * The errors of the last attempt, kept true while the visitor corrects them: a field loses its
+ * error as soon as it is right (as it is typed), and a field still wrong gets the right message
+ * when it is left. A field without an error is never judged while it is being typed in.
+ */
+export function useLiveErrors(errors: FormState["errors"]) {
+  const [over, setOver] = useState<Record<string, Verdict>>({});
+  const [seen, setSeen] = useState(errors);
+  if (seen !== errors) {
+    setSeen(errors);
+    setOver({});
+  }
+  const judge = (settle: boolean) => (e: SyntheticEvent<HTMLFormElement>) => {
+    const el = e.target as HTMLInputElement;
+    if (!el.name || !errors?.[el.name]) return;
+    const v = verdict(el);
+    if (v === "ok" || settle) setOver((o) => (o[el.name] === v ? o : { ...o, [el.name]: v }));
+  };
+  const live: Errors = {};
+  for (const [k, v] of Object.entries(errors ?? {})) {
+    const now = over[k] ?? v;
+    if (now !== "ok") live[k] = now;
+  }
+  return { errors: errors ? live : undefined, onInput: judge(false), onBlur: judge(true) };
+}
+
+/** Focus a field (in a group, the chosen option or else the first) and bring it, label and all, to the upper middle of the screen. */
+export function focusField(el: HTMLElement | null) {
+  const field = el?.matches("input, select, textarea") ? el : (el?.querySelector<HTMLElement>("input:checked") ?? el?.querySelector<HTMLElement>("input, select, textarea"));
+  if (!field) return;
+  field.focus({ preventScroll: true });
+  const box = field.closest<HTMLElement>(".vp-field, fieldset, label") ?? field;
+  // measured against the page's own scroll, which the smooth scroller may not have caught up with yet
+  const top = box.getBoundingClientRect().top + window.scrollY - innerHeight / 3;
+  const lenis = (window as unknown as { __lenis?: { scrollTo: (to: number) => void } }).__lenis;
+  if (lenis) lenis.scrollTo(top);
+  else window.scrollTo({ top, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
+/** The first field still to correct, in the order of the form. */
+export const firstInvalid = (form: HTMLFormElement | null) => form?.querySelector<HTMLElement>('fieldset[data-invalid], [aria-invalid="true"]') ?? null;
+
+/** Ahead of the form after a failed attempt: what is still wrong, each line a link to its field. */
+export function ErrorSummary({ title, items }: { title: string; items: { id: string; label: string; message: string }[] }) {
+  if (!items.length) return null;
+  return (
+    <div className="vp-errsum">
+      <h3 className="t-body">{title}</h3>
+      <ul className="mt-3 grid gap-2">
+        {items.map((it) => (
+          <li key={it.id} className="t-small">
+            <a
+              href={`#${it.id}`}
+              className="vp-ulink"
+              onClick={(e) => {
+                e.preventDefault();
+                focusField(document.getElementById(it.id));
+              }}
+            >
+              {it.label}
+            </a>
+            <span className="text-[var(--fg-2)]"> — {it.message}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** After a successful send the form gives way to this: the symbol fills, the title takes the focus. */
+export function Sent({ title, text, children }: { title: string; text: string; children?: ReactNode }) {
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => heading.current?.focus(), []);
+  return (
+    <div className="vp-sent">
+      <Mark className="vp-sent__mark" />
+      <h3 ref={heading} tabIndex={-1} aria-describedby="sent-text" className="t-l mt-8 outline-none">
+        {title}
+      </h3>
+      <p id="sent-text" className="t-body-l mt-4 max-w-[40ch] text-[var(--fg-2)]">
+        {text}
+      </p>
+      {children ? <div className="mt-10">{children}</div> : null}
+    </div>
+  );
+}
 
 /** Text field with a hairline, a real label and an error message linked to the input. */
 export function Field({
@@ -135,6 +236,7 @@ export function Select({
  * labels and form data behave natively. The chosen row carries the brand's slope mark.
  */
 export function Choice({
+  id,
   name,
   legend,
   options,
@@ -142,6 +244,7 @@ export function Choice({
   onChange,
   error,
 }: {
+  id: string;
   name: string;
   legend: string;
   options: { value: string; label: string }[];
@@ -150,7 +253,7 @@ export function Choice({
   error?: string;
 }) {
   return (
-    <fieldset className="vp-choice" aria-describedby={error ? `${name}-error` : undefined}>
+    <fieldset id={id} className="vp-choice" data-invalid={error ? "" : undefined} aria-describedby={error ? `${name}-error` : undefined}>
       <legend className="t-label mb-4">
         {legend}
         <span aria-hidden="true"> *</span>

@@ -373,6 +373,45 @@
   .vp-tabs::-webkit-scrollbar {
     display: none;
   }
+  /* forms, after a failed attempt: what to correct, ahead of the fields, set off by a navy rule */
+  .vp-errsum {
+    border-left: 2px solid var(--fg);
+    padding: 0.2rem 0 0.2rem 1.25rem;
+  }
+  /* forms, once sent: the confirmation takes the form's place; the symbol goes from outline to solid */
+  .vp-sent {
+    border-top: 1px solid var(--line);
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+  }
+  .vp-sent__mark {
+    height: clamp(2.75rem, 5vw, 4rem);
+    color: var(--fg);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .vp-sent__mark polygon {
+      animation: vp-sent-fill 900ms var(--ease-enter) 250ms both;
+    }
+    .vp-sent > :not(.vp-sent__mark) {
+      animation: vp-sent-rise 800ms var(--ease-enter) both;
+    }
+    .vp-sent > p {
+      animation-delay: 90ms;
+    }
+    .vp-sent > div {
+      animation-delay: 180ms;
+    }
+  }
+  @keyframes vp-sent-fill {
+    from {
+      fill-opacity: 0;
+    }
+  }
+  @keyframes vp-sent-rise {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem);
+    }
+  }
   /* contact topic: large rows, the chosen one carries the slope mark */
   .vp-choice {
     border: 0;
