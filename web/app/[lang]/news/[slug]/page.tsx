@@ -73,7 +73,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <header data-theme="paper" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))]">
           <div className="container-x">
-            <p className="t-label mb-8 flex flex-wrap items-center gap-x-3 gap-y-1" data-reveal="fade">
+            <p className="vp-rise t-label mb-8 flex flex-wrap items-center gap-x-3 gap-y-1">
               <TLink href={href(lang, "news")} className="vp-ulink">
                 {n.label}
               </TLink>
@@ -86,7 +86,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
             </h1>
             {item.lede ? (
               <div className="grid-12 mt-10 lg:mt-12">
-                <p className="t-body-l col-span-4 max-w-[50ch] text-[var(--fg-2)] lg:col-span-7 lg:col-start-4" data-reveal="fade" data-reveal-delay="0.15">
+                <p className="vp-rise vp-rise--late t-body-l col-span-4 max-w-[50ch] text-[var(--fg-2)] lg:col-span-7 lg:col-start-4">
                   {item.lede}
                 </p>
               </div>
@@ -97,7 +97,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
         {item.image ? (
           <div data-theme="paper" className="pt-[clamp(3rem,7vw,6rem)]">
             <div className="container-x">
-              <div data-reveal="image" className="relative aspect-[4/3] overflow-hidden sm:aspect-[16/9]">
+              <div className="vp-rise vp-rise--later relative aspect-[4/3] overflow-hidden sm:aspect-[16/9]">
                 {/* drawn plate under the published image: shows while it loads or if it cannot be reached */}
                 <div className="vp-plate" aria-hidden="true">
                   <span className="t-label">{press?.outlet ?? n.label}</span>

@@ -65,7 +65,7 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
       {/* At a glance */}
       <header data-theme="paper" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))] pb-[clamp(3.5rem,7vw,6rem)]">
         <div className="container-x">
-          <p className="t-label mb-8 flex items-center gap-3" data-reveal="fade">
+          <p className="vp-rise t-label mb-8 flex items-center gap-3">
             <TLink href={href(lang, "careers")} className="vp-ulink">
               {c.label}
             </TLink>
@@ -77,7 +77,7 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
               <DashTitle text={job.title} />
             </Rise>
           </h1>
-          <div className="mt-12 flex flex-col items-start gap-10 border-t border-[var(--line)] pt-8 lg:flex-row lg:items-end lg:justify-between" data-reveal="fade" data-reveal-delay="0.2">
+          <div className="mt-12 flex flex-col items-start gap-10 border-t border-[var(--line)] pt-8 lg:flex-row lg:items-end lg:justify-between vp-rise vp-rise--late">
             <dl className="grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-6 sm:grid-cols-3 sm:gap-x-12">
               <div>
                 <dt className="t-label">{c.jobMeta.location}</dt>

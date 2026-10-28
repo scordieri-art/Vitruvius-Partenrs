@@ -1479,6 +1479,9 @@ figure:has(.vp-tag) .vp-pubcap {
   .vp-rise--late {
     animation-delay: 0.22s;
   }
+  .vp-rise--later {
+    animation-delay: 0.34s;
+  }
   .vp-hero .vp-hero__lead {
     animation-delay: 0.4s;
   }
@@ -2779,9 +2782,10 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
   .vp-card[data-picked] .vp-card__link {
     animation: vp-card-pick 2.4s var(--ease-move);
   }
+  /* from all but transparent: the first cover counts as drawn from the first frame (LCP) */
   @keyframes vp-card-rise {
     from {
-      opacity: 0;
+      opacity: 0.01;
       translate: 0 2.5rem;
     }
   }

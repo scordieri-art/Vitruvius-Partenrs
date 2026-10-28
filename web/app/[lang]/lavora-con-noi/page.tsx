@@ -44,24 +44,24 @@ export default async function CareersPage() {
       <section data-theme="paper" aria-labelledby="careers-title" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))] pb-[clamp(4rem,9vw,7rem)]">
         <div className="container-x grid-12 gap-y-12 lg:items-end">
           <div className="col-span-4 lg:col-span-7">
-            <p className="t-label mb-8" data-reveal="fade">
+            <p className="vp-rise t-label mb-8">
               {c.label}
             </p>
             <h1 id="careers-title" className="t-xl max-w-[14ch]">
               <Rise>{c.title}</Rise>
             </h1>
-            <p className="t-body-l mt-10 max-w-[44ch] text-[var(--fg-2)]" data-reveal="fade" data-reveal-delay="0.2">
+            <p className="vp-rise vp-rise--late t-body-l mt-10 max-w-[44ch] text-[var(--fg-2)]">
               {c.lead}
             </p>
             {jobs.length ? (
-              <div className="mt-10" data-reveal="fade" data-reveal-delay="0.3">
+              <div className="vp-rise vp-rise--later mt-10">
                 <JumpLink to="positions" primary>
                   {c.openLabel} <span className="t-num opacity-70">· {jobs.length}</span>
                 </JumpLink>
               </div>
             ) : null}
           </div>
-          <div className="col-span-4 lg:col-span-4 lg:col-start-9" data-reveal="image">
+          <div className="vp-rise vp-rise--late col-span-4 lg:col-span-4 lg:col-start-9">
             <ParallaxImage src="/images/pages/careers-team-plans.jpg" alt="" sizes="(min-width: 1024px) 33vw, 100vw" className="aspect-[4/5] bg-[var(--line)]" priority />
           </div>
         </div>

@@ -34,17 +34,17 @@ export default async function ContactPage() {
       {/* Opening: the sentence, the action, the direct lines */}
       <section data-theme="paper" aria-labelledby="contact-title" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))] pb-[clamp(4rem,8vw,7rem)]">
         <div className="container-x">
-          <p className="t-label mb-8" data-reveal="fade">
+          <p className="vp-rise t-label mb-8">
             {c.label}
           </p>
           <h1 id="contact-title" className="t-xl max-w-[14ch]">
             <Rise>{c.title}</Rise>
           </h1>
           <div className="grid-12 mt-10 gap-y-8 lg:mt-14 lg:items-end">
-            <p className="t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5" data-reveal="fade" data-reveal-delay="0.2">
+            <p className="vp-rise vp-rise--late t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5">
               {c.lead}
             </p>
-            <div className="col-span-4 lg:col-span-6 lg:col-start-7 lg:justify-self-end" data-reveal="fade" data-reveal-delay="0.3">
+            <div className="vp-rise vp-rise--later col-span-4 lg:col-span-6 lg:col-start-7 lg:justify-self-end">
               <JumpLink to="write" primary>
                 {c.write}
               </JumpLink>
