@@ -2183,6 +2183,18 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     transform: translateX(0.4rem);
   }
 
+  /* a count running: the real figure stays in the text, transparent, and the layer over it counts */
+  .vp-count__n.is-counting {
+    position: relative;
+    color: transparent;
+  }
+  .vp-count__n.is-counting::after {
+    content: attr(data-n);
+    content: attr(data-n) / "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    color: var(--fg);
+  }
   .vp-count {
     font-size: clamp(2rem, 0.6rem + 4.6vw, 6rem);
     font-weight: 300;

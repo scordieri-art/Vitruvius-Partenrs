@@ -8,8 +8,10 @@ export type Figure = { value: number; decimals: number; pre: string; post: strin
 /**
  * Four figures. Counts (sites, cities) run up once when they come into view; amounts and
  * ranks are set still, because a sum of money or a position should never be seen changing.
- * The server renders the final values (no JavaScript, reduced motion and search engines
- * see the real numbers).
+ * The text always holds the final value (no JavaScript, reduced motion, search engines and
+ * screen readers get the real numbers): the count runs on a layer drawn over it from a data
+ * attribute (.vp-count__n.is-counting::after), the real figure kept transparent underneath so
+ * nothing moves when the layer goes.
  */
 /** `paired`: two columns at every width, for when the figures share the row with the map. */
 export function Counters({ figures, locale, paired = false }: { figures: Figure[]; locale: string; paired?: boolean }) {
@@ -23,7 +25,15 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
     const fmt = (v: number, d: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
     const rect = el.getBoundingClientRect();
     if (rect.top < window.innerHeight && rect.bottom > 0) return; // already on screen: keep the final values
-    nodes.forEach((n) => (n.textContent = fmt(0, Number(n.dataset.decimals))));
+    const draw = (n: HTMLElement, v: number) => (n.dataset.n = fmt(v, Number(n.dataset.decimals)));
+    const done = (n: HTMLElement) => {
+      n.classList.remove("is-counting");
+      delete n.dataset.n;
+    };
+    nodes.forEach((n) => {
+      draw(n, 0);
+      n.classList.add("is-counting");
+    });
     let raf = 0;
     const io = new IntersectionObserver(
       (entries) => {
@@ -34,8 +44,9 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
         const step = (now: number) => {
           const k = Math.min(1, (now - t0) / D);
           const e = 1 - Math.pow(1 - k, 3);
-          nodes.forEach((n) => (n.textContent = fmt(Number(n.dataset.count) * e, Number(n.dataset.decimals))));
+          nodes.forEach((n) => draw(n, Number(n.dataset.count) * e));
           if (k < 1) raf = requestAnimationFrame(step);
+          else nodes.forEach(done);
         };
         raf = requestAnimationFrame(step);
       },
@@ -45,7 +56,7 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
     return () => {
       io.disconnect();
       cancelAnimationFrame(raf);
-      nodes.forEach((n) => (n.textContent = fmt(Number(n.dataset.count), Number(n.dataset.decimals))));
+      nodes.forEach(done);
     };
   }, [reduced, locale]);
 
@@ -59,7 +70,7 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
           <dd className="vp-count t-num order-1 whitespace-nowrap">
             {f.pre}
             {f.count ? (
-              <span data-count={f.value} data-decimals={f.decimals}>
+              <span className="vp-count__n" data-count={f.value} data-decimals={f.decimals}>
                 {fmt(f.value, f.decimals)}
               </span>
             ) : (
