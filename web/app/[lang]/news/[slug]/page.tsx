@@ -4,6 +4,7 @@ import { RevealScope } from "@/components/layout/RevealScope";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { notFound } from "next/navigation";
 import { Cta } from "@/components/ui/Cta";
+import { ProjectImage } from "@/components/cases/ProjectImage";
 import { TLink } from "@/components/layout/PageTransition";
 import { getDictionary, getNews, getNewsItem, legacySize, newsCounterpart, outline, pressOutlet } from "@/lib/content";
 import { projects } from "@/content/projects";
@@ -158,7 +159,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
               </dl>
             </aside>
             <div className="col-span-4 lg:col-span-7 lg:col-start-4 lg:row-start-1">
-              <div className="prose-vp" dangerouslySetInnerHTML={{ __html: outline(item.html) }} />
+              <div className="prose-vp prose-vp--article" dangerouslySetInnerHTML={{ __html: outline(item.html) }} />
               {item.sources.length ? (
                 <div className="mt-14 border-t border-[var(--line)] pt-6">
                   <p className="t-label mb-2">{t.ui.sources}</p>
@@ -179,6 +180,34 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
                     ))}
                   </ul>
                 </div>
+              ) : null}
+              {/* the operation the article is about, at its close: the way on to the case */}
+              {project ? (
+                <TLink
+                  href={href(lang, "projects", project.slug[lang])}
+                  transitionLabel={project.name}
+                  className="group mt-14 grid gap-5 border-t border-[var(--line)] pt-8 sm:grid-cols-[minmax(0,15rem)_1fr] sm:items-end"
+                  data-cursor={t.ui.open}
+                >
+                  <ProjectImage
+                    p={project}
+                    lang={lang}
+                    label={t.home.projects.placeholder}
+                    sizes="(min-width: 640px) 15rem, 100vw"
+                    className="aspect-[4/3]"
+                    imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.04]"
+                  />
+                  <span className="grid gap-1.5">
+                    <span className="t-label">{t.projectsPage.label}</span>
+                    <span className="t-m">{project.name}</span>
+                    <span className="t-small text-[var(--fg-2)]">
+                      {project.place[lang]} · {project.status[lang]}
+                    </span>
+                    <span className="t-small mt-2 flex items-center gap-2">
+                      {t.home.projects.open} <span aria-hidden="true" className="vp-go">→</span>
+                    </span>
+                  </span>
+                </TLink>
               ) : null}
               <div className="mt-12">
                 <Cta href={href(lang, "news")} transitionLabel={n.label}>

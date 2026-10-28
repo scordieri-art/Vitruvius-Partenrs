@@ -1125,6 +1125,12 @@
   .prose-vp > * + * {
     margin-top: 1.1em;
   }
+  /* an article: its first paragraph set larger, as the opening of a printed piece */
+  .prose-vp--article > p:first-child {
+    font-size: var(--t-s);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
   .prose-vp h2,
   .prose-vp h3,
   .prose-vp h4 {
@@ -2477,6 +2483,31 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     aspect-ratio: 3 / 2;
     overflow: hidden;
     background: var(--line);
+  }
+  /* the covers, of every kind (photographs, banners, stock pictures), in one treatment: a navy
+     duotone (grey, its darks turned navy), in colour when the card is pointed at or reached with
+     the keyboard, as the leaders' portraits on Chi siamo */
+  .vp-card__pic img {
+    filter: grayscale(1) contrast(1.05);
+    transition:
+      filter 700ms var(--ease-move),
+      scale 1400ms var(--ease-enter);
+  }
+  .vp-card__pic::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: var(--color-navy);
+    mix-blend-mode: lighten;
+    pointer-events: none;
+    transition: opacity 700ms var(--ease-move);
+  }
+  .vp-card__link:is(:hover, :focus-visible) .vp-card__pic img {
+    filter: none;
+  }
+  .vp-card__link:is(:hover, :focus-visible) .vp-card__pic::after {
+    opacity: 0;
   }
   .vp-card__tag {
     justify-self: start;
