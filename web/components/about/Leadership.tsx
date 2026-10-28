@@ -23,7 +23,7 @@ const two = (n: number) => String(n).padStart(2, "0");
  * The legend is the readable list; the bands repeat it for the eye. On phones the portraits
  * form a row to swipe. Reduced motion: no turns, no easing.
  */
-export function Leadership({ groups, externalNote }: { groups: Group[]; externalNote: string }) {
+export function Leadership({ groups, externalNote, labelledBy }: { groups: Group[]; externalNote: string; labelledBy: string }) {
   const people = groups.flatMap((g) => g.people.map((p) => ({ ...p, group: g })));
   const [active, setActive] = useState(0);
   const touched = useRef(false);
@@ -96,8 +96,8 @@ export function Leadership({ groups, externalNote }: { groups: Group[]; external
         ))}
       </ol>
 
-      {/* phones and tablets: a row of portraits to swipe */}
-      <ul className="vp-lead__row">
+      {/* phones and tablets: a row of portraits to swipe; focusable, so the keyboard can scroll it too */}
+      <ul className="vp-lead__row" tabIndex={0} aria-labelledby={labelledBy}>
         {people.map((p) => (
           <li key={p.name} className="vp-lead__card">
             <span className="vp-lead__photo" aria-hidden="true">

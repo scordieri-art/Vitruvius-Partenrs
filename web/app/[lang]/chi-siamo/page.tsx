@@ -143,6 +143,7 @@ export default async function AboutPage() {
             <Leadership
               groups={columns.map(({ e, people: ps }) => ({ key: e.key, name: e.name, kind: e.kind, href: e.href || undefined, linkLabel: e.linkLabel, people: ps }))}
               externalNote={t.ui.externalNew}
+              labelledBy="leadership-title"
             />
           </div>
         </div>

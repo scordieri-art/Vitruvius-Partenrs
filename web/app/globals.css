@@ -2377,6 +2377,10 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-lead__row::-webkit-scrollbar {
     display: none;
   }
+  /* the row runs to the screen's edges: the focus ring is drawn inside it */
+  .vp-lead__row:focus-visible {
+    outline-offset: -2px;
+  }
   .vp-lead__card {
     scroll-snap-align: start;
   }
