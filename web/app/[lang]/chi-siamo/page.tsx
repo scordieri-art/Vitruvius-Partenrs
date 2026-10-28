@@ -4,6 +4,7 @@ import { TLink } from "@/components/layout/PageTransition";
 import { Chronicle } from "@/components/about/Chronicle";
 import { Leadership } from "@/components/about/Leadership";
 import { TeamWall } from "@/components/about/TeamWall";
+import { Mark } from "@/components/marks/Mark";
 import { PageHero } from "@/components/ui/PageHero";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
 import { guamari, production, qualifications, top200 } from "@/content/evidence";
@@ -192,6 +193,8 @@ export default async function AboutPage() {
               show: a.teamShow,
               hide: a.teamHide,
               summary: a.teamSummary.replace("{n}", String(staffCount)).replace("{d}", String(staff.length)),
+              // the leaders are above, in their own section: counted here, so the figures add up to the opening's
+              leaders: a.teamLeaders.replace("{l}", String(leadership.length)),
               careers: { href: href(lang, "careers"), label: a.teamCareers },
             }}
           />
@@ -207,25 +210,32 @@ export default async function AboutPage() {
               {a.credentialsTitle}
             </h2>
           </div>
-          <ul className="col-span-4 border-t border-[var(--line)] lg:col-span-7 lg:col-start-6">
+          {/* each check a documented fact (solid mark), its date, and where it can be read */}
+          <ul className="vp-index vp-index--short col-span-4 lg:col-span-7 lg:col-start-6">
             {credentials.map((c) => {
               const body = (
                 <>
-                  <span className="t-s min-w-0">{c.title}</span>
-                  <span className="t-label shrink-0 sm:text-right">
-                    {c.date} · {c.pdf ? `${a.pdf} ↗` : a.news}
+                  <span className="vp-index__lead">
+                    <Mark className="vp-index__mark" />
+                    {c.title}
+                  </span>
+                  <span className="vp-index__meta t-label">
+                    {c.date} · {c.pdf ? a.pdf : a.news}
                     {c.pdf ? <span className="sr-only"> ({t.ui.externalNew})</span> : null}
+                  </span>
+                  <span className="vp-index__go" aria-hidden="true">
+                    {c.pdf ? "↗" : "→"}
                   </span>
                 </>
               );
               return (
-                <li key={c.key} className="border-b border-[var(--line)]">
+                <li key={c.key}>
                   {c.pdf ? (
-                    <a href={c.href} target="_blank" rel="noopener noreferrer" className="flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+                    <a href={c.href} target="_blank" rel="noopener noreferrer" className="vp-index__row">
                       {body}
                     </a>
                   ) : (
-                    <TLink href={c.href} className="flex flex-col gap-1 py-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+                    <TLink href={c.href} className="vp-index__row">
                       {body}
                     </TLink>
                   )}

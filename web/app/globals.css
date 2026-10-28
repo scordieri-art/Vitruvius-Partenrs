@@ -1941,13 +1941,13 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* the press as an index of articles: the outlet large, its headline as published, the
-     operation and the date. The whole row is the link: pointed at, a tint wipes in behind it
-     along the slope of the symbol and its mark fills (outline → solid). */
-  .vp-pressrows {
+  /* an index of documents (the press on the home page, the external checks on Chi siamo): the
+     name large, a line of text, a note and the date. The whole row is the link: pointed at, a
+     tint wipes in behind it along the slope of the symbol and its mark fills (outline → solid). */
+  .vp-index {
     border-top: 1px solid var(--line);
   }
-  .vp-pressrow {
+  .vp-index__row {
     --lean: 2.5rem;
     position: relative;
     isolation: isolate;
@@ -1961,7 +1961,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     padding-block: clamp(1.25rem, 2.4vw, 2rem);
     border-bottom: 1px solid var(--line);
   }
-  .vp-pressrow::before {
+  .vp-index__row::before {
     content: "";
     position: absolute;
     inset: 0 calc(var(--gutter-x) * -0.5);
@@ -1970,11 +1970,11 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     clip-path: polygon(0 0, calc(0% - var(--lean)) 0, 0 100%, 0 100%);
     transition: clip-path 620ms var(--ease-move);
   }
-  .vp-pressrow:hover::before,
-  .vp-pressrow:focus-visible::before {
+  .vp-index__row:hover::before,
+  .vp-index__row:focus-visible::before {
     clip-path: polygon(0 0, 100% 0, calc(100% + var(--lean)) 100%, 0 100%);
   }
-  .vp-pressrow__outlet {
+  .vp-index__lead {
     grid-area: outlet;
     display: flex;
     align-items: baseline;
@@ -1984,46 +1984,62 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     line-height: 1.05;
     letter-spacing: -0.03em;
   }
-  .vp-pressrow__mark {
+  .vp-index__mark {
     height: 0.62em;
   }
-  .vp-pressrow:hover .vp-pressrow__mark polygon,
-  .vp-pressrow:focus-visible .vp-pressrow__mark polygon {
+  .vp-index__row:hover .vp-index__mark polygon,
+  .vp-index__row:focus-visible .vp-index__mark polygon {
     fill: currentColor;
   }
-  .vp-pressrow__mark polygon {
+  .vp-index__mark polygon {
     transition: fill 320ms var(--ease-move);
   }
-  .vp-pressrow__title {
+  .vp-index__text {
     grid-area: title;
     max-width: 46ch;
     font-size: var(--t-body-l);
     line-height: 1.35;
   }
-  .vp-pressrow__meta {
+  .vp-index__meta {
     grid-area: meta;
   }
-  .vp-pressrow__go {
+  .vp-index__go {
     grid-area: go;
     align-self: start;
     font-size: var(--t-s);
     line-height: 1;
     transition: transform 360ms var(--ease-move);
   }
-  .vp-pressrow:hover .vp-pressrow__go,
-  .vp-pressrow:focus-visible .vp-pressrow__go {
+  .vp-index__row:hover .vp-index__go,
+  .vp-index__row:focus-visible .vp-index__go {
     transform: translate(0.2em, -0.2em);
   }
   @media (min-width: 64rem) {
-    .vp-pressrow {
+    .vp-index__row {
       grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) minmax(0, 2.4fr) auto;
       grid-template-areas: "outlet title meta go";
       align-items: baseline;
       column-gap: var(--col-gap);
     }
-    .vp-pressrow__meta {
+    .vp-index__meta {
       text-align: right;
     }
+  }
+  /* rows without a line of text: the name and the note */
+  @media (min-width: 40rem) {
+    .vp-index--short .vp-index__row {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-areas: "outlet meta go";
+      align-items: baseline;
+      column-gap: var(--col-gap);
+    }
+    .vp-index--short .vp-index__meta {
+      text-align: right;
+    }
+  }
+  /* a documented fact: the mark is solid from the start */
+  .vp-index__mark.vp-mark--solid polygon {
+    fill: currentColor;
   }
 
   /* hero. Phones and tablets: the photograph above, the navy mass below, rising into

@@ -6,7 +6,7 @@ import { TLink } from "@/components/layout/PageTransition";
 
 type Person = { name: string; role: string; unit?: string | null; photo?: string | null };
 type Team = { key: string; label: string; count: string; people: Person[] };
-type Copy = { all: string; summary: string; show: string; hide: string; careers: { href: string; label: string } };
+type Copy = { all: string; summary: string; leaders: string; show: string; hide: string; careers: { href: string; label: string } };
 
 const COLS = 12;
 // the run of a stroke as a share of its box: the box is the visible width w plus the run,
@@ -135,6 +135,7 @@ export function TeamWall({ teams, copy }: { teams: Team[]; copy: Copy }) {
           </div>
           <div className="vp-team__summary" data-off={shown ? "" : undefined}>
             <p className="vp-team__name">{copy.summary}</p>
+            <p className="t-small mt-1">{copy.leaders}</p>
             <TLink href={copy.careers.href} className="vp-ulink t-small mt-3 inline-block">
               {copy.careers.label} →
             </TLink>

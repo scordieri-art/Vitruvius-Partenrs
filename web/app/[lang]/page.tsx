@@ -91,23 +91,23 @@ export default async function HomePage() {
           <SectionLabel n={3} as="h2" id="press-title" className="mb-[clamp(1.5rem,3vw,2.5rem)]">
             {h.press.label}
           </SectionLabel>
-          <ul className="vp-pressrows" aria-labelledby="press-title">
+          <ul className="vp-index" aria-labelledby="press-title">
             {press.map((x) => (
               <li key={x.outlet}>
-                <a href={x.url} target="_blank" rel="noopener noreferrer" className="vp-pressrow">
-                  <span className="vp-pressrow__outlet">
-                    <Mark kind="outline" className="vp-pressrow__mark" />
+                <a href={x.url} target="_blank" rel="noopener noreferrer" className="vp-index__row">
+                  <span className="vp-index__lead">
+                    <Mark kind="outline" className="vp-index__mark" />
                     {x.outlet}
                   </span>
                   {x.title ? (
-                    <span className="vp-pressrow__title" lang="it">
+                    <span className="vp-index__text" lang="it">
                       «{x.title}»
                     </span>
                   ) : null}
-                  <span className="vp-pressrow__meta t-label">
+                  <span className="vp-index__meta t-label">
                     {x.project} · {x.iso ? <time dateTime={x.iso}>{x.date}</time> : x.date}
                   </span>
-                  <span className="vp-pressrow__go" aria-hidden="true">
+                  <span className="vp-index__go" aria-hidden="true">
                     ↗
                   </span>
                   <span className="sr-only"> ({t.ui.externalNew})</span>
