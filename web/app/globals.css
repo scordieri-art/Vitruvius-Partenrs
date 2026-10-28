@@ -1508,10 +1508,51 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-fil__verb:hover .vp-fil__logo {
     opacity: 1;
   }
-  /* the logo of the site the way in leads to (Vitruvius Living, under «add value») */
+  /* the logo of where the way in leads (the group, Construction's site, Living's site): --sf
+     evens out their optical size, as for the logos beside the verbs */
   .vp-fil__site {
-    height: 2.5rem;
+    height: calc(2.4rem * var(--sf, 1));
     width: auto;
+    max-width: none;
+  }
+  /* phones: a long logo on a line of its own above the rule and the address */
+  @media (max-width: 39.99rem) {
+    .vp-fil__step .vp-cta--stack {
+      flex-wrap: wrap;
+      row-gap: 0.7rem;
+    }
+    .vp-fil__step .vp-cta--stack .vp-cta__lead {
+      flex-basis: 100%;
+    }
+    .vp-fil__site {
+      height: calc(2.1rem * var(--sf, 1));
+    }
+  }
+  /* phones and tablets: where the chain stands, 01 / 03 and a rule that fills with the scroll */
+  .vp-fil__count {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--fg);
+  }
+  .vp-fil__bar {
+    position: relative;
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .vp-fil__bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--fg);
+    transform-origin: 0 50%;
+    scale: calc(var(--t) / (var(--n) - 1)) 1;
+  }
+  @media (min-width: 64rem) {
+    .vp-fil__count {
+      display: none;
+    }
   }
 
   /* the window: the photographs, each wiping in over the last along the slope */

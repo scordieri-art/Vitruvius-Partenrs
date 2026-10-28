@@ -13,8 +13,8 @@ export type Step = {
   name: string;
   /** the company's own logo; f: its optical size, 1 for the most compact */
   logo: { src: string; w: number; h: number; f: number };
-  /** another company of the group whose site the way in leads to, shown by its logo */
-  site?: { src: string; w: number; h: number; name: string };
+  /** the company whose site the way in leads to, shown by its logo before the link; f as for `logo` */
+  site?: { src: string; w: number; h: number; name: string; f?: number };
   text: string;
   image: string;
   href: string;
@@ -69,6 +69,14 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
             ))}
           </div>
 
+          {/* phones and tablets: where the chain stands, the step and a rule filling with the scroll */}
+          <p className="vp-fil__count t-label t-num" aria-hidden="true">
+            <span>
+              {String(active + 1).padStart(2, "0")} / {String(n).padStart(2, "0")}
+            </span>
+            <span className="vp-fil__bar" />
+          </p>
+
           {/* the window on the slope of the symbol */}
           <div className="vp-fil__window" aria-hidden="true">
             {steps.map((s, i) => (
@@ -110,7 +118,22 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
                     external={s.external}
                     externalNote={externalNote}
                     transitionLabel={s.linkLabel}
-                    lead={s.site ? <Image src={s.site.src} alt={s.site.name} width={s.site.w} height={s.site.h} sizes="6rem" className="vp-fil__site" /> : undefined}
+                    // a long logo goes on a line of its own on phones
+                    className={s.site && s.site.w / s.site.h > 3 ? "vp-cta--stack" : ""}
+                    lead={
+                      s.site ? (
+                        <Image
+                          src={s.site.src}
+                          alt={s.site.name}
+                          width={s.site.w}
+                          height={s.site.h}
+                          unoptimized={s.site.src.endsWith(".svg")}
+                          sizes="12rem"
+                          className="vp-fil__site"
+                          style={{ "--sf": s.site.f ?? 1 } as CSSProperties}
+                        />
+                      ) : undefined
+                    }
                   >
                     {s.linkLabel}
                   </Cta>

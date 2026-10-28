@@ -61,11 +61,14 @@ export function homeSteps(lang: Locale): Step[] {
         proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
       };
     }
+    const logo = LOGOS[e.key as "vp" | "construction"];
     return {
       key: e.key,
       verb: e.verb,
       name: e.name,
-      logo: LOGOS[e.key as "vp" | "construction"],
+      logo,
+      // the way in starts with the logo of where it leads: the group (Chi siamo), Construction's site
+      site: { ...logo, name: e.name },
       text: e.text,
       image: HOME_IMG[e.key as "vp" | "construction"],
       href: e.href || href(lang, "about"),
