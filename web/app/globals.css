@@ -1287,8 +1287,11 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     color: transparent;
     -webkit-text-stroke: 1px var(--fg);
   }
-  /* the fill: its edge leans like the symbol, top behind, bottom ahead */
-  .vp-fil__fill {
+  /* the fill, drawn from data-verb (the verb is in the text once): its edge leans like the symbol,
+     top behind, bottom ahead; "/ ''" keeps the drawn copy out of what screen readers announce */
+  .vp-fil__word::after {
+    content: attr(data-verb);
+    content: attr(data-verb) / "";
     --lean: 0.62em;
     position: absolute;
     inset: 0;
@@ -1297,7 +1300,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     clip-path: polygon(0 -10%, calc(var(--f) * (100% + var(--lean)) - var(--lean)) -10%, calc(var(--f) * (100% + var(--lean))) 110%, 0 110%);
     transition: color 500ms var(--ease-move);
   }
-  .vp-fil__verb[aria-current] .vp-fil__fill {
+  .vp-fil__verb[aria-current] .vp-fil__word::after {
     color: var(--fg);
   }
   .vp-fil__verb:hover .vp-fil__outline {
@@ -1494,7 +1497,7 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   }
   @media (prefers-reduced-motion: reduce) {
     .vp-fil__step,
-    .vp-fil__fill,
+    .vp-fil__word::after,
     .vp-fil__verb::after,
     .vp-fil__logo {
       transition: none;

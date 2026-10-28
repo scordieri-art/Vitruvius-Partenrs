@@ -57,11 +57,9 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
                 <span className="vp-fil__num t-label t-num" aria-hidden="true">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <span className="vp-fil__word">
+                {/* the verb once: the outline is the text, the fill is drawn over it from data-verb */}
+                <span className="vp-fil__word" data-verb={s.verb}>
                   <span className="vp-fil__outline">{s.verb}</span>
-                  <span className="vp-fil__fill" aria-hidden="true">
-                    {s.verb}
-                  </span>
                 </span>
                 {/* who does it: the company's logo */}
                 <span className="vp-fil__logo" style={{ "--lf": s.logo.f } as CSSProperties}>
