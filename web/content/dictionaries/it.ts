@@ -459,6 +459,7 @@ const it = {
     nav: "Navigazione",
     offices: "Sedi",
     contacts: "Contatti",
+    more: "Altri recapiti",
     certs: "Certificazioni",
     rights: "Tutti i diritti riservati.",
     backTop: "Torna su",

@@ -465,6 +465,7 @@ const en: Dictionary = {
     nav: "Navigation",
     offices: "Offices",
     contacts: "Contact",
+    more: "Other contacts",
     certs: "Certifications",
     rights: "All rights reserved.",
     backTop: "Back to top",

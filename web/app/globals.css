@@ -276,6 +276,40 @@
     }
   }
 
+  /* the footer's closing (components/layout/Footer.tsx): how to reach the group, large, beside
+     the symbol drawn in outline, which turns solid as it comes into view */
+  .vp-foot__close {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 4rem);
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 64rem) {
+    .vp-foot__close {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+    }
+  }
+  .vp-foot__mail {
+    display: inline-block;
+    font-size: min(var(--t-m), 6.2vw);
+    font-weight: 300;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+  }
+  .vp-foot .vp-foot__symbol {
+    display: block;
+    height: clamp(7rem, 20vw, 17rem);
+    width: auto;
+    aspect-ratio: 269.655 / 170;
+    color: var(--color-navy);
+  }
+  .vp-foot .vp-foot__sec {
+    color: var(--color-slate);
+  }
+
   /* ---------------------------------------------------------------
      Actions — three kinds only:
        .vp-btn   primary: a solid block whose end is cut on the slope
