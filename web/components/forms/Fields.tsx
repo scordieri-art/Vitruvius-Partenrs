@@ -69,14 +69,23 @@ export function useLiveErrors(errors: FormState["errors"]) {
   return { errors: errors ? live : undefined, onInput: judge(false), onBlur: judge(true) };
 }
 
-/** Focus a field (in a group, the chosen option or else the first) and bring it, label and all, to the upper middle of the screen. */
-export function focusField(el: HTMLElement | null) {
+/**
+ * Focus a field (in a group, the chosen option or else the first) and bring it, label and all, to
+ * the upper middle of the screen; with `lead` (the error summary above it), show the summary from
+ * its top as well whenever both fit on the screen.
+ */
+export function focusField(el: HTMLElement | null, lead?: HTMLElement | null) {
   const field = el?.matches("input, select, textarea") ? el : (el?.querySelector<HTMLElement>("input:checked") ?? el?.querySelector<HTMLElement>("input, select, textarea"));
   if (!field) return;
   field.focus({ preventScroll: true });
   const box = field.closest<HTMLElement>(".vp-field, fieldset, label") ?? field;
   // measured against the page's own scroll, which the smooth scroller may not have caught up with yet
-  const top = box.getBoundingClientRect().top + window.scrollY - innerHeight / 3;
+  const y = (n: HTMLElement) => n.getBoundingClientRect().top + window.scrollY;
+  let top = y(box) - innerHeight / 3;
+  if (lead) {
+    const below = (document.querySelector(".vp-header")?.getBoundingClientRect().height ?? 0) + 24;
+    if (y(box) + box.offsetHeight < y(lead) - below + innerHeight - 24) top = y(lead) - below;
+  }
   const lenis = (window as unknown as { __lenis?: { scrollTo: (to: number) => void } }).__lenis;
   if (lenis) lenis.scrollTo(top);
   else window.scrollTo({ top, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });

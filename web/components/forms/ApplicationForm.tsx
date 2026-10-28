@@ -51,7 +51,7 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
     k === "email" ? labels.invalidEmail : k === "phone" ? labels.invalidPhone : k === "file" ? labels.invalidFile : k ? labels.required : undefined;
 
   useEffect(() => {
-    if (state.errors) focusField(firstInvalid(form.current));
+    if (state.errors) focusField(firstInvalid(form.current), form.current?.querySelector<HTMLElement>(".vp-errsum"));
     else if (state.failed) status.current?.focus();
   }, [state]);
 

@@ -83,7 +83,7 @@ export function ContactForm({ labels }: { labels: Labels }) {
   const onSubmit = useSubmitKeepingValues(action);
 
   useEffect(() => {
-    if (state.errors) focusField(firstInvalid(form.current));
+    if (state.errors) focusField(firstInvalid(form.current), form.current?.querySelector<HTMLElement>(".vp-errsum"));
     else if (state.failed) status.current?.focus();
   }, [state]);
   // back from the confirmation: the new form starts at its first question
