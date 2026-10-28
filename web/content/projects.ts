@@ -51,7 +51,9 @@ export type Project = {
   /** indicative stock photograph under the published one, always labelled as such */
   placeholder: string;
   newsSlug: { it: string; en?: string };
-  sources: { label: string; url: string; date: L }[];
+  /** title: the headline as the outlet published it, in its own language (read on its page);
+      iso: the day it was published, from the page's own metadata */
+  sources: { label: string; url: string; date: L; title?: string; iso?: string }[];
 };
 
 export const projects: Project[] = [
@@ -116,6 +118,8 @@ export const projects: Project[] = [
         label: "Il Secolo XIX",
         url: "https://www.ilsecoloxix.it/genova/news/palazzo-ex-inps-di-corso-italia-venduto-per-16-milioni-a-una-societa-milanese-tpjoiu1n/",
         date: { it: "Luglio 2026", en: "July 2026" },
+        title: "Palazzo ex Inps di corso Italia, venduto per 16 milioni a una società milanese",
+        iso: "2026-07-19",
       },
     ],
   },
@@ -186,6 +190,8 @@ export const projects: Project[] = [
         label: "La Stampa",
         url: "https://www.lastampa.it/asti/2025/03/21/news/asti_rinascita_asinari_operazione_sentimentale_estetica-15063023/",
         date: { it: "Marzo 2025", en: "March 2025" },
+        title: "Asti, la rinascita di via Asinari: “Un’operazione sentimentale ed estetica”",
+        iso: "2025-03-21",
       },
     ],
   },
@@ -260,9 +266,28 @@ export const projects: Project[] = [
       en: "sustainable-construction-contract-worth-over-10-million-euros-for-an-energy-efficient-residential-area-in-the-heart-of-brianza",
     },
     sources: [
-      { label: "Agi", url: "https://www.agi.it/economia/news/2022-12-08/airuno-brianza-costruzione-isolato-a-prova-di-bolletta-19114167/", date: { it: "Dicembre 2022", en: "December 2022" } },
-      { label: "Il Corriere Nazionale", url: "https://www.corrierenazionale.net/2022/12/09/in-brianza-stanno-costruendo-un-isolato-a-prova-di-bolletta/", date: { it: "Dicembre 2022", en: "December 2022" } },
-      { label: "Affaritaliani.it", url: "https://www.affaritaliani.it/economia/edilizia-sostenibile-appalto-da-10-milioni-per-isolato-a-prova-di-bolletta-828279.html", date: { it: "Dicembre 2022", en: "December 2022" } },
+      {
+        label: "Agi",
+        url: "https://www.agi.it/economia/news/2022-12-08/airuno-brianza-costruzione-isolato-a-prova-di-bolletta-19114167/",
+        date: { it: "Dicembre 2022", en: "December 2022" },
+        title: "In Brianza stanno costruendo un isolato ‘a prova di bolletta’",
+        iso: "2022-12-08",
+      },
+      {
+        label: "Il Corriere Nazionale",
+        url: "https://www.corrierenazionale.net/2022/12/09/in-brianza-stanno-costruendo-un-isolato-a-prova-di-bolletta/",
+        date: { it: "Dicembre 2022", en: "December 2022" },
+        title: "In Brianza stanno costruendo un isolato “a prova di bolletta”",
+        iso: "2022-12-09",
+      },
+      {
+        label: "Affaritaliani.it",
+        url: "https://www.affaritaliani.it/economia/edilizia-sostenibile-appalto-da-10-milioni-per-isolato-a-prova-di-bolletta-828279.html",
+        // published on 30 November 2022 (the article's own date): earlier listed as December
+        date: { it: "Novembre 2022", en: "November 2022" },
+        title: "Edilizia sostenibile, appalto da 10 milioni per isolato a “prova di bolletta”",
+        iso: "2022-11-30",
+      },
       { label: "Il Globo", url: "https://ilglobo.com/news/in-brianza-stanno-costruendo-un-isolato-a-prova-di-bolletta-87145/", date: { it: "Dicembre 2022", en: "December 2022" } },
       { label: "Pledge Times", url: "https://pledgetimes.com/sustainable-construction-bill-proof-contract-worth-10-million-per-block/", date: { it: "Dicembre 2022", en: "December 2022" } },
     ],
