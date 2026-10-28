@@ -603,6 +603,37 @@
     --tag-fg: var(--color-white);
     --model-shadow: rgb(0 0 0 / 0.3);
   }
+  /* the home's chapter «Dove operiamo»: the white model on the navy page, like a lit model on a
+     dark table (the paper palette, a deeper shadow), and larger */
+  .vp-where[data-theme="navy"] .vp-map__stage {
+    --sheet: var(--color-white);
+    --sheet-edge: #d9dfe5;
+    --grat: #edf0f3;
+    --grat-text: color-mix(in srgb, var(--color-navy) 45%, var(--color-white));
+    --nb-top: #f1f3f5;
+    --nb-side: #e2e6ea;
+    --nb-line: var(--color-white);
+    --it-top: #dfe5eb;
+    --it-side: #c6cfd8;
+    --it-edge: #f5f7f9;
+    --region: #c9d2db;
+    --city: color-mix(in srgb, var(--color-navy) 62%, var(--color-white));
+    --op-top: var(--color-navy);
+    --op-side: #061a33;
+    --op-edge: color-mix(in srgb, var(--color-white) 24%, var(--color-navy));
+    --city-high: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
+    --pin: var(--color-white);
+    --pin-line: var(--color-navy);
+    --rod: var(--color-navy);
+    --tag-bg: var(--color-white);
+    --tag-fg: var(--color-navy);
+    --model-shadow: rgb(0 0 0 / 0.42);
+    max-width: min(100%, 52rem);
+  }
+  .vp-map__note {
+    margin-left: 0.1rem;
+    opacity: 0.68;
+  }
   .vp-map__plane {
     position: absolute;
     inset: 5% 4% 3%;
@@ -1796,43 +1827,88 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     }
   }
 
-  /* press: outlet names set as type, each linking to its article */
-  /* phones and tablets: the names run on as a line of type (the topic stays for screen readers);
-     wide screens: one column per outlet, with the operation it wrote about */
-  .vp-press {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 1.4rem;
+  /* the press as an index of articles: the outlet large, its headline as published, the
+     operation and the date. The whole row is the link: pointed at, a tint wipes in behind it
+     along the slope of the symbol and its mark fills (outline → solid). */
+  .vp-pressrows {
     border-top: 1px solid var(--line);
-    padding-top: 0.5rem;
   }
-  .vp-press__link:hover .vp-ulink,
-  .vp-press__link:focus-visible .vp-ulink {
-    background-size: 100% 1px;
-    background-position: 0 100%;
+  .vp-pressrow {
+    --lean: 2.5rem;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "outlet go"
+      "title title"
+      "meta meta";
+    gap: 0.55rem 1.5rem;
+    padding-block: clamp(1.25rem, 2.4vw, 2rem);
+    border-bottom: 1px solid var(--line);
   }
-  .vp-press__link {
+  .vp-pressrow::before {
+    content: "";
+    position: absolute;
+    inset: 0 calc(var(--gutter-x) * -0.5);
+    z-index: -1;
+    background: color-mix(in srgb, var(--fg) 5%, transparent);
+    clip-path: polygon(0 0, calc(0% - var(--lean)) 0, 0 100%, 0 100%);
+    transition: clip-path 620ms var(--ease-move);
+  }
+  .vp-pressrow:hover::before,
+  .vp-pressrow:focus-visible::before {
+    clip-path: polygon(0 0, 100% 0, calc(100% + var(--lean)) 100%, 0 100%);
+  }
+  .vp-pressrow__outlet {
+    grid-area: outlet;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.25rem;
-    min-height: 44px;
+    align-items: baseline;
+    gap: 0.7rem;
+    font-size: var(--t-m);
+    font-weight: 300;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .vp-pressrow__mark {
+    height: 0.62em;
+  }
+  .vp-pressrow:hover .vp-pressrow__mark polygon,
+  .vp-pressrow:focus-visible .vp-pressrow__mark polygon {
+    fill: currentColor;
+  }
+  .vp-pressrow__mark polygon {
+    transition: fill 320ms var(--ease-move);
+  }
+  .vp-pressrow__title {
+    grid-area: title;
+    max-width: 46ch;
+    font-size: var(--t-body-l);
+    line-height: 1.35;
+  }
+  .vp-pressrow__meta {
+    grid-area: meta;
+  }
+  .vp-pressrow__go {
+    grid-area: go;
+    align-self: start;
+    font-size: var(--t-s);
+    line-height: 1;
+    transition: transform 360ms var(--ease-move);
+  }
+  .vp-pressrow:hover .vp-pressrow__go,
+  .vp-pressrow:focus-visible .vp-pressrow__go {
+    transform: translate(0.2em, -0.2em);
   }
   @media (min-width: 64rem) {
-    .vp-press {
-      display: grid;
-      grid-template-columns: repeat(var(--cols, 5), minmax(0, 1fr));
+    .vp-pressrow {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) minmax(0, 2.4fr) auto;
+      grid-template-areas: "outlet title meta go";
+      align-items: baseline;
       column-gap: var(--col-gap);
-      border-top: 0;
-      padding-top: 0;
     }
-    .vp-press > li {
-      border-top: 1px solid var(--line);
-    }
-    .vp-press__link {
-      justify-content: flex-start;
-      padding-block: 1.25rem 0;
+    .vp-pressrow__meta {
+      text-align: right;
     }
   }
 
@@ -2345,11 +2421,44 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     inset: 0 auto auto 0;
     color: var(--fg);
   }
+  /* the figures as a band: large numbers between hairlines, the label at the foot of each */
+  .vp-counts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--line);
+  }
+  .vp-counts > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    min-width: 0;
+    padding: clamp(1.25rem, 2.4vw, 2rem) var(--col-gap) clamp(1.5rem, 3vw, 2.5rem) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-counts > div:nth-child(2n) {
+    padding-left: var(--col-gap);
+    border-left: 1px solid var(--line);
+  }
+  @media (min-width: 64rem) {
+    .vp-counts {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .vp-counts > div:not(:first-child) {
+      padding-left: var(--col-gap);
+      border-left: 1px solid var(--line);
+    }
+  }
   .vp-count {
-    font-size: clamp(2rem, 0.6rem + 4.6vw, 6rem);
+    font-size: clamp(2.5rem, 0.5rem + 5.6vw, 8.5rem);
     font-weight: 300;
     line-height: 0.9;
-    letter-spacing: -0.045em;
+    letter-spacing: -0.05em;
+  }
+  .vp-count__unit {
+    margin-left: 0.08em;
+    font-size: 0.42em;
+    letter-spacing: -0.02em;
   }
 }
 

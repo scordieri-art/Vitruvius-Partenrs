@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { Cta } from "@/components/ui/Cta";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { company } from "@/content/site";
 
 /**
@@ -17,6 +18,7 @@ export function ContactBand({
   write,
   image,
   vivid = false,
+  n,
 }: {
   label: string;
   title: string;
@@ -25,6 +27,8 @@ export function ContactBand({
   write: { label: string; href: string };
   image: string;
   vivid?: boolean;
+  /** its number, on the home page, where the sections are numbered */
+  n?: number;
 }) {
   return (
     <section data-theme="navy" aria-labelledby="contact-band-title" className="relative overflow-hidden">
@@ -37,9 +41,15 @@ export function ContactBand({
       ) : null}
       <div className="relative container-x grid-12 gap-y-10 py-[clamp(4.5rem,11vw,9.5rem)] lg:items-end">
         <div className="col-span-4 lg:col-span-8">
-          <p className="t-label mb-6" data-reveal="fade">
-            {label}
-          </p>
+          {n ? (
+            <SectionLabel n={n} className="mb-6">
+              {label}
+            </SectionLabel>
+          ) : (
+            <p className="t-label mb-6" data-reveal="fade">
+              {label}
+            </p>
+          )}
           <h2 id="contact-band-title" className="t-xl max-w-[13ch]" data-reveal="lines">
             {title}
           </h2>

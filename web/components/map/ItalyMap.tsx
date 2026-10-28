@@ -45,6 +45,8 @@ export type MapPin = {
   kind: "office" | "project";
   /** the town, on the flag */
   label: string;
+  /** a word after the town on the flag: an operation's year */
+  note?: string;
   /** the region it raises, as named in content/geo/map.json `regions` */
   area: string;
 };
@@ -64,7 +66,7 @@ const Layer = ({ ids, z, className, view }: { ids: string[]; z: number; classNam
   </svg>
 );
 
-type Cluster = { keys: string[]; kind: MapPin["kind"]; label: string; xy: [number, number] };
+type Cluster = { keys: string[]; kind: MapPin["kind"]; label: string; note?: string; xy: [number, number] };
 
 /** Places a few km apart (an office and an operation in the same town) share one pin. */
 function clusters(pins: MapPin[], focus?: string): Cluster[] {
@@ -78,7 +80,7 @@ function clusters(pins: MapPin[], focus?: string): Cluster[] {
   return out.map(({ members, xy }) => {
     // the flag speaks for the focused place, else for an office, else for the first
     const lead = members.find((m) => m.key === focus) ?? members.find((m) => m.kind === "office") ?? members[0];
-    return { keys: members.map((m) => m.key), kind: lead.kind, label: lead.label, xy };
+    return { keys: members.map((m) => m.key), kind: lead.kind, label: lead.label, note: lead.note, xy };
   });
 }
 
@@ -104,7 +106,7 @@ function flags(cs: Cluster[], view: View, width: number, m: Metrics): Flag[] {
   cs.map((c, i) => ({ c, i, x: (c.xy[0] - view.x) * k + width * 0.04, y: (c.xy[1] - view.y) * ky }))
     .sort((a, b) => b.y - a.y)
     .forEach(({ c, i, x, y }) => {
-      const w = m.pad + c.label.length * m.char;
+      const w = m.pad + (c.label.length + (c.note ? c.note.length + 1.5 : 0)) * m.char;
       const box = (stem: number, west: boolean): Box => ({ x0: west ? x - w - 3 : x - 3, x1: west ? x + 3 : x + w + 3, y0: y - stem - m.h, y1: y - stem + 2 });
       const inside = (b: Box) => b.x0 >= 0 && b.x1 <= width && b.y0 >= top;
       const options = m.stems.flatMap((stem) => [false, true].map((west) => ({ stem, west, b: box(stem, west) })));
@@ -263,6 +265,7 @@ export function MapSlab({
                 <span className="vp-map__tag">
                   <Mark kind={c.kind === "office" ? "solid" : "outline"} />
                   {c.label}
+                  {c.note ? <span className="vp-map__note t-num">{c.note}</span> : null}
                 </span>
               </span>
             ) : null}

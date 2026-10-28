@@ -17,6 +17,7 @@ export function mapPins(lang: Locale): MapPin[] {
       kind: "project" as const,
       // the town, without the province: "Airuno (LC)" → "Airuno"
       label: p.place[lang].replace(/\s*\(.*\)$/, ""),
+      note: p.year,
       area: p.area,
     })),
   ];

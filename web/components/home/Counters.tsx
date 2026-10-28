@@ -11,10 +11,10 @@ export type Figure = { value: number; decimals: number; pre: string; post: strin
  * The text always holds the final value (no JavaScript, reduced motion, search engines and
  * screen readers get the real numbers): the count runs on a layer drawn over it from a data
  * attribute (.vp-count__n.is-counting::after), the real figure kept transparent underneath so
- * nothing moves when the layer goes.
+ * nothing moves when the layer goes. Laid out as a band: large figures between hairlines, four
+ * across on wide screens, two by two below.
  */
-/** `paired`: two columns at every width, for when the figures share the row with the map. */
-export function Counters({ figures, locale, paired = false }: { figures: Figure[]; locale: string; paired?: boolean }) {
+export function Counters({ figures, locale }: { figures: Figure[]; locale: string }) {
   const root = useRef<HTMLDListElement>(null);
   const reduced = useReducedMotion();
 
@@ -63,10 +63,10 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
   const fmt = (v: number, d: number) => new Intl.NumberFormat(locale, { minimumFractionDigits: d, maximumFractionDigits: d }).format(v);
 
   return (
-    <dl ref={root} className={`grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-10 lg:gap-y-14 ${paired ? "" : "xl:grid-cols-4"}`}>
+    <dl ref={root} className="vp-counts">
       {figures.map((f) => (
-        <div key={f.label} className="flex min-w-0 flex-col border-t border-[var(--line)] pt-6">
-          <dt className="t-small order-2 mt-3 max-w-[22ch] text-[var(--fg-2)]">{f.label}</dt>
+        <div key={f.label}>
+          <dt className="t-small order-2 max-w-[22ch] text-[var(--fg-2)]">{f.label}</dt>
           <dd className="vp-count t-num order-1 whitespace-nowrap">
             {f.pre}
             {f.count ? (
@@ -76,7 +76,8 @@ export function Counters({ figures, locale, paired = false }: { figures: Figure[
             ) : (
               fmt(f.value, f.decimals)
             )}
-            {f.post}
+            {/* a unit in words (M€) is set smaller than the figure; a sign (+, °) stays with it */}
+            {/[A-Za-z€]/.test(f.post) ? <span className="vp-count__unit">{f.post}</span> : f.post}
           </dd>
         </div>
       ))}

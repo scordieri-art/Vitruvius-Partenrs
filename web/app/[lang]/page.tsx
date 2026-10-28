@@ -12,15 +12,16 @@ import { ContactBand } from "@/components/home/ContactBand";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { Mark } from "@/components/marks/Mark";
 import { Cta } from "@/components/ui/Cta";
-import { MapSlab } from "@/components/map/ItalyMap";
-import { mapPins } from "@/components/map/mapPlaces";
+import { ItalyMap } from "@/components/map/ItalyMap";
+import { mapPlaces } from "@/components/map/mapPlaces";
+import { SectionLabel } from "@/components/ui/SectionLabel";
 import { lowRes, projects } from "@/content/projects";
 import { getDictionary, liveLink } from "@/lib/content";
 import { href } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
 
 
-/** Outlets that covered the group's operations, in the order of the operations. Names only, no logos. */
+/** Outlets that covered the group's operations. Names only, no logos. */
 const PRESS = ["Il Secolo XIX", "La Stampa", "Agi", "Affaritaliani.it", "Il Corriere Nazionale"];
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,15 +44,14 @@ export default async function HomePage() {
 
   const steps = homeSteps(lang);
 
-  const places = mapPins(lang);
-
+  // the press, newest first: the outlet, its headline as published, the operation and the date
   const press = PRESS.flatMap((outlet) => {
     for (const p of projects) {
       const s = p.sources.find((x) => x.label === outlet && liveLink(x.url));
-      if (s) return [{ outlet, url: liveLink(s.url)!, topic: `${p.name} · ${s.date[lang].replace(/^\D+/, "")}` }];
+      if (s) return [{ outlet, url: liveLink(s.url)!, title: s.title, iso: s.iso ?? "", date: s.date[lang], project: p.name }];
     }
     return [];
-  });
+  }).sort((a, b) => b.iso.localeCompare(a.iso));
 
   return (
     <RevealScope>
@@ -60,9 +60,9 @@ export default async function HomePage() {
       {/* How the group works */}
       <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)]">
         <div className="container-x">
-          <p className="t-label mb-5" data-reveal="fade">
+          <SectionLabel n={1} className="mb-5">
             {h.lines.label}
-          </p>
+          </SectionLabel>
           <h2 id="lines-title" className="t-l max-w-[20ch] [text-wrap:balance]" data-reveal="lines">
             {h.lines.title}
           </h2>
@@ -70,51 +70,65 @@ export default async function HomePage() {
         <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
-      {/* Figures and press */}
-      <section data-theme="navy" aria-labelledby="numbers-title" className="py-[clamp(4.5rem,9vw,8rem)]">
-        <div className="container-x grid-12 items-center gap-y-14">
-          <div className="col-span-4 lg:order-2 lg:col-span-7 lg:col-start-6">
-            <h2 id="numbers-title" className="t-label mb-8" data-reveal="fade">
+      {/* Figures, between hairlines, then the press as an index of articles */}
+      <section data-theme="paper" aria-labelledby="numbers-title" className="pt-[var(--section-y)]">
+        <div className="container-x">
+          <div className="mb-[clamp(2rem,4vw,3.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
+            <SectionLabel n={2} as="h2" id="numbers-title">
               {h.numbers.label}
-            </h2>
-            <Counters figures={t.group.figures} locale={lang === "it" ? "it-IT" : "en-GB"} paired />
-            <p className="t-label mt-10">
+            </SectionLabel>
+            <p className="t-label">
               {h.numbers.note} ·{" "}
               <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink">
                 {h.numbers.source}
               </TLink>
             </p>
           </div>
-          {/* the scale of the group: offices and published operations on the navy slab */}
-          <div className="col-span-4 lg:order-1 lg:col-span-5">
-            <MapSlab places={places} width={440} className="max-w-[19rem] lg:mx-0 lg:max-w-[28rem]" />
-            <div className="mt-6 flex justify-center lg:justify-start">
-              <Cta href={href(lang, "projects", undefined, "map-title")} transitionLabel={t.meta.titles.projects}>
-                {t.projectsPage.map.label}
-              </Cta>
-            </div>
-          </div>
+          <Counters figures={t.group.figures} locale={lang === "it" ? "it-IT" : "en-GB"} />
         </div>
 
+        <div className="container-x mt-[clamp(4.5rem,9vw,8rem)]">
+          <SectionLabel n={3} as="h2" id="press-title" className="mb-[clamp(1.5rem,3vw,2.5rem)]">
+            {h.press.label}
+          </SectionLabel>
+          <ul className="vp-pressrows" aria-labelledby="press-title">
+            {press.map((x) => (
+              <li key={x.outlet}>
+                <a href={x.url} target="_blank" rel="noopener noreferrer" className="vp-pressrow">
+                  <span className="vp-pressrow__outlet">
+                    <Mark kind="outline" className="vp-pressrow__mark" />
+                    {x.outlet}
+                  </span>
+                  {x.title ? (
+                    <span className="vp-pressrow__title" lang="it">
+                      «{x.title}»
+                    </span>
+                  ) : null}
+                  <span className="vp-pressrow__meta t-label">
+                    {x.project} · {x.iso ? <time dateTime={x.iso}>{x.date}</time> : x.date}
+                  </span>
+                  <span className="vp-pressrow__go" aria-hidden="true">
+                    ↗
+                  </span>
+                  <span className="sr-only"> ({t.ui.externalNew})</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Where the group works: the offices and the operations on the model, with their list */}
+      <section data-theme="navy" aria-labelledby="where-title" className="vp-where mt-[var(--section-y)] py-[var(--section-y)]">
         <div className="container-x">
-          <div className="mt-[clamp(3.5rem,7vw,6rem)]">
-            <h2 className="t-label mb-5">{h.press.label}</h2>
-            <ul className="vp-press">
-              {press.map((x) => (
-                <li key={x.outlet}>
-                  <a href={x.url} target="_blank" rel="noopener noreferrer" className="vp-press__link group">
-                    <span className="t-s leading-tight">
-                      <span className="vp-ulink">{x.outlet}</span>
-                    </span>
-                    <span className="t-label sr-only lg:not-sr-only">
-                      {x.topic}
-                      <span aria-hidden="true">{"\u00a0"}↗</span>
-                      <span className="sr-only"> ({t.ui.externalNew})</span>
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+          <SectionLabel n={4} className="mb-5">
+            {t.projectsPage.map.label}
+          </SectionLabel>
+          <h2 id="where-title" className="t-l max-w-[18ch] [text-wrap:balance]" data-reveal="lines">
+            {t.projectsPage.map.title}
+          </h2>
+          <div className="mt-[clamp(2.5rem,6vw,5rem)]">
+            <ItalyMap places={mapPlaces(lang, t)} caption={t.projectsPage.map.caption} label={t.projectsPage.map.aria} />
           </div>
         </div>
       </section>
@@ -123,9 +137,9 @@ export default async function HomePage() {
       <section id="progetti" data-theme="paper" aria-labelledby="projects-title" className="py-[var(--section-y)]">
         <div className="container-x mb-[clamp(2.5rem,5vw,4.5rem)] flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
           <div>
-            <p className="t-label mb-5" data-reveal="fade">
+            <SectionLabel n={5} className="mb-5">
               {h.projects.label}
-            </p>
+            </SectionLabel>
             <h2 id="projects-title" className="t-l max-w-[14ch]" data-reveal="lines">
               {h.projects.title}
             </h2>
@@ -232,6 +246,7 @@ export default async function HomePage() {
         write={{ label: h.contact.write, href: `${href(lang, "contact")}#write` }}
         image={IMG.contact}
         vivid
+        n={6}
       />
     </RevealScope>
   );
