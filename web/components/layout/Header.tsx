@@ -265,11 +265,12 @@ export function Header({
         }
         .vp-navlink:hover::after, .vp-navlink[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
         .vp-bar { transition: transform 300ms var(--ease-move); }
-        .vp-menu-item { animation: vp-rise 700ms var(--ease-enter) both; }
-        @keyframes vp-rise { from { transform: translateY(150%); } to { transform: none; } }
+        /* names of their own: keyframes are global, and the page openings have a vp-rise of theirs */
+        .vp-menu-item { animation: vp-menu-rise 700ms var(--ease-enter) both; }
+        @keyframes vp-menu-rise { from { transform: translateY(150%); } to { transform: none; } }
         .vp-menu-mark { height: 0.42em; }
-        .vp-menu-latest { animation: vp-fade 600ms var(--ease-enter) 320ms both; }
-        @keyframes vp-fade { from { opacity: 0; transform: translateY(0.75rem); } to { opacity: 1; transform: none; } }
+        .vp-menu-latest { animation: vp-menu-fade 600ms var(--ease-enter) 320ms both; }
+        @keyframes vp-menu-fade { from { opacity: 0; transform: translateY(0.75rem); } to { opacity: 1; transform: none; } }
         /* the panel opens like the page transition: a plane whose leading edge follows the slope */
         @media (prefers-reduced-motion: no-preference) {
           #vp-menu:not([hidden]) {
