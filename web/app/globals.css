@@ -322,13 +322,28 @@
   .vp-btn:focus-visible::after {
     clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% 100%, 0 100%);
   }
+  /* the arrow: on hover it leaves through the slanted side of its box (the slope of the
+     symbol) and a second one comes in behind it */
   .vp-btn__arrow {
-    display: inline-block;
-    transition: transform 320ms var(--ease-move);
+    --lean: 0.34em;
+    display: inline-grid;
+    padding-inline: 0.2em 0.3em;
+    clip-path: polygon(0 0, calc(100% - var(--lean)) 0, 100% 100%, var(--lean) 100%);
   }
-  .vp-btn:hover .vp-btn__arrow,
-  .vp-btn:focus-visible .vp-btn__arrow {
-    transform: translateX(0.3rem);
+  .vp-btn__arrow > span {
+    grid-area: 1 / 1;
+    transition: transform 460ms var(--ease-move);
+  }
+  .vp-btn__arrow > span + span {
+    transform: translateX(-150%);
+  }
+  .vp-btn:hover .vp-btn__arrow > span:first-child,
+  .vp-btn:focus-visible .vp-btn__arrow > span:first-child {
+    transform: translateX(150%);
+  }
+  .vp-btn:hover .vp-btn__arrow > span + span,
+  .vp-btn:focus-visible .vp-btn__arrow > span + span {
+    transform: none;
   }
   .vp-btn:disabled {
     opacity: 0.55;
@@ -345,6 +360,39 @@
     padding: 1rem calc(1.75rem + var(--cut)) 1rem 1.75rem;
     gap: 1.1rem;
     font-size: var(--t-body-l);
+  }
+  /* a section's label, numbered in the order of the page: number, short rule, name */
+  .vp-seclabel {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .vp-seclabel__rule {
+    width: 2.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  /* the label that follows the mouse over a project's picture (components/ui/CursorLabel.tsx):
+     a navy tag beside the pointer that wipes open along the slope */
+  .vp-cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 90;
+    margin: 1.1rem 0 0 1.1rem;
+    padding: 0.5rem 1.35rem 0.5rem 0.85rem;
+    color: var(--color-white);
+    background: var(--color-navy);
+    pointer-events: none;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+    transition: clip-path 360ms var(--ease-move);
+  }
+  .vp-cursor[data-on] {
+    clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 100%, 0 100%);
+  }
+  .vp-cursor:empty {
+    display: none;
   }
   /* a square control for icon-only buttons (previous / next) */
   .vp-iconbtn {

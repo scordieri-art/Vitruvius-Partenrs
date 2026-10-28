@@ -9,9 +9,11 @@ export function ButtonBody({ children, arrow = true }: { children: ReactNode; ar
   return (
     <>
       <span className="min-w-0">{children}</span>
+      {/* two arrows: on hover one leaves through the slanted edge, the other comes in behind it */}
       {arrow ? (
         <span aria-hidden="true" className="vp-btn__arrow">
-          →
+          <span>→</span>
+          <span>→</span>
         </span>
       ) : null}
     </>

@@ -160,7 +160,7 @@ export default async function HomePage() {
                   {p.place[lang]} · {p.year}
                 </span>
               </p>
-              <div className="vp-op__pic" data-small={lowRes(p) ? "" : undefined}>
+              <div className="vp-op__pic" data-small={lowRes(p) ? "" : undefined} data-cursor={t.ui.open}>
                 {/* a picture published small is shown at its own size, never stretched: a blurred copy fills the rest */}
                 {lowRes(p) && p.image ? (
                   <span className="vp-op__backdrop" aria-hidden="true">
