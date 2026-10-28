@@ -1,14 +1,11 @@
 import { Logo } from "@/components/brand/Logo";
-import { SYMBOL_POLYGONS, SYMBOL_VIEWBOX } from "@/components/brand/logo-paths";
 import { RevealScope } from "./RevealScope";
 import { company } from "@/content/site";
 import type { Dictionary } from "@/content/dictionaries/it";
 import { href, type Locale } from "@/lib/i18n";
-import type { CSSProperties } from "react";
 import { TLink } from "./PageTransition";
 import { BackToTop } from "./BackToTop";
-
-const points = (pts: [number, number][]) => pts.map(([x, y]) => `${x},${y}`).join(" ");
+import { SymbolMark } from "@/components/marks/Mark";
 
 /**
  * The ending. First the closing: how to reach the group, large (the email, a phone for each
@@ -44,10 +41,7 @@ export function Footer({ lang, t }: { lang: Locale; t: Dictionary }) {
               </ul>
             </div>
             <div className="vp-foot__mark" data-reveal="fill">
-              <svg viewBox={SYMBOL_VIEWBOX} className="vp-mark vp-mark--solid vp-foot__symbol" aria-hidden="true" focusable="false">
-                <polygon points={points(SYMBOL_POLYGONS.primary)} style={{ "--d": 0 } as CSSProperties} />
-                <polygon points={points(SYMBOL_POLYGONS.secondary)} className="vp-foot__sec" style={{ "--d": 2 } as CSSProperties} />
-              </svg>
+              <SymbolMark className="vp-foot__symbol" secondary="vp-foot__sec" />
             </div>
           </div>
         </RevealScope>

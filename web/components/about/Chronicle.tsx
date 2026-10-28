@@ -3,11 +3,12 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { TLink } from "@/components/layout/PageTransition";
+import { SymbolMark } from "@/components/marks/Mark";
 import { useScrollTime } from "@/lib/useScrollTime";
 
 type Link = { href: string; label: string };
 type Figure = { value: string; unit?: string; label: string; note?: string; source: Link };
-type Step = { year: string; tag: string; text: string; link?: Link; figures: Figure[]; image?: { src: string; alt: string } };
+type Step = { year: string; tag: string; text: string; link?: Link; figures: Figure[]; image?: { src: string; alt: string }; mark?: boolean };
 type Chart = { production: { year: string; value: number; display: string }[]; rank: { year: string; rank: number }[]; of: number };
 type Copy = { production: string; ranking: string; source: string; years: string };
 
@@ -105,9 +106,11 @@ export function Chronicle({ steps, chart, copy, label }: { steps: Step[]; chart:
                   ))}
                   {s.image ? (
                     <span className="vp-chron__picture">
-                      <Image src={s.image.src} alt="" fill sizes="(min-width: 1024px) 30vw, 60vw" className="object-cover" />
+                      <Image src={s.image.src} alt="" fill sizes="(min-width: 1024px) 384px, 272px" className="object-cover" />
                     </span>
                   ) : null}
+                  {/* the founding year: the symbol itself, outline, then solid as the year is reached */}
+                  {s.mark ? <SymbolMark className="vp-chron__mark" secondary="vp-chron__sec" /> : null}
                 </div>
               ))}
             </div>

@@ -1428,6 +1428,15 @@ html.js-motion [data-reveal]:focus-within {
 html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   fill-opacity: 0;
 }
+/* the chronicle's founding year: solid once its year is on stage, after the figures have come in;
+   back to outline only when it can no longer be seen (never solid → outline in view) */
+html.js-motion .vp-chron__readout .vp-chron__mark polygon {
+  transition-delay: calc(var(--d, 0) * 140ms + 420ms);
+}
+html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
+  fill-opacity: 0;
+  transition: fill-opacity 0s 400ms;
+}
 
 @layer components {
   /* a row that you swipe on phones and tablets and that sits as a grid on wide screens */
@@ -3322,14 +3331,14 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-chron__note {
     color: var(--fg-2);
   }
-  /* the project of the year, cut on the slope of the symbol */
+  /* the project of the year, cut on the slope of the symbol, in the height the figures take */
   .vp-chron__picture {
     position: relative;
     display: block;
-    width: min(100%, 24rem);
-    height: 9rem;
+    width: min(100%, 17rem);
+    height: var(--ph, 6.5rem);
     background: var(--line);
-    clip-path: polygon(0 0, calc(100% - 9rem * var(--slope)) 0, 100% 100%, calc(9rem * var(--slope)) 100%);
+    clip-path: polygon(0 0, calc(100% - var(--ph, 6.5rem) * var(--slope)) 0, 100% 100%, calc(var(--ph, 6.5rem) * var(--slope)) 100%);
   }
   .vp-chron__picture img {
     scale: 1.08;
@@ -3337,6 +3346,16 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   }
   .vp-chron__readout[data-on] .vp-chron__picture img {
     scale: 1;
+  }
+  /* the founding year: the symbol, both masses, in the same height */
+  .vp-chron .vp-chron__mark {
+    display: block;
+    height: var(--ph, 6.5rem);
+    aspect-ratio: 269.655 / 170;
+    color: var(--fg);
+  }
+  .vp-chron .vp-chron__sec {
+    color: var(--color-slate);
   }
 
   /* the chart: production over the ranking, one time axis (the rail) under both */
@@ -3364,7 +3383,8 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     position: absolute;
     bottom: 0;
     width: calc(100% / var(--n) * 0.46);
-    height: calc(var(--h) * 78%);
+    /* the tallest bar leaves room for its value under the title, however short the chart */
+    height: calc(var(--h) * (100% - 1.7rem));
     translate: -50% 0;
     border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
     border-bottom: 0;
@@ -3471,14 +3491,26 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   .vp-chron__tick[aria-current] {
     color: var(--fg);
   }
-  @media (max-width: 63.99rem) {
-    .vp-chron__picture {
-      display: none;
-    }
-  }
   @media (max-width: 30rem) {
     .vp-chron__tick {
       font-size: 0.75rem;
+    }
+  }
+  /* short phones (an SE, 640 px tall): tighter rows and a smaller picture, so the year stays
+     clear of the header that comes back on scrolling up */
+  @media (max-width: 63.99rem) and (max-height: 44rem) {
+    .vp-chron__grid {
+      row-gap: 0.75rem;
+    }
+    .vp-chron__year {
+      font-size: 4rem;
+    }
+    .vp-chron__readout {
+      --ph: 5.5rem;
+      min-height: 5.5rem;
+    }
+    .vp-chron__chart {
+      height: 9rem;
     }
   }
   @media (min-width: 64rem) {
@@ -3505,8 +3537,12 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       font-size: var(--t-s);
     }
     .vp-chron__readout {
+      --ph: 9rem;
       min-height: 9rem;
       gap: 1rem 3rem;
+    }
+    .vp-chron__picture {
+      width: min(100%, 24rem);
     }
     .vp-chron__value {
       font-size: var(--t-l);

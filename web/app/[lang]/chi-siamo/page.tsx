@@ -74,7 +74,7 @@ export default async function AboutPage() {
   };
   // the project of the year, where the step is one
   const pictureOf: Record<string, string> = { "2025": "via-asinari-asti", "2026": "palazzo-ex-inps-genova" };
-  const steps = a.milestones.map((m) => {
+  const steps = a.milestones.map((m, i) => {
     const figures = figuresOf(m.year);
     const link = proof[m.year];
     const pr = projects.find((x) => x.slug.it === pictureOf[m.year]);
@@ -84,6 +84,8 @@ export default async function AboutPage() {
       // the step's own link only when no figure already cites the same page
       link: link && !figures.some((f) => f.source.href === link.href) ? link : undefined,
       image: pr ? { src: pr.image?.src ?? pr.placeholder, alt: "" } : undefined,
+      // the founding: the group's symbol in place of a picture
+      mark: i === 0,
     };
   });
   const staff = team.filter((gr) => gr.key !== "LEADERSHIP");

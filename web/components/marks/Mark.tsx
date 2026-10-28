@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { SYMBOL_POLYGONS, SYMBOL_VIEWBOX } from "@/components/brand/logo-paths";
 
 /**
  * The primary stroke of the symbol, used as a unit mark.
@@ -29,6 +30,21 @@ export function Mark({
       style={order !== undefined ? ({ "--d": order } as CSSProperties) : undefined}
     >
       <polygon points={MARK_POINTS} />
+    </svg>
+  );
+}
+
+const points = (pts: [number, number][]) => pts.map(([x, y]) => `${x},${y}`).join(" ");
+
+/**
+ * The whole symbol, both masses, solid. In a fill sequence (data-reveal="fill") it is first drawn
+ * in outline and fills, the secondary mass after the primary.
+ */
+export function SymbolMark({ className = "", secondary }: { className?: string; secondary?: string }) {
+  return (
+    <svg viewBox={SYMBOL_VIEWBOX} aria-hidden="true" focusable="false" className={`vp-mark vp-mark--solid ${className}`}>
+      <polygon points={points(SYMBOL_POLYGONS.primary)} style={{ "--d": 0 } as CSSProperties} />
+      <polygon points={points(SYMBOL_POLYGONS.secondary)} className={secondary} style={{ "--d": 2 } as CSSProperties} />
     </svg>
   );
 }
