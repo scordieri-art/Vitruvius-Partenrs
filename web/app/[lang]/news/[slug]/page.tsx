@@ -5,7 +5,7 @@ import { SafeImage } from "@/components/ui/SafeImage";
 import { notFound } from "next/navigation";
 import { Cta } from "@/components/ui/Cta";
 import { TLink } from "@/components/layout/PageTransition";
-import { getDictionary, getNews, getNewsItem, newsCounterpart, outline, pressOutlet } from "@/lib/content";
+import { getDictionary, getNews, getNewsItem, legacySize, newsCounterpart, outline, pressOutlet } from "@/lib/content";
 import { projects } from "@/content/projects";
 import { formatDate, href, locales } from "@/lib/i18n";
 import { alternates, metaText, metaTitle, ogPath, share } from "@/lib/seo";
@@ -51,6 +51,9 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
   const label = (x: (typeof all)[number]) => pressOutlet(x.title)?.title ?? x.title;
   // the operation this article is about, when the case page cites it
   const project = projects.find((p) => p.newsSlug.it === slug || p.newsSlug.en === slug);
+  // a picture published small is not blown up to the page's width: it sits on the plate at its own size
+  const size = item.image ? legacySize(item.image) : null;
+  const small = size && size.width < 1100 ? size : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -98,7 +101,24 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
                   <span className="t-label">{press?.outlet ?? n.label}</span>
                   <span className="t-label">{formatDate(item.date, lang)}</span>
                 </div>
-                <SafeImage src={item.image} alt="" fill loading="eager" fetchPriority="high" sizes="100vw" className="object-cover" />
+                {small ? (
+                  // phones: the frame is narrower than the file, so it fills it as usual; wider
+                  // screens: the file at its own size on the plate, never stretched
+                  <div className="absolute inset-0 sm:flex sm:items-center sm:justify-center sm:p-[clamp(2.75rem,6vw,5.5rem)]">
+                    <SafeImage
+                      src={item.image}
+                      alt=""
+                      width={small.width}
+                      height={small.height}
+                      unoptimized
+                      loading="eager"
+                      fetchPriority="high"
+                      className="size-full object-cover sm:h-auto sm:max-h-full sm:w-auto sm:max-w-full sm:ring-1 sm:ring-[var(--line)]"
+                    />
+                  </div>
+                ) : (
+                  <SafeImage src={item.image} alt="" fill loading="eager" fetchPriority="high" sizes="100vw" className="object-cover" />
+                )}
               </div>
             </div>
           </div>

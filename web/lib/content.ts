@@ -43,6 +43,12 @@ export type Article = Omit<NewsItem, "sources"> & { sources: { label: string; ur
 /** Files the old WordPress site served, now served from this one (scripts/legacy-images.mjs). */
 const legacy = legacyFiles as Record<string, { path: string; width?: number; height?: number }>;
 export const local = (url: string): string => legacy[url]?.path ?? url;
+const byPath = new Map(Object.values(legacy).map((v) => [v.path, v]));
+/** The size of a picture copied from the old site, when it is known. */
+export const legacySize = (path: string) => {
+  const v = byPath.get(path);
+  return v?.width && v.height ? { width: v.width, height: v.height } : null;
+};
 
 function mend(item: NewsItem, lang: Locale): Article {
   let html = item.html;
@@ -50,6 +56,12 @@ function mend(item: NewsItem, lang: Locale): Article {
   for (const url of html.match(/https:\/\/(?:www\.)?vitruviusandpartners\.com\/wp-content\/uploads\/[^"'\s)<>]+/g) ?? []) {
     if (legacy[url]) html = html.split(url).join(legacy[url].path);
   }
+  // their sizes are known: the text does not jump as they arrive, and they load as they come near
+  html = html.replace(/<img ([^>]*?)src="(\/legacy\/[^"]+)"([^>]*)>/g, (tag, before: string, src: string, after: string) => {
+    const size = legacySize(src);
+    if (!size || /\swidth=/.test(tag)) return tag;
+    return `<img ${before}src="${src}" width="${size.width}" height="${size.height}" loading="lazy" decoding="async"${after}>`;
+  });
   for (const [url, copy] of Object.entries(deadLinks)) {
     if (!html.includes(url)) continue;
     html = copy
