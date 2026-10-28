@@ -160,7 +160,7 @@ export const projects: Project[] = [
     figures: [],
     stages: [
       { label: { it: "Annuncio", en: "Announcement" }, when: { it: "Marzo 2025", en: "March 2025" }, done: true },
-      { label: { it: "Prossime fasi", en: "Next phases" }, when: { it: "Da comunicare", en: "To be announced" }, done: false },
+      { label: { it: "Prossime fasi", en: "Next phases" }, when: { it: "In definizione", en: "Being defined" }, done: false },
     ],
     quote: {
       text: {
@@ -236,7 +236,7 @@ export const projects: Project[] = [
     stages: [
       { label: { it: "Appalto annunciato", en: "Contract announced" }, when: { it: "Dicembre 2022", en: "December 2022" }, done: true },
       { label: { it: "Avvio della riqualificazione", en: "Requalification started" }, when: { it: "Maggio 2023", en: "May 2023" }, done: true },
-      { label: { it: "Completamento", en: "Completion" }, when: { it: "Da documentare", en: "To be documented" }, done: false },
+      { label: { it: "Completamento", en: "Completion" }, when: { it: "Data non ancora pubblicata", en: "Date not yet published" }, done: false },
     ],
     quote: {
       text: {
