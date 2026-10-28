@@ -882,6 +882,18 @@
     min-width: 0;
     overflow-wrap: break-word;
   }
+  /* a mark before the rule (the logo of the site it leads to): rule and text centred on it */
+  .vp-cta:has(.vp-cta__lead) {
+    align-items: center;
+  }
+  .vp-cta__lead {
+    display: block;
+    flex: none;
+    line-height: 0;
+  }
+  .vp-cta:has(.vp-cta__lead) .vp-cta__rule {
+    margin-top: 0;
+  }
 
   /* Rich text from the legacy CMS (news, jobs) */
   .prose-vp {
@@ -1319,6 +1331,11 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   }
   .vp-fil__verb:hover .vp-fil__logo {
     opacity: 1;
+  }
+  /* the logo of the site the way in leads to (Vitruvius Living, under «add value») */
+  .vp-fil__site {
+    height: 2.5rem;
+    width: auto;
   }
 
   /* the window: the photographs, each wiping in over the last along the slope */

@@ -13,6 +13,8 @@ export type Step = {
   name: string;
   /** the company's own logo; f: its optical size, 1 for the most compact */
   logo: { src: string; w: number; h: number; f: number };
+  /** another company of the group whose site the way in leads to, shown by its logo */
+  site?: { src: string; w: number; h: number; name: string };
   text: string;
   image: string;
   href: string;
@@ -105,7 +107,13 @@ export function Filiera({ steps, externalNote, label }: { steps: Step[]; externa
                   </p>
                 </div>
                 <div className="mt-6">
-                  <Cta href={s.href} external={s.external} externalNote={externalNote} transitionLabel={s.linkLabel}>
+                  <Cta
+                    href={s.href}
+                    external={s.external}
+                    externalNote={externalNote}
+                    transitionLabel={s.linkLabel}
+                    lead={s.site ? <Image src={s.site.src} alt={s.site.name} width={s.site.w} height={s.site.h} sizes="6rem" className="vp-fil__site" /> : undefined}
+                  >
                     {s.linkLabel}
                   </Cta>
                 </div>

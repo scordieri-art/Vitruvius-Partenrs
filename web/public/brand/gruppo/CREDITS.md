@@ -1,6 +1,6 @@
 # Loghi delle società, nella filiera della home
 
-I loghi accanto ai verbi della home (`components/home/Filiera.tsx`, dati in `content/home.ts`). Sono usati nei loro colori.
+I loghi accanto ai verbi della home (`components/home/Filiera.tsx`, dati in `content/home.ts`), più quello di Vitruvius Living sotto «Valorizzare», davanti al link al suo sito. Sono usati nei loro colori.
 
 ### Vitruvius & Partners — «Sviluppare»
 - Il logo orizzontale del gruppo: `public/brand/vp-logo-orizzontale.svg`.
@@ -12,3 +12,6 @@ I loghi accanto ai verbi della home (`components/home/Filiera.tsx`, dati in `con
 ### `axis-real-estate.svg` — «Valorizzare»
 - **Fonte:** il file fornito dal gruppo, `AXIS_logo.pdf` (Adobe Illustrator, «LOGO Axis + Aura», marzo 2026), pagina 1, la versione su fondo chiaro. Copia in `assets/brand/AXIS_logo.pdf`.
 - **Lavorazione:** tracciati esportati dal PDF senza ridisegno, tavola ritagliata sul logo. Colori `#023047` e `#219EBC`.
+
+### `vitruvius-living.png` — sotto «Valorizzare», con il link al sito
+- **Fonte:** il logo pubblicato sul sito della società, https://vitruviusliving.com/wp-content/uploads/2023/07/logo-LIVING_x-web_blu.png (300 × 149 px, nel suo colore `#133645`). È piccolo: basta fino a 2,5 rem di altezza; con il file vettoriale si sostituisce senza toccare il codice.

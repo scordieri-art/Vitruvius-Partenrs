@@ -61,13 +61,10 @@ const it = {
       label: "Il gruppo",
       title: "Un gruppo integrato lungo tutta la filiera immobiliare.",
       swipe: "Scorri",
-      // «Valorizzare» in the home chain: Axis Real Estate (sources: its agency page on immobiliare.it, westhavenmilano.com)
+      // «Valorizzare» in the home chain: Axis Real Estate beside the verb, Vitruvius Living under it (sources for Axis: its agency page on immobiliare.it, westhavenmilano.com)
       axis: {
         name: "Axis Real Estate",
         text: "Asset manager dei progetti residenziali: li segue dalla progettazione alla realizzazione.",
-        proof: { value: "Westhaven", unit: "Milano", label: "Ne cura lo sviluppo ed è asset manager" },
-        href: "https://westhavenmilano.com/",
-        linkLabel: "westhavenmilano.com",
       },
     },
     press: {

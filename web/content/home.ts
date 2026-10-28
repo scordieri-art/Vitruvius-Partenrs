@@ -27,18 +27,20 @@ const proofHref = (lang: Locale, link: string) => {
  * The companies' own logos, in their own colours, beside the verbs. Vitruvius Construction
  * publishes its logo in white only: here in the blue of its site (#2F5597). Axis Real Estate:
  * the logo file supplied by the group. `f` evens out their optical size (a long one-line logo
- * is drawn lower than a compact one).
+ * is drawn lower than a compact one). Vitruvius Living: its logo from its site, under the
+ * «add value» step, with the way to its site.
  */
 const LOGOS = {
   vp: { src: "/brand/vp-logo-orizzontale.svg", w: 831, h: 71, f: 0.45 },
   construction: { src: "/brand/gruppo/vitruvius-construction.png", w: 1200, h: 238, f: 0.72 },
   axis: { src: "/brand/gruppo/axis-real-estate.svg", w: 470, h: 154, f: 0.94 },
+  living: { src: "/brand/gruppo/vitruvius-living.png", w: 300, h: 149, f: 1 },
 } as const;
 
 /**
  * The three steps of the group, as the home page tells them: develop (Vitruvius & Partners),
- * build (Vitruvius Construction), add value (Axis Real Estate, in the place of the group's
- * Living line on this page only).
+ * build (Vitruvius Construction), add value (Axis Real Estate beside the verb; under it,
+ * Vitruvius Living: its published figure and its site, with its logo).
  */
 export function homeSteps(lang: Locale): Step[] {
   const t = dictionaryFor(lang);
@@ -52,10 +54,11 @@ export function homeSteps(lang: Locale): Step[] {
         logo: LOGOS.axis,
         text: a.text,
         image: HOME_IMG.living,
-        href: a.href,
-        linkLabel: a.linkLabel,
+        href: e.href,
+        linkLabel: e.linkLabel,
         external: true,
-        proof: a.proof,
+        site: { ...LOGOS.living, name: e.name },
+        proof: { value: e.proof.value, unit: e.proof.unit, label: e.proof.label, href: proofHref(lang, e.proof.link), linkLabel: e.proof.linkLabel },
       };
     }
     return {
