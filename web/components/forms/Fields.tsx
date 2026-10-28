@@ -122,7 +122,7 @@ export function ErrorSummary({ title, items }: { title: string; items: { id: str
 }
 
 /** After a successful send the form gives way to this: the symbol fills, the title takes the focus. */
-export function Sent({ title, text, children }: { title: string; text: string; children?: ReactNode }) {
+export function Sent({ title, text, note, children }: { title: string; text: string; note?: ReactNode; children?: ReactNode }) {
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => heading.current?.focus(), []);
   return (
@@ -134,6 +134,7 @@ export function Sent({ title, text, children }: { title: string; text: string; c
       <p id="sent-text" className="t-body-l mt-4 max-w-[40ch] text-[var(--fg-2)]">
         {text}
       </p>
+      {note ? <p className="t-small mt-6">{note}</p> : null}
       {children ? <div className="mt-10">{children}</div> : null}
     </div>
   );

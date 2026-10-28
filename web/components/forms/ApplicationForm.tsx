@@ -29,6 +29,7 @@ type Labels = {
   error: string;
   consentShort: string;
   sentTitle: string;
+  sentWrite: string;
   required: string;
   invalidEmail: string;
   invalidPhone: string;
@@ -74,7 +75,18 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
           {labels.title}
         </h2>
         <div className="mt-10">
-          <Sent title={labels.sentTitle} text={labels.success} />
+          <Sent
+            title={labels.sentTitle}
+            text={labels.success}
+            note={
+              <>
+                {labels.sentWrite}{" "}
+                <a href={`mailto:${company.email}`} className="vp-ulink">
+                  {company.email}
+                </a>
+              </>
+            }
+          />
         </div>
       </div>
     );

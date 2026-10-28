@@ -205,9 +205,10 @@ export function Header({
           id="vp-menu"
           data-theme="navy"
           hidden={!open}
-          className="fixed inset-0 -z-0 flex flex-col justify-between pb-10 pt-[calc(var(--header-h)+3rem)] lg:hidden"
+          className="fixed inset-0 -z-0 flex flex-col justify-between pb-10 pt-[calc(var(--header-h)+3rem)] md:flex-row md:gap-[var(--col-gap)] md:px-[max(var(--gutter-x),env(safe-area-inset-left,0px))] lg:hidden"
         >
-          <nav aria-label={labels.menu} className="container-x">
+          {/* tablets: two columns, the pages large on the left, the latest operation and the contacts below right */}
+          <nav aria-label={labels.menu} className="container-x md:w-auto md:flex-1 md:px-0">
             <ul className="flex flex-col gap-1">
               {nav.map((item, i) => (
                 <li key={item.href} className="mask-line">
@@ -226,7 +227,7 @@ export function Header({
               ))}
             </ul>
           </nav>
-          <div className="container-x grid gap-8 t-small">
+          <div className="container-x grid gap-8 t-small md:w-[min(22rem,42%)] md:self-end md:px-0">
             {onLatest ? null : (
               <TLink href={latest.href} transitionLabel={latest.name} className="vp-menu-latest group flex items-center gap-4">
                 <span className="relative block aspect-[4/3] w-24 shrink-0 overflow-hidden bg-[var(--line)]">

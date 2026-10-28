@@ -26,6 +26,7 @@ type Labels = {
   sentTitle: string;
   sentTitleProperty: string;
   again: string;
+  sentWrite: string;
   required: string;
   invalidEmail: string;
   invalidPhone: string;
@@ -112,7 +113,18 @@ export function ContactForm({ labels }: { labels: Labels }) {
 
   if (state.ok && state.sent !== dismissed)
     return (
-      <Sent title={property ? labels.sentTitleProperty : labels.sentTitle} text={labels.success}>
+      <Sent
+        title={property ? labels.sentTitleProperty : labels.sentTitle}
+        text={labels.success}
+        note={
+          <>
+            {labels.sentWrite}{" "}
+            <a href={`mailto:${company.email}`} className="vp-ulink">
+              {company.email}
+            </a>
+          </>
+        }
+      >
         <button type="button" className="vp-cta" onClick={() => setDismissed(state.sent)}>
           <span className="vp-cta__rule" aria-hidden="true" />
           <span className="vp-cta__text">{labels.again}</span>
