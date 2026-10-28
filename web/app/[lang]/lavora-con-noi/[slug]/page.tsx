@@ -3,6 +3,7 @@ import { RevealScope } from "@/components/layout/RevealScope";
 import { notFound } from "next/navigation";
 import { TLink } from "@/components/layout/PageTransition";
 import { ApplicationForm } from "@/components/forms/ApplicationForm";
+import { StickyAction } from "@/components/ui/StickyAction";
 import { DashTitle } from "@/components/careers/DashTitle";
 import { JobList } from "@/components/careers/JobList";
 import { JumpLink } from "@/components/ui/JumpLink";
@@ -144,6 +145,11 @@ export default async function JobPage({ params }: PageProps<"/[lang]/lavora-con-
           <div lang="it" className="prose-vp col-span-4 lg:col-span-7 lg:col-start-1 lg:row-start-1" dangerouslySetInnerHTML={{ __html: outline(job.html) }} />
         </div>
       </section>
+
+      {/* phones: the way to apply at hand while reading, until the form comes into view */}
+      <StickyAction href="#candidatura" until="#candidatura">
+        {c.apply}
+      </StickyAction>
 
       {/* How to apply and the form */}
       <section id="candidatura" data-theme="navy" aria-labelledby="apply-title" className="py-[var(--section-y)]">

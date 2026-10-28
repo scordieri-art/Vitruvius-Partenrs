@@ -14,6 +14,7 @@ type Labels = {
   title: string;
   name: string;
   birth: string;
+  birthHint: string;
   phone: string;
   email: string;
   address: string;
@@ -95,7 +96,7 @@ export function ApplicationForm({ job, labels }: { job: string; labels: Labels }
       <ErrorSummary title={labels.error} items={wrong} />
       <div className="grid gap-10 sm:grid-cols-2">
         <Field id="a-name" name="name" label={labels.name} autoComplete="name" required error={msg(errors?.name)} />
-        <Field id="a-birth" name="birth" type="date" label={labels.birth} autoComplete="bday" required error={msg(errors?.birth)} />
+        <Field id="a-birth" name="birth" type="date" label={labels.birth} autoComplete="bday" hint={labels.birthHint} error={msg(errors?.birth)} />
         <Field id="a-phone" name="phone" type="tel" label={labels.phone} autoComplete="tel" inputMode="tel" pattern={PHONE} required error={msg(errors?.phone)} />
         <Field id="a-email" name="email" type="email" label={labels.email} autoComplete="email" pattern={EMAIL} required error={msg(errors?.email)} />
       </div>

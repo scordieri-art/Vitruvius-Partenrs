@@ -344,6 +344,7 @@ const en: Dictionary = {
       title: "Apply for this position",
       name: "Full name",
       birth: "Date of birth",
+      birthHint: "Optional.",
       phone: "Phone",
       email: "Email",
       address: "Place of residence",

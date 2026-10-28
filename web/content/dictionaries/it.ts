@@ -338,6 +338,7 @@ const it = {
       title: "Candidati per questa posizione",
       name: "Nome e cognome",
       birth: "Data di nascita",
+      birthHint: "Facoltativa.",
       phone: "Telefono",
       email: "Email",
       address: "Domicilio",

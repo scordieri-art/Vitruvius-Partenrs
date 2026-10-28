@@ -72,7 +72,8 @@ const contactSchema = z.object({
 const applicationSchema = z.object({
   job: required,
   name: required,
-  birth: required,
+  // optional: not needed to apply (data minimisation); the group's HR may drop it altogether
+  birth: optional,
   phone: z.string().trim().min(1, "required").regex(/^[+()\d\s.-]{6,20}$/, "phone"),
   email: z.string().trim().min(1, "required").pipe(z.email({ message: "email" })),
   address: required,
@@ -171,7 +172,7 @@ export async function sendApplication(_prev: FormState, data: FormData): Promise
   const content = Buffer.from(await file.arrayBuffer()).toString("base64");
   const delivered = await deliver(
     `Candidatura — ${d.job} — ${d.name}`,
-    `Posizione: ${d.job}\nNome e cognome: ${d.name}\nData di nascita: ${d.birth}\nTelefono: ${d.phone}\nEmail: ${d.email}\nDomicilio: ${d.address}\nConsenso privacy: sì`,
+    `Posizione: ${d.job}\nNome e cognome: ${d.name}\n${d.birth ? `Data di nascita: ${d.birth}\n` : ""}Telefono: ${d.phone}\nEmail: ${d.email}\nDomicilio: ${d.address}\nConsenso privacy: sì`,
     [{ filename: file.name, content }],
   ).catch(() => false);
   return delivered ? { ok: true, sent: Date.now() } : { ok: false, failed: true, sent: Date.now() };
