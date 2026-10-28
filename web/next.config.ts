@@ -33,7 +33,6 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [{ protocol: "https", hostname: "vitruviusandpartners.com", pathname: "/wp-content/uploads/**" }],
   },
   async redirects() {
     return legacyRedirects;

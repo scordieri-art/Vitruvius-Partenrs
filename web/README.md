@@ -68,6 +68,7 @@ Per aggiungere una news senza passare dallo script, aggiungi un oggetto in `cont
 
 ## Brand
 
+- **File del sito precedente** (`public/legacy/`, crediti in `public/legacy/CREDITS.md`): le immagini delle news, le foto delle tre operazioni e i certificati ISO che arrivavano da vitruviusandpartners.com/wp-content ora sono serviti da questo sito (`scripts/legacy-images.mjs`, mappa in `content/generated/legacy-files.json`, applicata in `lib/content.ts`). Le immagini sono ridotte a 2400 px: la copertina più pesante passava da 18 MB. `next.config.ts` non accetta più immagini da domini esterni.
 - Logo e simbolo: `public/brand/` e `components/brand/logo-paths.ts`. Sono i vettori esatti della **tavola 2** di `Proposte_rebranding_VP.ai`, esportati senza ridisegno; la “&” viene dalla versione rivista del logo orizzontale (`VP_lockup_orizzontale_rev.svg`, ottobre 2026), uguale in tutto il resto. È sostituita nel componente `Logo`, nei file del logo orizzontale (colori, navy, bianco, da cui escono anche le immagini di condivisione), nella scritta da sola e nella “&” da sola.
 - Il segno-unità del sito (`components/marks/Mark.tsx`) è il tratto principale dello stesso simbolo, non ridisegnato. Il simbolo non viene ingrandito da solo come elemento decorativo.
 - Palette (`app/globals.css`, `@theme`): navy `#0A2342`, slate `#6B7280`, paper `#FAFAF9`, bianco, ink `#0F172A`, hairline `#DCE1E6`. Nessun altro colore: i toni secondari sono opacità della palette.

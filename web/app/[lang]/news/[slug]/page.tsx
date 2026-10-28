@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteUrl } from "@/lib/site";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { SafeImage } from "@/components/ui/SafeImage";
 import { notFound } from "next/navigation";
@@ -56,7 +57,7 @@ export default async function NewsArticle({ params }: PageProps<"/[lang]/news/[s
     "@type": "NewsArticle",
     headline: item.title,
     datePublished: item.date,
-    image: item.image ? [item.image] : undefined,
+    image: item.image ? [new URL(item.image, siteUrl).href] : undefined,
     publisher: { "@type": "Organization", name: "Vitruvius & Partners" },
     inLanguage: lang,
   };

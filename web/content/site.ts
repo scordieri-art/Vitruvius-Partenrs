@@ -45,11 +45,9 @@ export const company = {
     living: "https://vitruviusliving.com/",
   },
   certifications: {
-    iso9001: "https://vitruviusandpartners.com/wp-content/uploads/2022/12/ISO9001-2015-VITRUVIUS-PARTNER-SRL-QMS-Certificate.pdf",
-    iso9001Renewal: "https://vitruviusandpartners.com/wp-content/uploads/2025/11/RINNOVO-ISO-9001.pdf",
+    iso9001: "/legacy/2022/12/ISO9001-2015-VITRUVIUS-PARTNER-SRL-QMS-Certificate.pdf",
+    iso9001Renewal: "/legacy/2025/11/RINNOVO-ISO-9001.pdf",
   },
-  governanceImage: "https://vitruviusandpartners.com/wp-content/uploads/2024/12/VandP-Governance.jpg",
-  careersImage: "https://vitruviusandpartners.com/wp-content/uploads/2023/01/team-work-guys.jpg",
 } as const;
 
 export type Office = (typeof company.offices)[number];

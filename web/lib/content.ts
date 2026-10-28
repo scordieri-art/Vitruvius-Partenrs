@@ -7,6 +7,7 @@ import newsEn from "@/content/generated/news-en.json";
 import jobsData from "@/content/generated/jobs.json";
 import teamData from "@/content/generated/team.json";
 import teamPhotos from "@/content/generated/team-photos.json";
+import legacyFiles from "@/content/generated/legacy-files.json";
 import { deadLinks } from "@/content/deadLinks";
 import { hasLocale, href, type Locale } from "./i18n";
 
@@ -39,8 +40,16 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** An article with its gone sources mended: archived copies linked, the rest left as names. */
 export type Article = Omit<NewsItem, "sources"> & { sources: { label: string; url: string; gone?: boolean }[] };
 
+/** Files the old WordPress site served, now served from this one (scripts/legacy-images.mjs). */
+const legacy = legacyFiles as Record<string, { path: string; width?: number; height?: number }>;
+export const local = (url: string): string => legacy[url]?.path ?? url;
+
 function mend(item: NewsItem, lang: Locale): Article {
   let html = item.html;
+  // pictures inside the article: from this site
+  for (const url of html.match(/https:\/\/(?:www\.)?vitruviusandpartners\.com\/wp-content\/uploads\/[^"'\s)<>]+/g) ?? []) {
+    if (legacy[url]) html = html.split(url).join(legacy[url].path);
+  }
   for (const [url, copy] of Object.entries(deadLinks)) {
     if (!html.includes(url)) continue;
     html = copy
@@ -51,7 +60,7 @@ function mend(item: NewsItem, lang: Locale): Article {
     const live = liveLink(s.url);
     return live ? { ...s, url: live } : { ...s, gone: true };
   });
-  return { ...item, html, sources };
+  return { ...item, image: item.image ? local(item.image) : item.image, html, sources };
 }
 
 const mended = { it: (newsIt as NewsItem[]).map((n) => mend(n, "it")), en: (newsEn as NewsItem[]).map((n) => mend(n, "en")) };

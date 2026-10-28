@@ -103,7 +103,7 @@ export const projects: Project[] = [
       { label: { it: "Destinazione e progetto", en: "Use and design" }, when: { it: "Prossime fasi", en: "Next phases" }, done: false },
     ],
     image: {
-      src: "https://vitruviusandpartners.com/wp-content/uploads/2026/07/genova.png",
+      src: "/legacy/2026/07/genova.jpg",
       width: 572,
       height: 429,
       alt: { it: "Il Palazzo ex INPS di Corso Italia, Genova", en: "The former INPS palace on Corso Italia, Genoa" },
@@ -173,9 +173,9 @@ export const projects: Project[] = [
     },
     image: {
       // the full render the group attached to the Asinari news (the article shows a 974 px crop of it)
-      src: "https://vitruviusandpartners.com/wp-content/uploads/2025/03/FOTORENDER-1-copia-2-scaled.jpg",
-      width: 1580,
-      height: 2560,
+      src: "/legacy/2025/03/FOTORENDER-1-copia-2-scaled.jpg",
+      width: 1481,
+      height: 2400,
       alt: { it: "Render del cortile del complesso di Via Asinari, Asti", en: "Render of the courtyard of the Via Asinari complex, Asti" },
       caption: { it: "Render pubblicato da Vitruvius & Partners, marzo 2025", en: "Render published by Vitruvius & Partners, March 2025" },
     },
@@ -248,7 +248,7 @@ export const projects: Project[] = [
       source: { it: "Maggio 2023", en: "May 2023" },
     },
     image: {
-      src: "https://vitruviusandpartners.com/wp-content/uploads/2023/05/immagine-2-progetto-Civitas5-Airuno-VitruviusPartners2.jpg",
+      src: "/legacy/2023/05/immagine-2-progetto-Civitas5-Airuno-VitruviusPartners2.jpg",
       width: 1200,
       height: 800,
       alt: { it: "Il progetto Civitas 5 ad Airuno", en: "The Civitas 5 project in Airuno" },
