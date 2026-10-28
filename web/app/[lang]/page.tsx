@@ -224,7 +224,15 @@ export default async function HomePage() {
         </OperationStack>
       </section>
 
-      <ContactBand label={h.contact.label} title={h.contact.title} cta={h.contact.cta} href={`${href(lang, "contact")}?topic=property#write`} image={IMG.contact} vivid />
+      <ContactBand
+        label={h.contact.label}
+        title={h.contact.title}
+        cta={h.contact.cta}
+        href={`${href(lang, "contact")}?topic=property#write`}
+        write={{ label: h.contact.write, href: `${href(lang, "contact")}#write` }}
+        image={IMG.contact}
+        vivid
+      />
     </RevealScope>
   );
 }

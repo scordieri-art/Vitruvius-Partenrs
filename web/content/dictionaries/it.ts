@@ -93,7 +93,8 @@ const it = {
     contact: {
       label: "Contatti",
       title: "Parliamo del vostro immobile.",
-      cta: "Scrivici",
+      cta: "Proponi un immobile",
+      write: "Scrivici per altre richieste",
     },
   },
   group: {

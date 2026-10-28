@@ -95,6 +95,7 @@ export default async function ProjectsIndex() {
         title={t.home.contact.title}
         cta={t.home.contact.cta}
         href={`${href(lang, "contact")}?topic=property#write`}
+        write={{ label: t.home.contact.write, href: `${href(lang, "contact")}#write` }}
         image="/images/home/home-contact-palazzo.jpg"
         vivid
       />

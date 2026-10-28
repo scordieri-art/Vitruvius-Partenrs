@@ -99,7 +99,8 @@ const en: Dictionary = {
     contact: {
       label: "Contact",
       title: "Let’s talk about your property.",
-      cta: "Write to us",
+      cta: "Propose a property",
+      write: "Write to us about something else",
     },
   },
   group: {

@@ -1,13 +1,31 @@
 import { Button } from "@/components/ui/Button";
+import { Cta } from "@/components/ui/Cta";
 import { ParallaxImage } from "@/components/ui/ParallaxImage";
 import { company } from "@/content/site";
 
 /**
- * Closing call to action: one sentence over a photograph, one button and the email. Offices live
+ * Closing call to action: one sentence over a photograph, one large button (an offer of a property,
+ * the topic already chosen), then the way to write about anything else and the email. Offices live
  * in the footer. Quiet by default (the photograph faint on navy); vivid on the home page, where the
  * photograph keeps its colour under a navy veil that deepens towards the words.
  */
-export function ContactBand({ label, title, cta, href, image, vivid = false }: { label: string; title: string; cta: string; href: string; image: string; vivid?: boolean }) {
+export function ContactBand({
+  label,
+  title,
+  cta,
+  href,
+  write,
+  image,
+  vivid = false,
+}: {
+  label: string;
+  title: string;
+  cta: string;
+  href: string;
+  write: { label: string; href: string };
+  image: string;
+  vivid?: boolean;
+}) {
   return (
     <section data-theme="navy" aria-labelledby="contact-band-title" className="relative overflow-hidden">
       <ParallaxImage src={image} alt="" sizes="100vw" strength={10} className="absolute inset-0" imgClassName={vivid ? undefined : "opacity-30"} />
@@ -26,11 +44,16 @@ export function ContactBand({ label, title, cta, href, image, vivid = false }: {
             {title}
           </h2>
         </div>
-        <div className="col-span-4 flex flex-col items-start gap-4 lg:col-span-4 lg:items-end" data-reveal="fade">
-          <Button href={href}>{cta}</Button>
-          <a href={`mailto:${company.email}`} className="vp-ulink t-body">
-            {company.email}
-          </a>
+        <div className="col-span-4 flex flex-col items-start gap-7 lg:col-span-4 lg:items-end" data-reveal="fade">
+          <Button href={href} size="lg">
+            {cta}
+          </Button>
+          <div className="flex flex-col items-start gap-3 lg:items-end">
+            <Cta href={write.href}>{write.label}</Cta>
+            <a href={`mailto:${company.email}`} className="vp-ulink t-body">
+              {company.email}
+            </a>
+          </div>
         </div>
       </div>
     </section>

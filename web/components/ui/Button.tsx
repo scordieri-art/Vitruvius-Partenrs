@@ -32,12 +32,12 @@ export function Button({
   children: ReactNode;
   external?: boolean;
   externalNote?: string;
-  size?: "md" | "sm";
+  size?: "lg" | "md" | "sm";
   arrow?: boolean;
   className?: string;
   transitionLabel?: string;
 }) {
-  const cls = `vp-btn ${size === "sm" ? "vp-btn--sm" : ""} ${className}`;
+  const cls = `vp-btn ${size === "md" ? "" : `vp-btn--${size}`} ${className}`;
   const body = (
     <ButtonBody arrow={arrow}>
       {children}
