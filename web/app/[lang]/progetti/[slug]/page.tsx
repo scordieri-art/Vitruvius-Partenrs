@@ -8,6 +8,7 @@ import { StageTrack } from "@/components/cases/StageTrack";
 import { Mark } from "@/components/marks/Mark";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Cta } from "@/components/ui/Cta";
+import { StickyAction } from "@/components/ui/StickyAction";
 import { MapSlab } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
 import { findProject, lowRes, projects } from "@/content/projects";
@@ -147,7 +148,8 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
           </div>
         </section>
 
-        {/* The case at a glance: a fact sheet that stays in view, with the place on the map; the story beside it */}
+        {/* The case at a glance: a fact sheet that stays in view beside the story while it is read;
+            the place on the map closes the story */}
         <section data-theme="paper" aria-labelledby="sheet-title" className="pb-[var(--section-y)] pt-[clamp(4.5rem,9vw,8rem)]">
           <div className="container-x grid-12 gap-y-14">
             <aside className="col-span-4 lg:sticky lg:top-[calc(var(--header-h)+2rem)] lg:col-span-4 lg:self-start">
@@ -168,20 +170,6 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                   </div>
                 ))}
               </dl>
-              <figure className="mt-10 grid gap-5" aria-label={c.mapLabel}>
-                <MapSlab
-                  places={mapPins(lang).filter((x) => x.kind === "office" || x.key === p.slug.it)}
-                  focus={p.slug.it}
-                  zoom={2.2}
-                  width={288}
-                  className="max-w-[18rem] lg:mx-0"
-                />
-                <div>
-                  <Cta href={mapsUrl(p.address.it)} external externalNote={t.ui.externalNew}>
-                    {c.maps}
-                  </Cta>
-                </div>
-              </figure>
             </aside>
 
             <div className="col-span-4 grid gap-[clamp(3rem,6vw,4.5rem)] lg:col-span-7 lg:col-start-6">
@@ -237,6 +225,24 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                   </p>
                 </div>
               </div>
+              {/* where it is: the place on the model, beside the way to open it in a maps app */}
+              <figure className="grid items-end gap-6 border-t border-[var(--line)] pt-10 sm:grid-cols-[minmax(0,18rem)_1fr]" aria-label={c.mapLabel}>
+                <MapSlab
+                  places={mapPins(lang).filter((x) => x.kind === "office" || x.key === p.slug.it)}
+                  focus={p.slug.it}
+                  zoom={2.2}
+                  width={288}
+                  className="max-w-[18rem] sm:mx-0"
+                />
+                <figcaption className="grid gap-4 pb-2">
+                  <span className="t-body">{p.address[lang]}</span>
+                  <span>
+                    <Cta href={mapsUrl(p.address.it)} external externalNote={t.ui.externalNew}>
+                      {c.maps}
+                    </Cta>
+                  </span>
+                </figcaption>
+              </figure>
             </div>
           </div>
         </section>
@@ -256,10 +262,16 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
           </section>
         ) : null}
 
-        {/* Next project */}
+        {/* Next project: its picture opens as it comes up the screen */}
         <section data-theme="paper" aria-label={t.projectsPage.next} className="pb-[var(--section-y)]">
           <div className="container-x">
-            <TLink href={href(lang, "projects", next.slug[lang])} transitionLabel={next.name} className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10" morph={!lowRes(next)}>
+            <TLink
+              href={href(lang, "projects", next.slug[lang])}
+              transitionLabel={next.name}
+              className="group grid-12 items-end gap-y-6 border-t border-[var(--line)] pt-10"
+              morph={!lowRes(next)}
+              data-cursor={t.ui.open}
+            >
               <div className="col-span-4 lg:col-span-5">
                 <p className="t-label">{t.projectsPage.next}</p>
                 <p className="t-l mt-3">{next.name}</p>
@@ -270,13 +282,17 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                 lang={lang}
                 label={label}
                 sizes="(min-width: 1024px) 50vw, 100vw"
-                className="col-span-4 aspect-[16/10] lg:col-span-6 lg:col-start-7"
+                className="vp-next__pic col-span-4 aspect-[16/10] lg:col-span-6 lg:col-start-7"
                 imgClassName="transition-transform duration-[1400ms] ease-[var(--ease-enter)] group-hover:scale-[1.04]"
               />
             </TLink>
           </div>
         </section>
       </article>
+      {/* phones: the offer of a property at hand, until the band below takes over */}
+      <StickyAction href={`${href(lang, "contact")}?topic=property#write`} until="#contact-band-title">
+        {t.home.contact.cta}
+      </StickyAction>
       {/* where the reader is most interested: an offer of a property, with the topic chosen */}
       <ContactBand
         label={t.home.contact.label}

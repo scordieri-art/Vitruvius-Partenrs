@@ -395,6 +395,67 @@
     gap: 1.1rem;
     font-size: var(--t-body-l);
   }
+  /* phones and tablets: the page's main action in a bar at the foot of the screen
+     (components/ui/StickyAction.tsx); hidden, it leaves the tab order too (visibility) */
+  .vp-stickyact {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 70;
+    padding: 0.75rem max(var(--gutter-x), env(safe-area-inset-right, 0px)) max(0.75rem, env(safe-area-inset-bottom)) max(var(--gutter-x), env(safe-area-inset-left, 0px));
+    background: color-mix(in srgb, var(--color-paper) 92%, transparent);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 -1px 0 var(--color-hairline);
+    transform: translateY(110%);
+    visibility: hidden;
+    transition:
+      transform 420ms var(--ease-move),
+      visibility 0s linear 420ms;
+  }
+  .vp-stickyact[data-on] {
+    transform: none;
+    visibility: visible;
+    transition:
+      transform 420ms var(--ease-move),
+      visibility 0s;
+  }
+  .vp-stickyact .vp-btn {
+    width: 100%;
+    justify-content: space-between;
+    --fg: var(--color-navy);
+    --bg: var(--color-white);
+  }
+  @media (min-width: 64rem) {
+    .vp-stickyact {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .vp-stickyact {
+      background: var(--color-paper);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+  /* a project page's next project: its picture opens from a window shaped like the stroke of the
+     symbol to the whole frame as it comes up the screen (scroll-driven, where supported) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .vp-next__pic {
+        animation: vp-next-open linear both;
+        animation-timeline: view();
+        animation-range: entry 5% cover 50%;
+      }
+    }
+  }
+  @keyframes vp-next-open {
+    from {
+      clip-path: polygon(24% 10%, 52% 10%, 76% 90%, 48% 90%);
+    }
+    to {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+  }
   /* a section's label, numbered in the order of the page: number, short rule, name */
   .vp-seclabel {
     display: flex;
