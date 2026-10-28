@@ -1062,6 +1062,20 @@ figure:has(.vp-tag) .vp-pubcap {
     translate: 0 0.9rem;
   }
 }
+/* the home's opening: label, then the title's lines (in its own rule), then the lead and the
+   two ways on; through the page transition, once the plane has uncovered the page. Out of the
+   layers, like .vp-rise itself, so the delays are not reset by its shorthand */
+@media (prefers-reduced-motion: no-preference) {
+  .vp-hero .vp-hero__lead {
+    animation-delay: 0.4s;
+  }
+  .vp-hero .vp-hero__ctas {
+    animation-delay: 0.5s;
+  }
+  html[data-vp-transition] .vp-hero .vp-rise {
+    animation-delay: 0.62s;
+  }
+}
 
 /* Pre-hide elements that animate in (only when JS + motion are available) */
 /* opacity, not visibility: what waits for its entrance stays in the accessibility tree, so a
@@ -1805,14 +1819,45 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
     padding-top: calc(var(--tab) + 1.25rem);
     padding-bottom: 3rem;
   }
+  /* the title: phones and tablets as large as the longest line allows across the screen;
+     wide screens below */
   .vp-hero__title {
-    font-size: clamp(2.7rem, 1rem + 5.4vw, 7.25rem);
+    font-size: min(13.6vw, 6.5rem);
     font-weight: 300;
     line-height: 0.95;
     letter-spacing: -0.045em;
   }
+  /* each line rises from its own mask (room kept for accents and descenders) */
+  .vp-hero__line {
+    display: block;
+    white-space: nowrap;
+    overflow: clip;
+    padding-block: 0.16em 0.22em;
+    margin-block: -0.16em -0.22em;
+  }
+  .vp-hero__word {
+    display: block;
+  }
+  /* the opening in CSS alone: shown with the first paint, never waiting for the scripts */
+  @media (prefers-reduced-motion: no-preference) {
+    html.js-motion .vp-hero__word {
+      animation: vp-hero-line 1.05s var(--ease-enter) both;
+      animation-delay: calc(0.18s + var(--i) * 0.09s);
+    }
+    /* arriving through the page transition: once the plane has uncovered the page */
+    html[data-vp-transition] .vp-hero__word {
+      animation-delay: calc(0.72s + var(--i) * 0.09s);
+    }
+  }
+  @keyframes vp-hero-line {
+    from {
+      transform: translateY(150%);
+    }
+  }
   @media (min-width: 64rem) {
     .vp-hero {
+      /* the cut keeps its place against the text when the page is wider than the container */
+      --c: calc(34% + max(0px, (100% - 112rem) / 2));
       height: var(--h);
     }
     .vp-hero__img {
@@ -1833,6 +1878,14 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
       clip-path: polygon(0 0, var(--x) 0, calc(var(--x) + var(--s)) 100%, 0 100%);
       /* own layer: over the transformed photograph, Chrome otherwise may paint the clip as its bounding box */
       transform: translateZ(0);
+    }
+    /* larger at the foot of the mass, where it is widest; each line set in by the slope, so
+       the title leans like the cut; never so large on a short screen that a line reaches it */
+    .vp-hero__title {
+      font-size: clamp(4rem, min(7vw, 12svh), 9.5rem);
+    }
+    .vp-hero__line {
+      margin-left: calc(var(--i) * 0.95em * var(--slope));
     }
     .vp-hero__body {
       height: 100%;

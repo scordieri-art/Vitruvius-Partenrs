@@ -55,7 +55,7 @@ export default async function HomePage() {
 
   return (
     <RevealScope>
-      <Hero copy={h.hero} image={IMG.hero} />
+      <Hero copy={h.hero} image={IMG.hero} propose={{ label: h.contact.cta, href: `${href(lang, "contact")}?topic=property#write` }} />
 
       {/* How the group works */}
       <section data-theme="paper" aria-labelledby="lines-title" className="pt-[var(--section-y)]">
