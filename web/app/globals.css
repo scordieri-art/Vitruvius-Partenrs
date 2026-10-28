@@ -3161,6 +3161,24 @@ html.js-motion [data-reveal="fill"]:not([data-filled]) .vp-mark--solid polygon {
   }
 
   /* header: the primary action takes the colours of the surface under the header */
+  /* the header shown again mid-page: the colour of the section under it, a hairline, a light blur
+     (never with the menu open: a backdrop filter would make the header hold the fixed menu) */
+  .vp-header[data-solid="light"] {
+    background-color: color-mix(in srgb, var(--color-paper) 90%, transparent);
+    box-shadow: 0 1px 0 var(--color-hairline);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+  .vp-header[data-solid="dark"] {
+    background-color: color-mix(in srgb, var(--color-navy) 92%, transparent);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.12);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    backdrop-filter: blur(14px) saturate(1.15);
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .vp-header[data-solid="light"] { background-color: var(--color-paper); }
+    .vp-header[data-solid="dark"] { background-color: var(--color-navy); }
+  }
   .vp-header[data-on="dark"] .vp-btn {
     --fg: var(--color-white);
     --bg: var(--color-navy);

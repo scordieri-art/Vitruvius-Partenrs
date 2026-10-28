@@ -122,6 +122,9 @@ export function Header({
   const onLatest = hydrated && pathname.startsWith(latest.href);
   const onDark = dark || open;
   const bigLogo = hydrated && pathname === homeHref && top && !open;
+  // shown again mid-page (scrolling back up): it carries the colour of the section under it, so it
+  // never sits on the text; transparent only at the top of the page and with the menu open
+  const solid = hydrated && !top && !open ? (onDark ? "dark" : "light") : undefined;
 
   return (
     <>
@@ -134,11 +137,13 @@ export function Header({
       <header
         ref={header}
         data-on={onDark ? "dark" : "light"}
+        data-solid={solid}
         className="vp-header fixed inset-x-0 top-0 z-[80]"
         style={{
           // "none" when shown: any transform would make the header the containing block of the fixed menu
           transform: hidden && !open ? "translate3d(0,-110%,0)" : "none",
-          transition: "transform 420ms var(--ease-move), color 220ms var(--ease-move)",
+          transition:
+            "transform 420ms var(--ease-move), color 220ms var(--ease-move), background-color 320ms var(--ease-move), box-shadow 320ms var(--ease-move)",
           color: onDark ? "var(--color-white)" : "var(--color-navy)",
         }}
       >
