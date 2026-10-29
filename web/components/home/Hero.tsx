@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Fragment, useEffect, useRef, type CSSProperties } from "react";
 import { Button } from "@/components/ui/Button";
 import { JumpLink } from "@/components/ui/JumpLink";
-import { ScrollTrigger, setupGsap } from "@/lib/motion";
+import { whenMotion, type Trigger } from "@/lib/motion";
 import { useReducedMotion } from "@/lib/hooks";
 
 type HeroCopy = { label: string; title: string[]; lead: string; cta: string; scroll: string };
@@ -25,15 +25,19 @@ export function Hero({ copy, image, propose }: { copy: HeroCopy; image: string; 
   useEffect(() => {
     const el = root.current;
     if (!el || reduced) return;
-    setupGsap();
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: "top top",
-      end: "bottom top",
-      onUpdate: (self) => el.style.setProperty("--p", self.progress.toFixed(4)),
+    // the wipe only matters once the page scrolls: it waits for the reader (lib/motion)
+    let st: Trigger | undefined;
+    const cancel = whenMotion(({ ScrollTrigger }) => {
+      st = ScrollTrigger.create({
+        trigger: el,
+        start: "top top",
+        end: "bottom top",
+        onUpdate: (self) => el.style.setProperty("--p", self.progress.toFixed(4)),
+      });
     });
     return () => {
-      st.kill();
+      cancel();
+      st?.kill();
       el.style.removeProperty("--p");
     };
   }, [reduced]);

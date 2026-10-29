@@ -13,7 +13,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
-import { gsap, prefersReducedMotion, setupGsap, ScrollTrigger } from "@/lib/motion";
+import { loadMotion, motionNow, prefersReducedMotion, whenMotion, type Motion } from "@/lib/motion";
 
 /** Where a project picture starts from, for the shared-image transition. */
 type Morph = { rect: DOMRect; src: string };
@@ -41,7 +41,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const phase = useRef<"idle" | "covering" | "revealing">("idle");
   const pending = useRef<string | null>(null);
   const awaiting = useRef(false);
-  const tween = useRef<gsap.core.Tween | null>(null);
+  const tween = useRef<ReturnType<Motion["gsap"]["to"]> | null>(null);
   const clip = useRef({ lead: 0, trail: 0 });
   const here = useRef(pathname);
   const morphEl = useRef<HTMLDivElement>(null);
@@ -74,14 +74,22 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
         lenis?.scrollTo(top, { immediate: true, force: true });
       };
       land();
+      const m = motionNow();
       requestAnimationFrame(() => {
+        if (!m) {
+          if (plane.current) plane.current.style.visibility = "hidden";
+          setClip(0, 0);
+          phase.current = "idle";
+          delete document.documentElement.dataset.vpTransition;
+          return;
+        }
         // a refresh restores the scroll position it last recorded (the previous page's):
         // land again once the new page has been measured
-        ScrollTrigger.refresh();
+        m.ScrollTrigger.refresh();
         land();
         const c = { ...clip.current };
         tween.current?.kill();
-        tween.current = gsap.to(c, {
+        tween.current = m.gsap.to(c, {
           trail: 1,
           duration: 0.7 * (1 - c.trail),
           delay: 0.12,
@@ -94,7 +102,7 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
             delete document.documentElement.dataset.vpTransition;
           },
         });
-        if (label.current) gsap.to(label.current, { opacity: 0, duration: 0.3, ease: "move" });
+        if (label.current) m.gsap.to(label.current, { opacity: 0, duration: 0.3, ease: "move" });
       });
     },
     [setClip],
@@ -104,7 +112,8 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
   const finishMorph = useCallback(() => {
     const m = morphState.current;
     const el = morphEl.current;
-    if (!m || !m.routeReady || !m.expanded || !el) return;
+    const motion = motionNow();
+    if (!m || !m.routeReady || !m.expanded || !el || !motion) return;
     morphState.current = null;
     phase.current = "revealing";
     const lenis = (window as unknown as { __lenis?: { scrollTo: (t: number, o: object) => void } }).__lenis;
@@ -114,9 +123,9 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     };
     top();
     requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
+      motion.ScrollTrigger.refresh();
       top();
-      tween.current = gsap.to(el, {
+      tween.current = motion.gsap.to(el, {
         opacity: 0,
         duration: 0.65,
         delay: 0.1,
@@ -135,8 +144,9 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     (href: string, from: Morph) => {
       const el = morphEl.current;
       const img = el?.querySelector("img");
-      if (!el || !img) return false;
-      setupGsap();
+      const motion = motionNow();
+      if (!el || !img || !motion) return false;
+      const { gsap } = motion;
       tween.current?.kill();
       img.src = from.src;
       phase.current = "covering";
@@ -182,12 +192,16 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
         router.push(href);
         return;
       }
-      if (prefersReducedMotion() || !plane.current) {
+      // the motion engine comes with the reader's first movement: a click before it is there
+      // (or with reduced motion) goes straight to the page, and asks for it for the next one
+      const motion = motionNow();
+      if (prefersReducedMotion() || !plane.current || !motion) {
+        if (!motion) loadMotion();
         router.push(href);
         return;
       }
       if (morph && startMorph(href, morph)) return;
-      setupGsap();
+      const { gsap } = motion;
       tween.current?.kill();
       const wasRevealing = phase.current === "revealing";
       phase.current = "covering";
@@ -215,6 +229,10 @@ export function PageTransitionProvider({ children }: { children: ReactNode }) {
     },
     [router, setClip, reveal, startMorph],
   );
+
+  // the plane needs the engine: ask for it at the reader's first movement on any page, so it is
+  // there by the first click even where nothing else on the page moves
+  useEffect(() => whenMotion(() => {}), []);
 
   // reveal once the new route is rendered
   useEffect(() => {

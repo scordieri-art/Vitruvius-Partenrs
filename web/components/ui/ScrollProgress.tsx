@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { ScrollTrigger, setupGsap } from "@/lib/motion";
+import { whenMotion, type Trigger } from "@/lib/motion";
 import { useReducedMotion } from "@/lib/hooks";
 
 /**
@@ -25,15 +25,19 @@ export function ScrollProgress({
   useEffect(() => {
     const node = el.current;
     if (!node || reduced) return;
-    setupGsap();
-    const st = ScrollTrigger.create({
-      trigger: node,
-      start,
-      end,
-      onUpdate: (self) => node.style.setProperty("--sp", self.progress.toFixed(4)),
+    // 0 until the page scrolls: the trigger waits for the reader (lib/motion)
+    let st: Trigger | undefined;
+    const cancel = whenMotion(({ ScrollTrigger }) => {
+      st = ScrollTrigger.create({
+        trigger: node,
+        start,
+        end,
+        onUpdate: (self) => node.style.setProperty("--sp", self.progress.toFixed(4)),
+      });
     });
     return () => {
-      st.kill();
+      cancel();
+      st?.kill();
       node.style.removeProperty("--sp");
     };
   }, [reduced, start, end]);

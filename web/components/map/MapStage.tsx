@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-import { ScrollTrigger, prefersReducedMotion, setupGsap } from "@/lib/motion";
+import { prefersReducedMotion, whenMotion, type Trigger } from "@/lib/motion";
 
 type View = { x: number; y: number; w: number; h: number };
 
@@ -39,16 +39,20 @@ export function MapStage({
   useEffect(() => {
     const el = root.current;
     if (!el || prefersReducedMotion()) return;
-    setupGsap();
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: "top 90%",
-      end: "center 55%",
-      scrub: 0.6,
-      onUpdate: (self) => el.style.setProperty("--tilt", `${(8 + self.progress * 40).toFixed(2)}deg`),
+    // until the page scrolls the model rests at the CSS tilt; the trigger waits for the reader
+    let st: Trigger | undefined;
+    const cancel = whenMotion(({ ScrollTrigger }) => {
+      st = ScrollTrigger.create({
+        trigger: el,
+        start: "top 90%",
+        end: "center 55%",
+        scrub: 0.6,
+        onUpdate: (self) => el.style.setProperty("--tilt", `${(8 + self.progress * 40).toFixed(2)}deg`),
+      });
     });
     return () => {
-      st.kill();
+      cancel();
+      st?.kill();
       el.style.removeProperty("--tilt");
     };
   }, []);

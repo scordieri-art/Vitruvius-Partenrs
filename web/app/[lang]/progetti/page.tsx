@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { RevealScope } from "@/components/layout/RevealScope";
 import { ContactBand } from "@/components/home/ContactBand";
 import { TLink } from "@/components/layout/PageTransition";
 import { ProjectImage } from "@/components/cases/ProjectImage";
-import { Mark } from "@/components/marks/Mark";
+import { Mark, slopeRun } from "@/components/marks/Mark";
 import { PageHero } from "@/components/ui/PageHero";
 import { ItalyMap } from "@/components/map/ItalyMap";
 import { mapPlaces } from "@/components/map/mapPlaces";
@@ -53,7 +54,13 @@ export default async function ProjectsIndex() {
               <li key={p.slug.it} id={`p-${p.slug[lang]}`} className={first ? "col-span-4 lg:col-span-12" : i === 1 ? "col-span-4 lg:col-span-6" : "col-span-4 lg:col-span-5 lg:col-start-8 lg:mt-[clamp(6rem,14vw,14rem)]"}>
                 <TLink href={href(lang, "projects", p.slug[lang])} transitionLabel={p.name} className={`group ${framed ? "grid-12 gap-y-6 lg:items-end" : "block"}`} morph={!lowRes(p)}>
                   {/* pointed at with a mouse: the picture comes a little closer and «Apri» follows the pointer */}
-                  <div data-reveal="image" data-cursor={t.ui.open} className={framed ? "col-span-4 lg:col-span-7" : undefined} style={framed ? { maxWidth: `${Math.round(p.image!.width * 1.25)}px` } : undefined}>
+                  <div
+                    data-reveal="image"
+                    data-cursor={t.ui.open}
+                    // --sl: the slope's run across the frame, from its proportions (the cases' own, 4:5 or 16:9)
+                    className={framed ? "col-span-4 lg:col-span-7" : first ? "[--sl:73.3%] sm:[--sl:33%]" : "[--sl:73.3%]"}
+                    style={framed ? ({ maxWidth: `${Math.round(p.image!.width * 1.25)}px`, "--sl": slopeRun(p.image!.width, p.image!.height) } as CSSProperties) : undefined}
+                  >
                     {caseLink}
                   </div>
                   <div className={`${framed ? "col-span-4 lg:col-span-5 lg:col-start-8" : "mt-6"} flex items-start justify-between gap-6`}>

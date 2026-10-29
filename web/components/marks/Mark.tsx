@@ -10,6 +10,8 @@ export const MARK_POINTS = "0,0 93.793,0 193.448,170 99.655,170";
 /** Top edge and horizontal run of the stroke, per unit of height. */
 export const MARK_W = 93.793 / 170;
 export const MARK_S = 99.655 / 170;
+/** How far the stroke's slope runs across a frame w × h, as a share of its width: --sl, for data-reveal="image". */
+export const slopeRun = (w: number, h: number) => `${((h / w) * MARK_S * 100).toFixed(1)}%`;
 
 export function Mark({
   kind = "solid",

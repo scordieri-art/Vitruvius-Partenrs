@@ -1494,18 +1494,82 @@ figure:has(.vp-tag) .vp-pubcap {
     transform: translateY(150%);
   }
 }
-/* arriving through the page transition: the openings wait at their first frame until the plane
-   has uncovered the page (the attribute goes then), and play from there: never a jump */
-html[data-vp-transition] :is(.vp-rise, .vp-rise-in, .vp-hero__word, .vp-hero__mass) {
+/* Entrances declared in markup (data-reveal, components/layout/RevealScope.tsx). Where a page
+   opens, in the first two blocks of its scope (.vp-scope, or of the article that holds the whole
+   page), each plays in CSS from the first frame
+   the browser draws: nothing there waits for the scripts (and it counts as drawn from that frame,
+   LCP). The rest waits transparent until RevealScope plays it as it comes into view: playing it
+   from the first frame too would only add work to the start of the page for what nobody sees yet.
+   Transparent, not hidden: it stays in the accessibility tree. With JS (the class comes from the
+   head script) and motion allowed. */
+html.js-motion [data-reveal]:not([data-reveal="fill"]) {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.js-motion :is(.vp-scope > :nth-child(-n + 2):not(article), .vp-scope > article > :nth-child(-n + 2)) [data-reveal="fade"] {
+    opacity: 1;
+    animation: vp-reveal-fade 800ms var(--ease-enter) both;
+  }
+  html.js-motion :is(.vp-scope > :nth-child(-n + 2):not(article), .vp-scope > article > :nth-child(-n + 2)) [data-reveal="lines"] {
+    opacity: 1;
+    animation: vp-reveal-lines 1.05s var(--ease-enter) both;
+  }
+  html.js-motion :is(.vp-scope > :nth-child(-n + 2):not(article), .vp-scope > article > :nth-child(-n + 2)) [data-reveal="rule"] {
+    opacity: 1;
+    transform-origin: left center;
+    animation: vp-reveal-rule 1.1s var(--ease-move) both;
+  }
+  /* the frame opens with the slope of the symbol, the picture settles. --sl: how far the slope
+     runs across the frame, a share of its width or a length, set where its proportions are known */
+  html.js-motion :is(.vp-scope > :nth-child(-n + 2):not(article), .vp-scope > article > :nth-child(-n + 2)) [data-reveal="image"] {
+    opacity: 1;
+    animation: vp-reveal-image 1.2s var(--ease-move) backwards;
+  }
+  html.js-motion :is(.vp-scope > :nth-child(-n + 2):not(article), .vp-scope > article > :nth-child(-n + 2)) [data-reveal="image"] :is(img, video, canvas) {
+    animation: vp-reveal-settle 1.6s var(--ease-enter) backwards;
+  }
+  html.js-motion [data-reveal][data-reveal-delay="0.2"],
+  html.js-motion [data-reveal][data-reveal-delay="0.2"] :is(img, video, canvas) {
+    animation-delay: 0.2s;
+  }
+}
+@keyframes vp-reveal-fade {
+  from {
+    opacity: 0.01;
+    translate: 0 24px;
+  }
+}
+@keyframes vp-reveal-lines {
+  from {
+    opacity: 0.01;
+    translate: 0 1.2rem;
+  }
+}
+@keyframes vp-reveal-rule {
+  from {
+    scale: 0 1;
+  }
+}
+/* from a hair open at the foot to wholly open, the leading edge on the slope */
+@keyframes vp-reveal-image {
+  from {
+    clip-path: polygon(0 0, calc(1% - var(--sl, 40%)) 0, 1% 100%, 0 100%);
+  }
+  to {
+    clip-path: polygon(0 0, 100% 0, calc(100% + var(--sl, 40%)) 100%, 0 100%);
+  }
+}
+@keyframes vp-reveal-settle {
+  from {
+    scale: 1.08;
+  }
+}
+/* arriving through the page transition: the openings and the entrances on screen wait at their
+   first frame until the plane has uncovered the page (the attribute goes then), and play from
+   there: never a jump */
+html[data-vp-transition] :is(.vp-rise, .vp-rise-in, .vp-hero__word, .vp-hero__mass, [data-reveal], [data-reveal] :is(img, video, canvas)) {
   /* a state over every entrance's own shorthand, wherever it is declared */
   animation-play-state: paused !important;
-}
-
-/* Pre-hide elements that animate in (only when JS + motion are available) */
-/* opacity, not visibility: what waits for its entrance stays in the accessibility tree, so a
-   screen reader finds every heading before it has been scrolled to */
-html.js-motion [data-reveal] {
-  opacity: 0;
 }
 /* reached by the keyboard before its entrance: shown at once */
 html.js-motion [data-reveal]:focus-within {

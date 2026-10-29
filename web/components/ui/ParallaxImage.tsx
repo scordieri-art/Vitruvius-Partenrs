@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-import { ScrollTrigger, setupGsap } from "@/lib/motion";
+import { whenMotion, type Trigger } from "@/lib/motion";
 import { useReducedMotion } from "@/lib/hooks";
 
 /**
@@ -36,15 +36,18 @@ export function ParallaxImage({
     const el = frame.current;
     // phones: the drift is barely visible there and would run on every scroll: the frame stays still
     if (!el || reduced || matchMedia("(pointer: coarse)").matches) return;
-    setupGsap();
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: "top bottom",
-      end: "bottom top",
-      onUpdate: (self) => el.style.setProperty("--py", (self.progress - 0.5).toFixed(4)),
+    let st: Trigger | undefined;
+    const cancel = whenMotion(({ ScrollTrigger }) => {
+      st = ScrollTrigger.create({
+        trigger: el,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: (self) => el.style.setProperty("--py", (self.progress - 0.5).toFixed(4)),
+      });
     });
     return () => {
-      st.kill();
+      cancel();
+      st?.kill();
       el.style.removeProperty("--py");
     };
   }, [reduced]);

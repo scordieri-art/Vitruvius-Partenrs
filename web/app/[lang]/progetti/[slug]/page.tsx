@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { Rise } from "@/components/ui/Rise";
 import { notFound } from "next/navigation";
 import { RevealScope } from "@/components/layout/RevealScope";
@@ -6,7 +7,7 @@ import { ContactBand } from "@/components/home/ContactBand";
 import { TLink } from "@/components/layout/PageTransition";
 import { ProjectImage } from "@/components/cases/ProjectImage";
 import { StageTrack } from "@/components/cases/StageTrack";
-import { Mark } from "@/components/marks/Mark";
+import { Mark, slopeRun } from "@/components/marks/Mark";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { Cta } from "@/components/ui/Cta";
 import { StickyAction } from "@/components/ui/StickyAction";
@@ -75,7 +76,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
                 </p>
               </div>
               <figure className="col-span-4 lg:col-span-6" style={{ maxWidth: `${Math.round(p.image.width * 1.25)}px` }}>
-                <div data-reveal="image">
+                <div data-reveal="image" style={{ "--sl": slopeRun(p.image.width, p.image.height) } as CSSProperties}>
                   <ProjectImage
                     p={p}
                     lang={lang}
@@ -94,7 +95,8 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/progett
           // Opening: the picture full frame, the name over it
           <header data-theme="ink">
             <ScrollProgress className="relative flex min-h-[max(88svh,34rem)] flex-col justify-end overflow-hidden">
-              <div className="absolute inset-0" data-reveal="image">
+              {/* the frame is the opening: as tall as it, max(88svh, 34rem) */}
+              <div className="absolute inset-0 [--sl:calc(max(88svh,34rem)*0.586)]" data-reveal="image">
                 <ProjectImage p={p} lang={lang} label={label} sizes="100vw" priority className="vp-slow h-full w-full" tagClassName="right-[max(1.5rem,6vw)] top-24" />
               </div>
               <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[30%] bg-[linear-gradient(to_bottom,rgb(15_23_42/0.6),transparent)]" />

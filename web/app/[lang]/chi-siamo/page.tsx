@@ -112,7 +112,8 @@ export default async function AboutPage() {
       <section data-theme="paper" aria-label={a.label}>
         {/* the group's own photograph, widened at the sides to the page's 21:9; on phones the original frame, so all three stay in */}
         <div className="container-x">
-          <div data-reveal="image">
+          {/* --sl: the slope's run across the frame, 4:3 then 21:9 */}
+          <div data-reveal="image" className="[--sl:44%] sm:[--sl:25.1%]">
             <ParallaxImage src="/images/pages/about-team-site.jpg" alt="" sizes="100vw" strength={10} className="aspect-[4/3] bg-[var(--line)] sm:aspect-[21/9]" priority />
           </div>
           <dl className="mt-12 grid grid-cols-2 gap-x-[var(--col-gap)] gap-y-2 md:grid-cols-3 lg:grid-cols-5">

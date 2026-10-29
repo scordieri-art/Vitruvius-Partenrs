@@ -1,6 +1,6 @@
 # Vitruvius & Partners — sito di gruppo
 
-Next.js 16 (App Router) · TypeScript · GSAP + ScrollTrigger · Lenis · Tailwind CSS 4. Una sola scena 3D, il capitolo «Dove operiamo» della home su desktop (WebGL puro più earcut, licenza ISC); il sito non dipende da WebGL: senza, il capitolo torna la lastra in CSS.
+Next.js 16 (App Router) · TypeScript · GSAP + ScrollTrigger · Lenis · Tailwind CSS 4. GSAP e Lenis non sono tra i primi script di nessuna pagina: arrivano al primo gesto del lettore (`lib/motion.ts`). Una sola scena 3D, il capitolo «Dove operiamo» della home su desktop (WebGL puro più earcut, licenza ISC); il sito non dipende da WebGL: senza, il capitolo torna la lastra in CSS.
 
 ## Avvio
 
@@ -173,7 +173,8 @@ Tolti di proposito: numeri che contano su importi e classifiche (contano solo i 
 - Il tratto del simbolo è anche il segno di stato (`components/marks/Mark.tsx`): **pieno** = fatto documentato o fase conclusa, **contorno** = obiettivo dichiarato o fase prevista.
 - Senza movimento o senza JavaScript tutto è nello stato finale.
 - Curve: entrate `cubic-bezier(0.22, 1, 0.36, 1)`, movimenti `cubic-bezier(0.65, 0, 0.35, 1)`. Niente rimbalzi.
-- Le animazioni d'ingresso si dichiarano nel markup (`data-reveal="lines" | "fade" | "image" | "rule" | "fill"`), dentro `<RevealScope>`.
+- Le animazioni d'ingresso si dichiarano nel markup (`data-reveal="lines" | "fade" | "image" | "rule" | "fill"`), dentro `<RevealScope>`. Dove la pagina si apre (i primi due blocchi di `<RevealScope>`, o dell'`article` che contiene tutta la pagina) partono in CSS dal primo fotogramma che il browser disegna, come le aperture (`.vp-rise`): ciò che è sullo schermo all'arrivo non aspetta gli script. Il resto aspetta trasparente e `RevealScope` lo fa entrare quando arriva in vista, con transizioni CSS sulle due curve del marchio: farlo partire subito anche fuori schermo costava circa 130 ms all'avvio di un telefono lento, per animazioni che nessuno vede. Le immagini si aprono sulla pendenza del simbolo: `--sl` (`slopeRun` in `components/marks/Mark.tsx`) è quanto la pendenza attraversa la cornice, dato dove le proporzioni sono note.
+- **GSAP su richiesta** (`lib/motion.ts`): GSAP, ScrollTrigger e Lenis si scaricano al primo scorrimento, tocco, tasto o movimento del mouse (`whenMotion`), mai all'apertura della pagina: un telefono che apre una pagina non scarica né compila circa 48 KB compressi. Un clic che arriva prima di GSAP porta alla pagina senza il piano navy. I titoli sotto lo schermo salgono riga per riga con SplitText, che arriva con GSAP; uno raggiunto prima che sia arrivato sale intero, senza aspettarlo.
 - Le maschere delle righe hanno spazio sopra e sotto il testo, così accenti e discendenti (à, g, p) non vengono mai tagliati. Il controllo automatico lo verifica.
 
 ## Navigazione e accessibilità
