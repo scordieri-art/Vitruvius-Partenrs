@@ -3004,45 +3004,122 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     transform: translateX(0.4rem);
   }
 
-  /* a count running: the real figure stays in the text, transparent, and the layer over it counts */
-  .vp-count__n.is-counting {
+  /* Home «In numeri»: the climb in the Top 200, on the slope of the symbol. --sp (ScrollProgress, 0 → 1
+     as the section comes into view) plays it: the old place in outline, the stroke rising from it,
+     the new place filling in as the stroke reaches it. Without scripts or motion, --sp is unset and
+     all of it is there at once */
+  .vp-climb {
+    --k: var(--sp, 1);
+    --rise: clamp(0, calc((var(--k) - 0.05) / 0.55), 1);
+    --fill: clamp(0, calc((var(--k) - 0.55) / 0.3), 1);
     position: relative;
+    height: clamp(24rem, 38vw, 32rem);
+  }
+  .vp-climb__n {
+    display: block;
+    font-size: clamp(5.5rem, 2rem + 13vw, 15rem);
+    font-weight: 300;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    -webkit-text-stroke: 1.5px var(--fg);
+  }
+  .vp-climb__from {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  }
+  .vp-climb__from .vp-climb__n {
     color: transparent;
   }
-  .vp-count__n.is-counting::after {
-    content: attr(data-n);
-    content: attr(data-n) / "";
+  .vp-climb__to {
     position: absolute;
-    inset: 0 auto auto 0;
-    color: var(--fg);
+    right: 0;
+    top: 0;
+    text-align: right;
   }
-  /* the figures as a band: large numbers between hairlines, the label at the foot of each */
-  .vp-counts {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    border-top: 1px solid var(--line);
+  .vp-climb__suf {
+    margin-left: 0.04em;
+    font-size: 0.34em;
+    letter-spacing: -0.01em;
+    vertical-align: 1.3em;
   }
-  .vp-counts > div {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-    min-width: 0;
-    padding: clamp(1.25rem, 2.4vw, 2rem) var(--col-gap) clamp(1.5rem, 3vw, 2.5rem) 0;
-    border-bottom: 1px solid var(--line);
+  /* the tight tracking runs on past the last glyph: given back, so the ° keeps to the margin */
+  .vp-climb__to .vp-climb__n {
+    padding-right: 0.05em;
   }
-  .vp-counts > div:nth-child(2n) {
-    padding-left: var(--col-gap);
-    border-left: 1px solid var(--line);
+  .vp-climb__to .vp-climb__n {
+    color: color-mix(in srgb, var(--fg) calc(var(--fill) * 100%), transparent);
+    translate: 0 calc((1 - var(--fill)) * 0.06em);
+  }
+  .vp-climb :is(.vp-climb__from, .vp-climb__to) .t-label {
+    display: block;
+    margin-top: 0.9rem;
+  }
+  /* the stroke rises from the old place to the new: drawn from its foot */
+  .vp-climb__stroke {
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    height: 49%;
+    width: auto;
+    translate: -46% 0;
+    fill: var(--fg);
+    clip-path: inset(calc((1 - var(--rise)) * 100%) 0 0 0);
   }
   @media (min-width: 64rem) {
-    .vp-counts {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .vp-climb__stroke {
+      top: 6%;
+      height: 88%;
     }
-    .vp-counts > div:not(:first-child) {
+  }
+
+  /* the figures under it, between hairlines: the number, then what it counts */
+  .vp-figs {
+    display: grid;
+    margin-top: clamp(3rem, 6vw, 5rem);
+    border-top: 1px solid var(--line);
+  }
+  .vp-figs > div {
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem 0 1.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .vp-figs dt {
+    color: var(--fg-2);
+  }
+  .vp-figs dd {
+    order: -1;
+    margin-bottom: 0.9rem;
+  }
+  @media (min-width: 64rem) {
+    .vp-figs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .vp-figs > div {
+      padding: 1.6rem var(--col-gap) 1.8rem 0;
+    }
+    .vp-figs > div + div {
       padding-left: var(--col-gap);
       border-left: 1px solid var(--line);
     }
+  }
+  .vp-fig {
+    font-size: clamp(2.6rem, 1rem + 3.4vw, 4.75rem);
+    font-weight: 300;
+    line-height: 0.95;
+    letter-spacing: -0.045em;
+  }
+  .vp-fig__unit {
+    margin-left: 0.12em;
+    font-size: 0.42em;
+    letter-spacing: -0.02em;
+  }
+  .vp-fig__arrow {
+    margin: 0 0.3em;
+    font-size: 0.5em;
+    vertical-align: 0.25em;
+    color: var(--fg-2);
   }
   .vp-count {
     font-size: clamp(2.5rem, 0.5rem + 5.6vw, 8.5rem);

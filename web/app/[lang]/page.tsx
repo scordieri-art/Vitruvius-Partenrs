@@ -6,7 +6,6 @@ import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
 import { Filiera } from "@/components/home/Filiera";
 import { HOME_IMG as IMG, homeSteps } from "@/content/home";
-import { Counters } from "@/components/home/Counters";
 import { OperationStack } from "@/components/home/OperationStack";
 import { ContactBand } from "@/components/home/ContactBand";
 import { ProjectImage } from "@/components/cases/ProjectImage";
@@ -16,8 +15,10 @@ import { ItalyMap } from "@/components/map/ItalyMap";
 import { chapterSteps, mapPins, mapPlaces } from "@/components/map/mapPlaces";
 import { WhereChapter } from "@/components/map/WhereChapter";
 import { SectionLabel } from "@/components/ui/SectionLabel";
+import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { declared, production, top200 } from "@/content/evidence";
 import { lowRes, projects } from "@/content/projects";
-import { getDictionary, liveLink } from "@/lib/content";
+import { getDictionary, liveLink, newsHref } from "@/lib/content";
 import { href } from "@/lib/i18n";
 import { alternates } from "@/lib/seo";
 
@@ -35,6 +36,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 
+/** A place in the ranking, set large: an ordinal in letters (English "th", "rd") rides small above the
+ * figure, as the Italian ° does by itself, so both languages draw the same climb */
+function Place({ n, label }: { n: number; label: string }) {
+  const suffix = label.slice(String(n).length);
+  return (
+    <span className="vp-climb__n t-num">
+      {n}
+      {/[a-z]/i.test(suffix) ? <span className="vp-climb__suf">{suffix}</span> : suffix}
+    </span>
+  );
+}
+
 /**
  * Home: statement → how the group works (three steps, one proof each) → figures and
  * press → projects → contact. Few words, large images, nothing hidden behind a hover.
@@ -44,6 +57,10 @@ export default async function HomePage() {
   const h = t.home;
 
   const steps = homeSteps(lang);
+  // the two places in the Top 200, and the value of production from its first published year to its last
+  const [from, to] = top200.points;
+  const first = production[0];
+  const last = production[production.length - 1];
 
   // the press, newest first: the outlet, its headline as published, the operation and the date
   const press = PRESS.flatMap((outlet) => {
@@ -71,7 +88,7 @@ export default async function HomePage() {
         <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
-      {/* Figures, between hairlines, then the press as an index of articles */}
+      {/* Figures: the climb in the Top 200 on the slope of the symbol, then the press as an index of articles */}
       <section data-theme="paper" aria-labelledby="numbers-title" className="pt-[var(--section-y)]">
         <div className="container-x">
           <div className="mb-[clamp(2rem,4vw,3.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
@@ -85,7 +102,57 @@ export default async function HomePage() {
               </TLink>
             </p>
           </div>
-          <Counters figures={t.group.figures} locale={lang === "it" ? "it-IT" : "en-GB"} />
+          {/* the old place in outline, the stroke of the symbol rising from it, the new place filling in as
+              it arrives (--sp, with the scroll; all at once without scripts or motion). The figures are
+              drawn for the eye: the sentence below says the same for everyone */}
+          <ScrollProgress className="vp-climb" start="top 85%" end="center 55%">
+            <p className="vp-climb__from" aria-hidden="true">
+              <Place n={from.rank} label={t.group.rank(from.rank)} />
+              <span className="t-label">{from.year}</span>
+            </p>
+            <svg className="vp-climb__stroke" viewBox="0 0 193.448 170" aria-hidden="true" focusable="false">
+              {/* the primary stroke of the symbol, mirrored: the climb on the brand's own slope */}
+              <polygon points="193.448,0 99.655,0 0,170 93.793,170" />
+            </svg>
+            <p className="vp-climb__to" aria-hidden="true">
+              <Place n={to.rank} label={t.group.rank(to.rank)} />
+              <span className="t-label">{to.year}</span>
+            </p>
+          </ScrollProgress>
+          <p className="t-l mt-[clamp(2rem,4vw,3.5rem)] max-w-[22ch] [text-wrap:balance]" data-reveal="lines">
+            {h.numbers.climb}
+          </p>
+          <p className="t-label mt-4">
+            {h.numbers.climbSource}:{" "}
+            <TLink href={newsHref(lang, top200.source.news!)} className="vp-ulink">
+              {top200.source.label[lang]}
+            </TLink>
+          </p>
+          <dl className="vp-figs" data-reveal="fade">
+            <div>
+              <dt className="t-small">
+                {h.numbers.production}
+                <span className="t-label mt-2 block">
+                  {first.year}–{last.year} · {h.numbers.growth(production[1].change![lang], production[1].year)}
+                </span>
+              </dt>
+              <dd className="vp-fig t-num">
+                <span aria-hidden="true">
+                  {first.display[lang]}
+                  <span className="vp-fig__arrow">→</span>
+                  {last.display[lang]}
+                  <span className="vp-fig__unit">{h.numbers.productionUnit}</span>
+                </span>
+                <span className="sr-only">{h.numbers.productionSpoken(first.display[lang], last.display[lang])}</span>
+              </dd>
+            </div>
+            {[declared[0], declared[2]].map((d) => (
+              <div key={d.value}>
+                <dt className="t-small">{d.label[lang]}</dt>
+                <dd className="vp-fig t-num">{d.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <div className="container-x mt-[clamp(4.5rem,9vw,8rem)]">

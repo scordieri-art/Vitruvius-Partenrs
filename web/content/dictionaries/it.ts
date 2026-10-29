@@ -74,6 +74,13 @@ const it = {
       label: "In numeri",
       note: "Dati pubblicati dal gruppo",
       source: "Le fonti",
+      // the climb in the Top 200 (content/evidence.ts, top200): the sentence says it, the figures draw it
+      climb: "Top 200 imprese di costruzioni: dal 169° all’83° posto in due anni.",
+      climbSource: "Fonte",
+      production: "valore della produzione",
+      productionUnit: "M€",
+      productionSpoken: (from: string, to: string) => `da ${from} a ${to} milioni di euro`,
+      growth: (change: string, year: string) => `${change} nel ${year}`,
     },
     projects: {
       label: "Progetti",
@@ -153,12 +160,6 @@ const it = {
           linkLabel: "",
         },
       },
-    ],
-    figures: [
-      { value: 300, decimals: 0, pre: "", post: "+", label: "cantieri completati", count: true },
-      { value: 30, decimals: 0, pre: "", post: "+", label: "città in Italia", count: true },
-      { value: 73.8, decimals: 1, pre: "", post: " M€", label: "valore della produzione 2023", count: false },
-      { value: 83, decimals: 0, pre: "", post: "°", label: "nella Top 200 imprese di costruzioni, 2024", count: false },
     ],
     rank: (rank: number) => `${rank}°`,
     rankOf: (rank: number, of: number) => `${rank}° su ${of}`,
