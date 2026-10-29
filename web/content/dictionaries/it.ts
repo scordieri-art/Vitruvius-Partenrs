@@ -270,7 +270,14 @@ const it = {
       aria: "Mappa dell’Italia con le sedi e le operazioni di Vitruvius & Partners",
       here: "Questa operazione",
       // the home chapter: the stops of the camera, as named on the rail and over the captions
-      chapter: { italy: "Italia", offices: "Le sedi", all: "Tutti i luoghi", stops: "Tappe della mappa", project: "Il progetto" },
+      chapter: {
+        italy: "Italia",
+        offices: "Le sedi",
+        all: "Tutti i luoghi",
+        stops: "Tappe della mappa",
+        project: "Il progetto",
+        hint: "Scegli un luogo sulla mappa per raggiungerlo, o scorri per visitarli in ordine.",
+      },
     },
   },
   newsPage: {

@@ -5,7 +5,7 @@ import earcut from "earcut";
  * a real model — a white board with the graticule, the neighbouring countries barely raised,
  * Italy as a pale block, the regions where the group works raised higher in navy — lit like a
  * model on a dark table, and a camera that travels over it as the page scrolls. Every place
- * stands as the brand mark, rising from the ground when the camera reaches it: solid for an
+ * stands as the brand mark, rising from the ground as the model comes into view: solid for an
  * office, in outline for an operation.
  *
  * Plain WebGL 1, one shader, no library but earcut (triangulation). The cartography is the
@@ -53,8 +53,8 @@ export type Project = (x: number, y: number, z: number) => [number, number, bool
 export type Scene = {
   /** where the scroll is: t from 0 (first stop) to n - 1, and how far the section has come in (0–1) */
   set(t: number, enter: number): void;
-  /** the marks that stand up (once up, they stay) */
-  rise(keys: string[]): void;
+  /** the marks that stand up (once up, they stay), each `stagger` ms after the one before */
+  rise(keys: string[], stagger?: number): void;
   /** one place lit, the others dimmed; null: all alike */
   light(keys: string[] | null): void;
   visible(on: boolean): void;
@@ -486,7 +486,7 @@ export function createScene({
     bind(G.line);
     gl.drawArrays(gl.LINES, 0, G.line.n);
 
-    // the marks: a size that reads at every distance, rising from the ground when they are reached
+    // the marks: a size that reads at every distance, rising from the ground one after another
     const mh = Math.min(48, Math.max(8, sh.size * 0.075));
     let moving = false;
     gl.uniform1f(u.lift, 0.14);
@@ -494,7 +494,7 @@ export function createScene({
       const r = up.get(m.key);
       let k = 0;
       if (r) {
-        const p = Math.min(1, (now - r.t0) / 1100);
+        const p = Math.min(1, Math.max(0, (now - r.t0) / 1100));
         k = lerp(r.from, 1, 1 - Math.pow(1 - p, 3));
         if (p < 1) moving = true;
       }
@@ -564,15 +564,11 @@ export function createScene({
       enter = ne;
       ask();
     },
-    rise(keys) {
+    rise(keys, stagger = 0) {
       const now = performance.now();
-      let any = false;
-      for (const k of keys)
-        if (!up.has(k)) {
-          up.set(k, { from: 0.02, t0: now });
-          any = true;
-        }
-      if (any) ask();
+      let i = 0;
+      for (const k of keys) if (!up.has(k)) up.set(k, { from: 0.02, t0: now + stagger * i++ });
+      if (i) ask();
     },
     light(keys) {
       lit = keys;

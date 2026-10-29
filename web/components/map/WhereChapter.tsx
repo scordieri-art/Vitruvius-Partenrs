@@ -17,12 +17,48 @@ const GROUND = { it: 7, op: 15 } as const;
 // the brand slope as the camera's: the model seen at 59.6°, the places at 30.4° (90° − 59.6°)
 const SLOPE = 59.6;
 const MEDIA = "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
+// ms between one mark rising and the next (their flags follow at the same pace: .vp-gl__flag --d)
+const RISE_STAGGER = 140;
+// a flag hangs this far above its mark's head (.vp-gl__tag), then on a rod as long as it must rise
+const GAP = 9;
+const LIFTS = [0, 30, 60, 90, 120, 150];
+type Lay = { lift: number; west: boolean };
+
+/**
+ * Where each flag stands so that none covers another, as the pins of the CSS slab: the flags
+ * nearest the viewer (lowest on screen) keep the short rods, those behind rise above them, and a
+ * flag opens to the west when the east is taken or would leave the screen. A flag stays where it
+ * is until it would touch another, and moves only to a place with room around it: nothing
+ * flickers while the camera travels (the moves themselves are eased in CSS).
+ */
+function layFlags(pts: [number, number, boolean][], sizes: [number, number][], prev: (Lay | null)[], width: number): (Lay | null)[] {
+  const out: (Lay | null)[] = pts.map(() => null);
+  const boxes: [number, number, number, number][] = [];
+  const order = pts.map((_, i) => i).filter((i) => pts[i][2]).sort((a, b) => pts[b][1] - pts[a][1]);
+  for (const i of order) {
+    const [x, y] = pts[i];
+    const [w, h] = sizes[i];
+    const box = ({ lift, west }: Lay) => [west ? x - w : x, y - GAP - lift - h, west ? x : x + w, y - GAP - lift] as [number, number, number, number];
+    const fits = (l: Lay, room: number) => {
+      const [x0, y0, x1, y1] = box(l);
+      return x0 >= 8 && x1 <= width - 8 && !boxes.some(([a0, b0, a1, b1]) => x0 < a1 + room && x1 > a0 - room && y0 < b1 + room && y1 > b0 - room);
+    };
+    const options = LIFTS.flatMap((lift) => [false, true].map((west) => ({ lift, west })));
+    const best = options.find((l) => fits(l, 4));
+    const was = prev[i];
+    const lay = was && fits(was, 0) && (!best || best.lift >= was.lift) ? was : (best ?? options[options.length - 2]);
+    boxes.push(box(lay));
+    out[i] = lay;
+  }
+  return out;
+}
 
 /**
  * «Dove operiamo» as a chapter of its own, on a desktop with motion: the page holds the white
  * model of Italy still (WebGL, components/map/gl/scene.ts) while the scroll moves a camera over
  * it — Italy, then the two offices, then each operation, then all the places with their list.
- * Each place's mark rises from the model when the camera first reaches it, and stays.
+ * Every place's mark rises from the model as the chapter comes into view, one after another,
+ * and its flag takes the camera there: a click on Milano is the scroll to the offices' stop.
  *
  * Phones, reduced motion, no scripts and no WebGL keep the slab with its list (`fallback`),
  * decided in CSS so the page never changes height once drawn: the chapter's place is held by an
@@ -71,19 +107,35 @@ export function WhereChapter({
 
 /**
  * The chapter itself. The captions are an ordered list (one stop shown at a time, all of them
- * read by screen readers, a focused link brings its stop on screen); the rail jumps to any stop.
+ * read by screen readers, a focused link brings its stop on screen); the rail jumps to any stop,
+ * and so does each flag on the model, for the pointer (the rail is the same for the keyboard).
  */
 function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; steps: ChapterStep[]; stopsLabel: string; gl: Gl; setGl: (g: Gl) => void }) {
   const n = steps.length;
   const canvas = useRef<HTMLCanvasElement>(null);
   const flagEls = useRef<(HTMLSpanElement | null)[]>([]);
+  const layout = useRef<(Lay | null)[]>([]);
   const cityEls = useRef<(HTMLSpanElement | null)[]>([]);
   const scene = useRef<Scene | null>(null);
   const time = useRef<[number, number]>([0, 0]);
   const [hover, setHover] = useState<string | null>(null);
+  // the marks stand once the chapter is half in view
+  const [risen, setRisen] = useState(false);
+  // a place chosen on the model: lit alone at its stop (an office shares the offices' stop with
+  // the other) until the reader moves on from there
+  const [picked, setPicked] = useState<string | null>(null);
+  const pick = useRef<{ step: number; there: boolean } | null>(null);
   const { wrap, stage, active, go } = useScrollTime(n, (t, enter) => {
     time.current = [t, enter];
     scene.current?.set(t, enter);
+    if (enter > 0.5) setRisen(true);
+    const p = pick.current;
+    if (!p) return;
+    if (Math.round(t) === p.step) p.there = true;
+    else if (p.there) {
+      pick.current = null;
+      setPicked(null);
+    }
   });
 
   // the places on the model: a mark each, side by side when two share a town
@@ -97,8 +149,6 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
     const k = near.indexOf(p);
     return { key: p.key, x: p.x, z: p.z, y: areas.includes(p.area) ? GROUND.op : GROUND.it, kind: p.kind, side: near.length > 1 ? (k === 0 ? -1 : 1) : 0 };
   });
-  // a second flag in the same town stands above the first
-  const stack = places.map((p, i) => places.slice(0, i).filter((q) => Math.hypot(q.x - p.x, q.z - p.z) < 8).length);
   // printed cities, except where a mark already names the town
   const cities = Object.entries(map.cities)
     .filter(([, [x, y]]) => !places.some((p) => Math.hypot(p.x - (x as number), p.z - (y as number)) < 15))
@@ -121,15 +171,24 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
     };
   });
 
-  // the marks reached so far stand; the stop's own places are lit, the others dimmed
-  const risen = new Set(steps.slice(0, active + 1).flatMap((s) => s.focus));
+  // the stop's own places are lit (the chosen one alone, at its stop), the others dimmed
   const focus = steps[active]?.focus ?? [];
-  const lit = hover ? [hover] : focus.length && active !== n - 1 ? focus : null;
+  const chosen = picked && active !== n - 1 && focus.includes(picked) ? [picked] : null;
+  const lit = hover ? [hover] : (chosen ?? (focus.length && active !== n - 1 ? focus : null));
 
   useEffect(() => {
-    scene.current?.rise([...risen]);
+    if (risen) scene.current?.rise(places.map((p) => p.key), RISE_STAGGER);
     scene.current?.light(lit);
   });
+
+  // a flag's place: its own stop, or the offices' for an office (never the last, which is all of them)
+  const choose = (key: string) => {
+    const i = steps.findIndex((s, k) => k > 0 && k < n - 1 && s.focus.includes(key));
+    if (i < 0) return;
+    pick.current = { step: i, there: i === active };
+    setPicked(key);
+    go(i);
+  };
 
   // load when the chapter is a screen and a half away; draw only while it is on screen.
   // No WebGL: the slab, decided only then, so a page that never gets here asks nothing of the GPU
@@ -138,6 +197,13 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
     if (!el || !cv) return;
     let s: Scene | null = null;
     let dead = false;
+    let width = cv.clientWidth;
+    const sizes: [number, number][] = places.map(() => [0, 0]);
+    const measure = () =>
+      flagEls.current.forEach((f, i) => {
+        const t = f?.firstElementChild as HTMLElement | null;
+        if (t) sizes[i] = [t.offsetWidth, t.offsetHeight];
+      });
     const start = async () => {
       try {
         const [{ createScene }, svg] = await Promise.all([import("./gl/scene"), fetch("/map/italia.svg").then((r) => r.text())]);
@@ -151,13 +217,21 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
           marks,
           shots,
           onFrame: (project, mh) => {
-            marks.forEach((m, i) => {
+            // at the top of each mark, over its leaning head; the flags laid out so none covers another
+            const pts = marks.map((m) => project(m.x + m.side * mh * 0.62 - 0.586 * mh, m.y + mh, m.z));
+            if (sizes.some(([w]) => !w)) measure();
+            const lays = layFlags(pts, sizes, layout.current, width);
+            pts.forEach(([x, y, ok], i) => {
               const f = flagEls.current[i];
               if (!f) return;
-              // at the top of the mark, over its leaning head
-              const [x, y, ok] = project(m.x + m.side * mh * 0.62 - 0.586 * mh, m.y + mh, m.z);
               f.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
               f.style.visibility = ok ? "" : "hidden";
+              const l = lays[i], was = layout.current[i];
+              if (l && (l.lift !== was?.lift || l.west !== was?.west)) {
+                f.style.setProperty("--lift", `${l.lift}px`);
+                f.toggleAttribute("data-west", l.west);
+              }
+              if (l) layout.current[i] = l;
             });
             cities.forEach((c, i) => {
               const e = cityEls.current[i];
@@ -192,8 +266,13 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
     near.observe(el);
     const seen = new IntersectionObserver((es) => scene.current?.visible(es.some((e) => e.isIntersecting)));
     seen.observe(el);
-    const ro = new ResizeObserver(() => scene.current?.resize());
+    const ro = new ResizeObserver(() => {
+      width = cv.clientWidth;
+      scene.current?.resize();
+    });
     ro.observe(cv);
+    // the flags' sizes, read when they are drawn and again once the brand font is in
+    document.fonts?.ready.then(() => !dead && measure());
     return () => {
       dead = true;
       near.disconnect();
@@ -229,19 +308,29 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
                 key={p.key}
                 ref={(e) => void (flagEls.current[i] = e)}
                 className="vp-gl__flag"
-                data-up={risen.has(p.key) ? "" : undefined}
+                data-up={risen ? "" : undefined}
                 data-dim={lit && !lit.includes(p.key) ? "" : undefined}
-                style={{ "--stack": stack[i] } as CSSProperties}
+                style={{ "--d": i } as CSSProperties}
               >
-                <span className="vp-gl__tag">
+                {/* for the pointer: the keyboard has the same stops on the rail */}
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  className="vp-gl__tag"
+                  onClick={() => choose(p.key)}
+                  onPointerEnter={() => setHover(p.key)}
+                  onPointerLeave={() => setHover(null)}
+                >
                   <Mark kind={p.kind === "office" ? "solid" : "outline"} />
                   {p.label}
                   {p.note ? <span className="vp-map__note t-num">{p.note}</span> : null}
-                </span>
+                </button>
               </span>
             ))}
           </div>
         ) : null}
+        {/* the chosen office stands out on the offices' card */}
+        {chosen && focus.length > 1 ? <style>{`.vp-gl__places>li:not([data-k="${chosen[0]}"]){opacity:.42}`}</style> : null}
         <ol className="vp-gl__steps" onPointerOver={onOver} onPointerLeave={() => setHover(null)} onFocus={onOver} onBlur={() => setHover(null)}>
           {steps.map((s, i) => (
             <li key={s.key} className="vp-gl__step" data-on={i === active ? "" : undefined} onFocus={() => i !== active && go(i)}>

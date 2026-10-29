@@ -976,6 +976,28 @@
     padding-block: 1rem;
     min-height: 44px;
   }
+  /* a pin points to its entry (MapStage): touched or clicked, its place is lit, the others
+     dimmed, and its entry lights up a moment as it comes into view */
+  .vp-map:has(:is(.vp-map__item, [data-map-target])) .vp-map__pin {
+    cursor: pointer;
+  }
+  /* the others stay readable, a touch away */
+  .vp-map:has(.vp-map__pin[data-picked]) .vp-map__pin {
+    --dim: 0.6;
+  }
+  .vp-map__pin[data-picked] {
+    --on: 1;
+  }
+  :is(.vp-map__item, [data-map-target])[data-picked] {
+    color: var(--fg);
+    animation: vp-map-pick 2.4s var(--ease-move);
+  }
+  @keyframes vp-map-pick {
+    0%,
+    55% {
+      background: color-mix(in srgb, var(--fg) 8%, transparent);
+    }
+  }
 
   /* ---------------------------------------------------------------
      «Dove operiamo», the home chapter (components/map/WhereChapter.tsx). By default (phones,
@@ -1055,23 +1077,75 @@
     top: 0;
     will-change: transform;
   }
-  /* a place's flag: comes once its mark has risen; the places outside the stop step back */
+  /* a place's flag: comes once its mark has risen, one after another (--d, at the pace of the
+     marks: WhereChapter RISE_STAGGER); the places outside the stop step back. A flag is a button
+     for the pointer: it takes the camera to its place, inverted while pointed at */
   .vp-gl__flag {
-    opacity: 0;
-    transition: opacity 500ms var(--ease-enter);
+    transition: opacity 400ms var(--ease-move);
   }
-  .vp-gl__flag[data-up] {
-    opacity: 1;
-    transition-delay: 650ms;
-  }
-  .vp-gl__flag[data-up][data-dim] {
+  .vp-gl__flag[data-dim] {
     opacity: 0.38;
-    transition-delay: 0ms;
+  }
+  .vp-gl__flag:not([data-up]) .vp-gl__tag {
+    visibility: hidden;
+  }
+  .vp-gl__flag[data-up] .vp-gl__tag {
+    pointer-events: auto;
+    cursor: pointer;
+    animation: vp-gl-flag 600ms var(--ease-enter) both;
+    animation-delay: calc(650ms + var(--d, 0) * 140ms);
+  }
+  @keyframes vp-gl-flag {
+    from {
+      opacity: 0;
+      transform: translateY(0.6rem);
+    }
+  }
+  /* its rod: from the mark's head up to the flag, as long as the flag has had to rise to keep
+     clear of the others (--lift, WhereChapter); navy with a light edge, it reads on the white
+     board and on the navy regions */
+  .vp-gl__flag::before {
+    content: "";
+    position: absolute;
+    left: -0.75px;
+    bottom: 0;
+    width: 1.5px;
+    height: calc(0.55rem + var(--lift, 0px));
+    background: var(--color-navy);
+    box-shadow: 0 0 0 1px var(--color-white);
+    transform-origin: bottom;
+    transition: height 380ms var(--ease-move);
+  }
+  .vp-gl__flag:not([data-up])::before {
+    visibility: hidden;
+  }
+  .vp-gl__flag[data-up]::before {
+    animation: vp-gl-rod 500ms var(--ease-enter) both;
+    animation-delay: calc(550ms + var(--d, 0) * 140ms);
+  }
+  @keyframes vp-gl-rod {
+    from {
+      scale: 1 0;
+    }
+  }
+  /* a flag that opens to the west hangs from its right edge */
+  .vp-gl__flag[data-west] .vp-gl__tag {
+    translate: calc(-100% + 0.4rem) 0;
+  }
+  .vp-gl__tag:hover {
+    color: var(--color-white);
+    background: var(--color-navy);
+    box-shadow:
+      inset 0 0 0 1px var(--color-white),
+      0 0.8rem 1.6rem -0.5rem rgb(0 0 0 / 0.55);
+  }
+  .vp-gl__flag:has(.vp-gl__tag:hover) {
+    z-index: 1;
   }
   .vp-gl__tag {
     position: absolute;
     left: -0.2rem;
-    bottom: calc(0.55rem + var(--stack, 0) * 2.1rem);
+    bottom: calc(0.55rem + var(--lift, 0px));
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -1083,6 +1157,12 @@
     color: var(--color-navy);
     background: var(--color-white);
     box-shadow: 0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 0.45);
+    transition:
+      color var(--dur-ui) var(--ease-move),
+      background-color var(--dur-ui) var(--ease-move),
+      box-shadow var(--dur-ui) var(--ease-move),
+      bottom 380ms var(--ease-move),
+      translate 380ms var(--ease-move);
   }
   .vp-gl__tag .vp-mark {
     height: 0.7rem;
@@ -1155,6 +1235,9 @@
   }
   .vp-gl__places .vp-mark {
     height: 0.62em;
+  }
+  .vp-gl__places > li {
+    transition: opacity 300ms var(--ease-move);
   }
   /* the rail: every stop, the way to jump to it, and how far the chapter has gone */
   .vp-gl__rail {

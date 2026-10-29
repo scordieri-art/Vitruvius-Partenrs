@@ -17,6 +17,8 @@ const ITEM = ".vp-map__item, [data-map-target]";
  * eases the cartography onto that place by moving every layer's SVG viewBox, so it is redrawn
  * sharp at each frame; the marks follow. Without JavaScript, or with reduced motion, the model
  * rests at the CSS default tilt and shows the whole sheet.
+ *
+ * The other way round, a pin touched or clicked lights its place and brings its entry into view.
  */
 export function MapStage({
   children,
@@ -119,6 +121,31 @@ export function MapStage({
       });
     };
   }, [targets, sheet, view]);
+
+  // a pin points to its entry: touched or clicked, the place is lit, its entry marked and brought
+  // into view (an entry is the readable version of its pin, for every input)
+  useEffect(() => {
+    const el = root.current;
+    const figure = el?.closest(".vp-map");
+    if (!el || !figure) return;
+    const onClick = (e: MouseEvent) => {
+      const pin = (e.target as Element).closest<HTMLElement>(".vp-map__pin");
+      const was = el.querySelector(".vp-map__pin[data-picked]");
+      figure.querySelectorAll("[data-picked]").forEach((x) => x.removeAttribute("data-picked"));
+      // the same pin again, or the model around it, lets go
+      if (!pin || pin === was) return;
+      const items = (pin.dataset.k ?? "")
+        .split(" ")
+        .map((k) => figure.querySelector<HTMLElement>(`:is(${ITEM})[data-k="${k}"]`))
+        .filter((x): x is HTMLElement => !!x);
+      if (!items.length) return;
+      pin.setAttribute("data-picked", "");
+      items.forEach((x) => x.setAttribute("data-picked", ""));
+      items[0].scrollIntoView({ block: "nearest", behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    };
+    el.addEventListener("click", onClick);
+    return () => el.removeEventListener("click", onClick);
+  }, []);
 
   return (
     <div

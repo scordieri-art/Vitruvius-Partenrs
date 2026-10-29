@@ -79,6 +79,7 @@ export function chapterSteps(lang: Locale, t: Dictionary): ChapterStep[] {
       caption: (
         <div className="vp-gl__card">
           <p className="t-body-l">{m.caption}</p>
+          <p className="t-label mt-5">{c.hint}</p>
         </div>
       ),
     },
@@ -91,7 +92,7 @@ export function chapterSteps(lang: Locale, t: Dictionary): ChapterStep[] {
           <p className="t-label">{c.offices}</p>
           <ul className="vp-gl__places">
             {company.offices.map((o) => (
-              <li key={o.key}>
+              <li key={o.key} data-k={o.key}>
                 <span className="t-m flex items-center gap-3">
                   <Mark />
                   {o.city}
