@@ -3026,7 +3026,45 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     }
   }
   .vp-cifre__stage {
+    position: relative;
+    isolation: isolate;
     display: grid;
+  }
+  /* the figure counted in marks of the symbol (Figures, Field): a light ground in the white between
+     the figure and the index, its edges dissolving into the paper. Only where that white is: on a
+     phone the figure sits above its index, with no gap beside it */
+  .vp-cifre__field {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    .vp-cifre__field {
+      position: absolute;
+      z-index: -1;
+      display: block;
+      top: -12%;
+      left: 44%;
+      /* to the index, less a margin: the rest of the stage, then column 7 and its two gaps */
+      width: calc(56% + (100% - 5 * var(--col-gap)) / 6 + 2 * var(--col-gap) - 1rem);
+      height: 124%;
+      pointer-events: none;
+      /* dissolving all round, and more on the figure's side, so no word sits on the marks */
+      mask-image: radial-gradient(closest-side, #000 45%, transparent), linear-gradient(90deg, transparent 8%, #000 48%);
+      mask-composite: intersect;
+    }
+    .vp-cifre__field path {
+      fill: color-mix(in srgb, var(--fg) 9%, transparent);
+    }
+    .vp-cifre__field--planned path {
+      fill: none;
+      stroke: color-mix(in srgb, var(--fg) 30%, transparent);
+      stroke-width: 1.2;
+    }
+    .vp-cifre__field--here {
+      mask-image: none;
+    }
+    .vp-cifre__field--here path {
+      fill: var(--fg);
+    }
   }
   /* each panel as tall as the stage: the figure and its words from the top, the source at the
      foot, so the stage keeps the same frame whatever is chosen. Without motion (or scripts) the
@@ -3175,7 +3213,7 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     html.js-motion .vp-cifre:not([data-seen]) .vp-cifre__ch {
       translate: 0 115%;
     }
-    html.js-motion .vp-cifre:not([data-seen]) :is(.vp-cifre__about, .vp-cifre__row) {
+    html.js-motion .vp-cifre:not([data-seen]) :is(.vp-cifre__about, .vp-cifre__field, .vp-cifre__row) {
       opacity: 0;
     }
     html.js-motion .vp-cifre[data-seen] .vp-cifre__row {
@@ -3191,9 +3229,16 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
       opacity: 1;
       transition: visibility 0s linear 0.85s;
     }
-    html.js-motion .vp-cifre[data-seen] .vp-cifre__about {
+    html.js-motion .vp-cifre[data-seen] :is(.vp-cifre__about, .vp-cifre__field) {
       opacity: 0;
       transition: opacity 0.2s var(--ease-move);
+    }
+    /* the field of the figure going fades, then closes unseen, ready to fill again from its first column */
+    html.js-motion .vp-cifre[data-seen] .vp-cifre__field {
+      clip-path: inset(0 100% 0 0);
+      transition:
+        opacity 0.2s var(--ease-move),
+        clip-path 0s linear 0.25s;
     }
   }
   @keyframes vp-cifre-in {

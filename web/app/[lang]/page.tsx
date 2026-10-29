@@ -69,7 +69,13 @@ export default async function HomePage() {
       ))}
     </>
   );
-  const said = (d: (typeof declared)[number]) => ({ value: d.value, label: d.label[lang], source: n.declared, planned: d.kind === "planned" });
+  const said = (d: (typeof declared)[number]) => ({
+    value: d.value,
+    label: d.label[lang],
+    source: n.declared,
+    planned: d.kind === "planned",
+    tally: { n: parseInt(d.value, 10) },
+  });
   const figures: Figure[] = [
     {
       key: "production",
@@ -81,6 +87,8 @@ export default async function HomePage() {
       note: n.productionNote(first.display[lang], first.year, second.display[lang], second.year, second.change![lang]),
       // each source once: 2021 and 2022 come from the same release
       source: cite(production.map((p) => p.source).filter((s, i, all) => all.findIndex((x) => x.news === s.news) === i)),
+      // a mark for each million, the last one as long as the decimal
+      tally: { n: Math.ceil(last.value), part: +(last.value % 1).toFixed(2) || undefined },
     },
     {
       key: "top200",
@@ -91,6 +99,7 @@ export default async function HomePage() {
       label: n.top200Label(place.year),
       note: t.group.top200Note,
       source: cite([top200.source]),
+      tally: { n: top200.of, here: place.rank },
     },
     { key: "sites", row: n.rows.sites, ...said(declared[0]) },
     {
