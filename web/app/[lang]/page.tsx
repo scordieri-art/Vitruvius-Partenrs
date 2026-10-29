@@ -5,6 +5,7 @@ import { RevealScope } from "@/components/layout/RevealScope";
 import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
 import { Filiera } from "@/components/home/Filiera";
+import { Figures, type Figure } from "@/components/home/Figures";
 import { HOME_IMG as IMG, homeSteps } from "@/content/home";
 import { OperationStack } from "@/components/home/OperationStack";
 import { ContactBand } from "@/components/home/ContactBand";
@@ -15,7 +16,6 @@ import { ItalyMap } from "@/components/map/ItalyMap";
 import { chapterSteps, mapPins, mapPlaces } from "@/components/map/mapPlaces";
 import { WhereChapter } from "@/components/map/WhereChapter";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { ScrollProgress } from "@/components/ui/ScrollProgress";
 import { declared, production, top200 } from "@/content/evidence";
 import { lowRes, projects } from "@/content/projects";
 import { getDictionary, liveLink, newsHref } from "@/lib/content";
@@ -36,18 +36,6 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 
-/** A place in the ranking, set large: an ordinal in letters (English "th", "rd") rides small above the
- * figure, as the Italian ° does by itself, so both languages draw the same climb */
-function Place({ n, label }: { n: number; label: string }) {
-  const suffix = label.slice(String(n).length);
-  return (
-    <span className="vp-climb__n t-num">
-      {n}
-      {/[a-z]/i.test(suffix) ? <span className="vp-climb__suf">{suffix}</span> : suffix}
-    </span>
-  );
-}
-
 /**
  * Home: statement → how the group works (three steps, one proof each) → figures and
  * press → projects → contact. Few words, large images, nothing hidden behind a hover.
@@ -57,10 +45,66 @@ export default async function HomePage() {
   const h = t.home;
 
   const steps = homeSteps(lang);
-  // the two places in the Top 200, and the value of production from its first published year to its last
-  const [from, to] = top200.points;
-  const first = production[0];
+  // the published figures, one at a time: first the documented ones, with their sources (the value
+  // of production in its last published year, the two before as context; the place in the Top
+  // 200), then what the group declares, the planned last
+  const n = h.numbers;
+  const [first, second] = production;
   const last = production[production.length - 1];
+  const place = top200.points[top200.points.length - 1];
+  // an ordinal in letters (English "rd") rides small above the figure, the Italian ° is a digit's own
+  const rank = t.group.rank(place.rank);
+  const suffix = rank.slice(String(place.rank).length);
+  const lettered = /[a-z]/i.test(suffix);
+  const cite = (sources: (typeof top200.source)[]) => (
+    <>
+      {sources.length > 1 ? n.sourceMany : n.sourceOne}:{" "}
+      {sources.map((s, i) => (
+        <span key={s.news}>
+          {i ? " · " : null}
+          <TLink href={newsHref(lang, s.news!)} className="vp-ulink">
+            {s.label[lang]}
+          </TLink>
+        </span>
+      ))}
+    </>
+  );
+  const said = (d: (typeof declared)[number]) => ({ value: d.value, label: d.label[lang], source: n.declared, planned: d.kind === "planned" });
+  const figures: Figure[] = [
+    {
+      key: "production",
+      value: last.display[lang],
+      unit: { text: n.productionUnit },
+      spoken: n.productionSpoken(last.display[lang]),
+      row: n.rows.production,
+      label: n.productionLabel(last.year),
+      note: n.productionNote(first.display[lang], first.year, second.display[lang], second.year, second.change![lang]),
+      // each source once: 2021 and 2022 come from the same release
+      source: cite(production.map((p) => p.source).filter((s, i, all) => all.findIndex((x) => x.news === s.news) === i)),
+    },
+    {
+      key: "top200",
+      value: lettered ? String(place.rank) : rank,
+      unit: lettered ? { text: suffix, sup: true } : undefined,
+      spoken: n.top200Spoken(place.rank),
+      row: n.rows.top200,
+      label: n.top200Label(place.year),
+      note: t.group.top200Note,
+      source: cite([top200.source]),
+    },
+    { key: "sites", row: n.rows.sites, ...said(declared[0]) },
+    {
+      key: "cities",
+      row: n.rows.cities,
+      ...said(declared[2]),
+      note: (
+        <a href="#where-title" className="vp-ulink">
+          {n.where} <span aria-hidden="true">↓</span>
+        </a>
+      ),
+    },
+    { key: "contracts", row: n.rows.contracts, ...said(declared[1]), note: n.planned },
+  ];
 
   // the press, newest first: the outlet, its headline as published, the operation and the date
   const press = PRESS.flatMap((outlet) => {
@@ -88,71 +132,21 @@ export default async function HomePage() {
         <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
-      {/* Figures: the climb in the Top 200 on the slope of the symbol, then the press as an index of articles */}
+      {/* Figures, one at a time beside their index, then the press as an index of articles */}
       <section data-theme="paper" aria-labelledby="numbers-title" className="pt-[var(--section-y)]">
         <div className="container-x">
-          <div className="mb-[clamp(2rem,4vw,3.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
+          <div className="mb-[clamp(2.5rem,5vw,4.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
             <SectionLabel n={2} as="h2" id="numbers-title">
-              {h.numbers.label}
+              {n.label}
             </SectionLabel>
             <p className="t-label">
-              {h.numbers.note} ·{" "}
+              {n.note} ·{" "}
               <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink">
-                {h.numbers.source}
+                {n.source}
               </TLink>
             </p>
           </div>
-          {/* the old place in outline, the stroke of the symbol rising from it, the new place filling in as
-              it arrives (--sp, with the scroll; all at once without scripts or motion). The figures are
-              drawn for the eye: the sentence below says the same for everyone */}
-          <ScrollProgress className="vp-climb" start="top 85%" end="center 55%">
-            <p className="vp-climb__from" aria-hidden="true">
-              <Place n={from.rank} label={t.group.rank(from.rank)} />
-              <span className="t-label">{from.year}</span>
-            </p>
-            <svg className="vp-climb__stroke" viewBox="0 0 193.448 170" aria-hidden="true" focusable="false">
-              {/* the primary stroke of the symbol, mirrored: the climb on the brand's own slope */}
-              <polygon points="193.448,0 99.655,0 0,170 93.793,170" />
-            </svg>
-            <p className="vp-climb__to" aria-hidden="true">
-              <Place n={to.rank} label={t.group.rank(to.rank)} />
-              <span className="t-label">{to.year}</span>
-            </p>
-          </ScrollProgress>
-          <p className="t-l mt-[clamp(2rem,4vw,3.5rem)] max-w-[22ch] [text-wrap:balance]" data-reveal="lines">
-            {h.numbers.climb}
-          </p>
-          <p className="t-label mt-4">
-            {h.numbers.climbSource}:{" "}
-            <TLink href={newsHref(lang, top200.source.news!)} className="vp-ulink">
-              {top200.source.label[lang]}
-            </TLink>
-          </p>
-          <dl className="vp-figs" data-reveal="fade">
-            <div>
-              <dt className="t-small">
-                {h.numbers.production}
-                <span className="t-label mt-2 block">
-                  {first.year}–{last.year} · {h.numbers.growth(production[1].change![lang], production[1].year)}
-                </span>
-              </dt>
-              <dd className="vp-fig t-num">
-                <span aria-hidden="true">
-                  {first.display[lang]}
-                  <span className="vp-fig__arrow">→</span>
-                  {last.display[lang]}
-                  <span className="vp-fig__unit">{h.numbers.productionUnit}</span>
-                </span>
-                <span className="sr-only">{h.numbers.productionSpoken(first.display[lang], last.display[lang])}</span>
-              </dd>
-            </div>
-            {[declared[0], declared[2]].map((d) => (
-              <div key={d.value}>
-                <dt className="t-small">{d.label[lang]}</dt>
-                <dd className="vp-fig t-num">{d.value}</dd>
-              </div>
-            ))}
-          </dl>
+          <Figures figures={figures} legend={n.pick} name="cifre" />
         </div>
 
         <div className="container-x mt-[clamp(4.5rem,9vw,8rem)]">

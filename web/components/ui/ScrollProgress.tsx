@@ -12,10 +12,10 @@ const meeting = (s: string) => {
 
 /**
  * Exposes how far an element has travelled between two meetings with the screen as a CSS variable
- * (--sp, 0 → 1) for scroll-linked styles: a slower photograph behind a title, the climb on the home
- * page. Measured natively, from the first frame the scope is drawn, so a style never starts from the
- * wrong end; the scroll is heard only while the element is near the screen. Unset (the styles' own
- * default) without scripts and with reduced motion.
+ * (--sp, 0 → 1) for scroll-linked styles, such as a slower photograph behind a title. Measured
+ * natively, from the first frame the scope is drawn, so a style never starts from the wrong end;
+ * the scroll is heard only while the element is near the screen. Unset (the styles' own default)
+ * without scripts and with reduced motion.
  */
 export function ScrollProgress({
   children,

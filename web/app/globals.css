@@ -3004,122 +3004,203 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     transform: translateX(0.4rem);
   }
 
-  /* Home «In numeri»: the climb in the Top 200, on the slope of the symbol. --sp (ScrollProgress, 0 → 1
-     as the section comes into view) plays it: the old place in outline, the stroke rising from it,
-     the new place filling in as the stroke reaches it. Without scripts or motion, --sp is unset and
-     all of it is there at once */
-  .vp-climb {
-    --k: var(--sp, 1);
-    --rise: clamp(0, calc((var(--k) - 0.05) / 0.55), 1);
-    --fill: clamp(0, calc((var(--k) - 0.55) / 0.3), 1);
-    position: relative;
-    height: clamp(24rem, 38vw, 32rem);
-  }
-  .vp-climb__n {
-    display: block;
-    font-size: clamp(5.5rem, 2rem + 13vw, 15rem);
-    font-weight: 300;
-    line-height: 0.8;
-    letter-spacing: -0.06em;
-    -webkit-text-stroke: 1.5px var(--fg);
-  }
-  .vp-climb__from {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-  }
-  .vp-climb__from .vp-climb__n {
-    color: transparent;
-  }
-  .vp-climb__to {
-    position: absolute;
-    right: 0;
-    top: 0;
-    text-align: right;
-  }
-  .vp-climb__suf {
-    margin-left: 0.04em;
-    font-size: 0.34em;
-    letter-spacing: -0.01em;
-    vertical-align: 1.3em;
-  }
-  /* the tight tracking runs on past the last glyph: given back, so the ° keeps to the margin */
-  .vp-climb__to .vp-climb__n {
-    padding-right: 0.05em;
-  }
-  .vp-climb__to .vp-climb__n {
-    color: color-mix(in srgb, var(--fg) calc(var(--fill) * 100%), transparent);
-    translate: 0 calc((1 - var(--fill)) * 0.06em);
-  }
-  .vp-climb :is(.vp-climb__from, .vp-climb__to) .t-label {
-    display: block;
-    margin-top: 0.9rem;
-  }
-  /* the stroke rises from the old place to the new: drawn from its foot */
-  .vp-climb__stroke {
-    position: absolute;
-    left: 50%;
-    top: 22%;
-    height: 49%;
-    width: auto;
-    translate: -46% 0;
-    fill: var(--fg);
-    clip-path: inset(calc((1 - var(--rise)) * 100%) 0 0 0);
+  /* Home «In numeri», one figure at a time (components/home/Figures.tsx): the large figure on the
+     left, the index of all of them on the right; on phones the figure above its index. The panels
+     share one cell, so the stage keeps the height of the tallest and nothing moves when the choice
+     changes; the chosen one is shown by the rules the component writes (one per figure) */
+  .vp-cifre {
+    display: grid;
+    gap: clamp(2.75rem, 7vw, 4rem);
   }
   @media (min-width: 64rem) {
-    .vp-climb__stroke {
-      top: 6%;
-      height: 88%;
+    .vp-cifre {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      align-items: center;
+    }
+    .vp-cifre__stage {
+      grid-column: 1 / span 6;
+    }
+    .vp-cifre__index {
+      grid-column: 8 / span 5;
     }
   }
-
-  /* the figures under it, between hairlines: the number, then what it counts */
-  .vp-figs {
+  .vp-cifre__stage {
     display: grid;
-    margin-top: clamp(3rem, 6vw, 5rem);
-    border-top: 1px solid var(--line);
   }
-  .vp-figs > div {
+  /* each panel as tall as the stage: the figure and its words from the top, the source at the
+     foot, so the stage keeps the same frame whatever is chosen. Without motion (or scripts) the
+     chosen one fades in, the other out */
+  .vp-cifre__panel {
+    grid-area: 1 / 1;
     display: flex;
     flex-direction: column;
-    padding: 1.4rem 0 1.6rem;
-    border-bottom: 1px solid var(--line);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.3s var(--ease-move),
+      visibility 0s linear 0.3s;
   }
-  .vp-figs dt {
-    color: var(--fg-2);
-  }
-  .vp-figs dd {
-    order: -1;
-    margin-bottom: 0.9rem;
-  }
-  @media (min-width: 64rem) {
-    .vp-figs {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-    .vp-figs > div {
-      padding: 1.6rem var(--col-gap) 1.8rem 0;
-    }
-    .vp-figs > div + div {
-      padding-left: var(--col-gap);
-      border-left: 1px solid var(--line);
-    }
-  }
-  .vp-fig {
-    font-size: clamp(2.6rem, 1rem + 3.4vw, 4.75rem);
+  .vp-cifre__n {
+    font-size: clamp(6rem, 2rem + 11vw, 13rem);
     font-weight: 300;
-    line-height: 0.95;
-    letter-spacing: -0.045em;
+    line-height: 0.82;
+    letter-spacing: -0.055em;
+    white-space: nowrap;
   }
-  .vp-fig__unit {
-    margin-left: 0.12em;
-    font-size: 0.42em;
-    letter-spacing: -0.02em;
+  /* the digits rise from under this edge: room all round, so no glyph is ever cut */
+  .vp-cifre__mask {
+    display: inline-block;
+    overflow: clip;
+    padding: 0.08em 0.08em 0.12em 0;
+    margin: -0.08em -0.08em -0.12em 0;
   }
-  .vp-fig__arrow {
-    margin: 0 0.3em;
-    font-size: 0.5em;
-    vertical-align: 0.25em;
+  .vp-cifre__ch {
+    display: inline-block;
+  }
+  .vp-cifre__unit {
+    margin-left: 0.14em;
+    font-size: 0.3em;
+    letter-spacing: -0.01em;
+  }
+  .vp-cifre__unit--sup {
+    margin-left: 0.04em;
+    vertical-align: 1.45em;
+  }
+  .vp-cifre__about {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .vp-cifre__label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin-top: clamp(1.25rem, 2.6vw, 2rem);
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.35;
+  }
+  .vp-cifre__mark {
+    flex: none;
+    height: 0.62em;
+  }
+  .vp-cifre__note {
+    max-width: 40ch;
+    margin-top: 0.6rem;
     color: var(--fg-2);
+    text-wrap: balance;
+  }
+  .vp-cifre__src {
+    margin-top: auto;
+    padding-top: 1rem;
+    text-wrap: balance;
+  }
+  /* the index: a row per figure, its value at the end. The chosen one fills with the navy block
+     whose end is cut on the slope (the primary button), drawn from the left over a white copy of
+     its line; a row pointed at darkens, and with a mouse is chosen after a short rest (FiguresLive) */
+  .vp-cifre__index {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  .vp-cifre__row,
+  .vp-cifre__band {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    column-gap: 1rem;
+  }
+  .vp-cifre__row {
+    /* the row's height when its name holds one line: the cut, as on the button, is half its run */
+    --cut: calc((2.1rem + 1.3 * var(--t-body-l) + 2px) * var(--slope) * 0.5);
+    position: relative;
+    min-height: 44px;
+    padding: 1.05rem 0.25rem 1.05rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg-2);
+    cursor: pointer;
+    transition: color 380ms var(--ease-move);
+  }
+  .vp-cifre__row:hover {
+    color: var(--fg);
+  }
+  /* over the row and its two hairlines, half a gutter wider each side; its line set exactly on
+     the row's own */
+  .vp-cifre__band {
+    position: absolute;
+    inset: -1px calc(var(--gutter-x) * -0.5);
+    padding: calc(1.05rem + 1px) calc(0.25rem + var(--gutter-x) * 0.5) calc(1.05rem + 1px) calc(var(--gutter-x) * 0.5);
+    background: var(--color-navy);
+    color: var(--color-white);
+    pointer-events: none;
+    /* not drawn: wholly outside the box, so no edge of it shows through at a fractional pixel */
+    clip-path: polygon(-2px 0, calc(-2px - var(--cut)) 0, -2px 100%, -2px 100%);
+    transition: clip-path 620ms var(--ease-move);
+  }
+  .vp-cifre__row:has(:checked) .vp-cifre__band {
+    clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% 100%, 0 100%);
+  }
+  /* the focused row is always the chosen one (a radio group): its ring goes round the block,
+     on the paper, where the navy cannot swallow it */
+  .vp-cifre__row::after {
+    content: "";
+    position: absolute;
+    inset: -6px calc(var(--gutter-x) * -0.5 - 5px);
+    border: 2px solid var(--fg);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .vp-cifre__row:has(:focus-visible)::after {
+    opacity: 1;
+  }
+  .vp-cifre__ix {
+    font-size: var(--t-label);
+  }
+  .vp-cifre__name,
+  .vp-cifre__val {
+    font-size: var(--t-body-l);
+    font-weight: 300;
+    line-height: 1.3;
+  }
+  .vp-cifre__val {
+    text-align: right;
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* until the section is seen: the digits under their edge, the words and the rows waiting
+       transparent; the chosen block draws a moment after the rows are in (data-drawn) */
+    html.js-motion .vp-cifre:not([data-seen]) .vp-cifre__ch {
+      translate: 0 115%;
+    }
+    html.js-motion .vp-cifre:not([data-seen]) :is(.vp-cifre__about, .vp-cifre__row) {
+      opacity: 0;
+    }
+    html.js-motion .vp-cifre[data-seen] .vp-cifre__row {
+      animation: vp-cifre-in 0.8s var(--ease-enter) calc(0.15s + var(--r) * 70ms) both;
+    }
+    html.js-motion .vp-cifre:not([data-drawn]) .vp-cifre__band {
+      clip-path: polygon(-2px 0, calc(-2px - var(--cut)) 0, -2px 100%, -2px 100%);
+    }
+    /* once seen, FiguresLive rolls the digits: the panel stepping out stays drawn until its last
+       digit has gone up through the edge, its words fading at once; the chosen one's words come
+       in after its digits (the component's rules) */
+    html.js-motion .vp-cifre[data-seen] .vp-cifre__panel {
+      opacity: 1;
+      transition: visibility 0s linear 0.85s;
+    }
+    html.js-motion .vp-cifre[data-seen] .vp-cifre__about {
+      opacity: 0;
+      transition: opacity 0.2s var(--ease-move);
+    }
+  }
+  @keyframes vp-cifre-in {
+    from {
+      opacity: 0;
+      translate: 0 0.75rem;
+    }
   }
   .vp-count {
     font-size: clamp(2.5rem, 0.5rem + 5.6vw, 8.5rem);

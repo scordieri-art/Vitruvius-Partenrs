@@ -74,13 +74,28 @@ const it = {
       label: "In numeri",
       note: "Dati pubblicati dal gruppo",
       source: "Le fonti",
-      // the climb in the Top 200 (content/evidence.ts, top200): the sentence says it, the figures draw it
-      climb: "Top 200 imprese di costruzioni: dal 169° all’83° posto in due anni.",
-      climbSource: "Fonte",
-      production: "valore della produzione",
+      // one figure at a time (components/home/Figures.tsx): the index names each figure, the large
+      // one says what it counts; the values come from content/evidence.ts
+      pick: "Scegli un dato",
+      rows: {
+        sites: "Cantieri completati",
+        cities: "Città",
+        production: "Valore della produzione",
+        top200: "Top 200 costruzioni",
+        contracts: "Progetti contrattualizzati",
+      },
+      where: "Le sedi e le operazioni, sulla mappa più sotto",
+      productionLabel: (year: string) => `valore della produzione, ${year}`,
       productionUnit: "M€",
-      productionSpoken: (from: string, to: string) => `da ${from} a ${to} milioni di euro`,
-      growth: (change: string, year: string) => `${change} nel ${year}`,
+      productionSpoken: (value: string) => `${value} milioni di euro`,
+      productionNote: (a: string, aYear: string, b: string, bYear: string, change: string) =>
+        `${a} M€ nel ${aYear}, ${b} M€ nel ${bYear}: ${change} in un anno.`,
+      top200Label: (year: string) => `nella classifica Top 200 costruzioni, ${year}`,
+      top200Spoken: (rank: number) => `posizione ${rank}`,
+      planned: "Il simbolo a contorno segna una fase prevista, non ancora conclusa.",
+      declared: "Dato dichiarato dal gruppo",
+      sourceOne: "Fonte",
+      sourceMany: "Fonti",
     },
     projects: {
       label: "Progetti",
