@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { PageTransitionProvider } from "@/components/layout/PageTransition";
 import { PreloadFonts } from "@/components/layout/PreloadFonts";
-import { CursorLabel } from "@/components/ui/CursorLabel";
+import { Cursor } from "@/components/ui/Cursor";
 import { company } from "@/content/site";
 import { FONT_KIT } from "@/lib/fonts";
 import { projects } from "@/content/projects";
@@ -106,7 +106,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
             <Footer lang={lang} t={t} />
           </PageTransitionProvider>
         </SmoothScroll>
-        <CursorLabel />
+        <Cursor />
       </body>
     </html>
   );

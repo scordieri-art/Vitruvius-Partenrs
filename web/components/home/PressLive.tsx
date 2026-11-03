@@ -30,7 +30,10 @@ export function PressLive({ children, className }: { children: ReactNode; classN
       const input = (e.currentTarget as HTMLElement).querySelector("input");
       clearTimeout(wait);
       wait = window.setTimeout(() => {
-        if (input && !input.checked) input.checked = true;
+        if (!input || input.checked) return;
+        input.checked = true;
+        // a choice made without a click: the pointer's stroke (Cursor) fills with it
+        input.dispatchEvent(new Event("vp-pick", { bubbles: true }));
       }, 120);
     };
     const leave = () => clearTimeout(wait);

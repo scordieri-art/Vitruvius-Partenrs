@@ -468,26 +468,114 @@
     background: currentColor;
     opacity: 0.4;
   }
-  /* the label that follows the mouse over a project's picture (components/ui/CursorLabel.tsx):
-     a navy tag beside the pointer that wipes open along the slope */
-  .vp-cursor {
+  /* Beside the pointer (components/ui/Cursor.tsx): the symbol's primary stroke, 22 px tall, its
+     tip 18 px below and right of the pointer's. In outline over an action, solid over what is
+     chosen or current and while pressed; on a click the second mass joins it (.vp-cur__arm). Over
+     a picture it grows to 34 px and opens a tag with the word where the second mass would be. Navy
+     with a paper rim, so it reads on a photo too; paper with a navy rim over navy. */
+  .vp-cur,
+  .vp-cur__arm {
+    --ink: var(--color-navy);
+    --rim: var(--color-paper);
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 90;
-    margin: 1.1rem 0 0 1.1rem;
-    padding: 0.5rem 1.35rem 0.5rem 0.85rem;
-    color: var(--color-white);
-    background: var(--color-navy);
+    z-index: 100;
     pointer-events: none;
-    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
-    transition: clip-path 360ms var(--ease-move);
   }
-  .vp-cursor[data-on] {
-    clip-path: polygon(0 0, calc(100% - 0.75rem) 0, 100% 100%, 0 100%);
+  .vp-cur[data-dark],
+  .vp-cur__arm[data-dark] {
+    --ink: var(--color-paper);
+    --rim: var(--color-navy);
   }
-  .vp-cursor:empty {
-    display: none;
+  .vp-cur {
+    will-change: transform;
+  }
+  .vp-cur__mark,
+  .vp-cur__arm {
+    /* the whole symbol's frame (269.655 × 170) at 22 px: the second mass lands in it */
+    width: 34.9px;
+    height: 22px;
+    overflow: visible;
+    transform-origin: 0 0;
+  }
+  .vp-cur__mark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    scale: 0;
+    transition:
+      scale 340ms var(--ease-enter),
+      opacity 200ms var(--ease-move);
+  }
+  .vp-cur:is([data-k="act"], [data-k="on"]) .vp-cur__mark {
+    opacity: 1;
+    scale: 1;
+  }
+  .vp-cur[data-k="tag"] .vp-cur__mark {
+    opacity: 1;
+    scale: 1.5455; /* 34 px, the tag's height */
+  }
+  .vp-cur polygon,
+  .vp-cur__arm polygon {
+    vector-effect: non-scaling-stroke;
+    stroke-linejoin: round;
+  }
+  .vp-cur__rim {
+    fill: var(--rim);
+    stroke: var(--rim);
+    stroke-width: 3.5px;
+    transition: fill 200ms var(--ease-move);
+  }
+  .vp-cur__a {
+    fill: var(--ink);
+    stroke: var(--ink);
+    stroke-width: 1.5px;
+    transition: fill 200ms var(--ease-move);
+  }
+  /* what can be done: the outline (as a planned phase); chosen, pressed, done: solid */
+  .vp-cur[data-k="act"]:not([data-press], [data-done]) .vp-cur__rim {
+    fill: transparent;
+    stroke-width: 4.5px;
+  }
+  .vp-cur[data-k="act"]:not([data-press], [data-done]) .vp-cur__a {
+    fill: transparent;
+  }
+  .vp-cur__arm polygon {
+    fill: var(--ink);
+    stroke: var(--rim);
+    stroke-width: 3.5px;
+    paint-order: stroke;
+    opacity: 0;
+  }
+  /* the word, on a tag cut on the slope where the second mass would be: at 34 px the slope runs
+     19.93 px and the symbol's gap is 12.90 px */
+  .vp-cur__tag {
+    position: absolute;
+    left: 31.65px;
+    top: 0;
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 calc(19.93px + 0.55rem) 0 calc(19.93px + 0.3rem);
+    white-space: nowrap;
+    color: var(--rim);
+    background: var(--ink);
+    clip-path: polygon(0 0, 0 0, 19.93px 100%, 19.93px 100%);
+    transition: clip-path 420ms var(--ease-move);
+  }
+  .vp-cur[data-k="tag"] .vp-cur__tag {
+    clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
+  }
+  /* near the right edge it opens on the stroke's other side, the same gap along the slope */
+  .vp-cur[data-flip] .vp-cur__tag {
+    left: auto;
+    right: -7.03px;
+    clip-path: polygon(calc(100% - 19.93px) 0, calc(100% - 19.93px) 0, 100% 100%, 100% 100%);
+  }
+  .vp-cur[data-flip][data-k="tag"] .vp-cur__tag {
+    clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
   }
   /* a square control for icon-only buttons (previous / next) */
   .vp-iconbtn {

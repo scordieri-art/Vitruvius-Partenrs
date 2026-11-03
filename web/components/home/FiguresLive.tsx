@@ -76,6 +76,8 @@ export function FiguresLive({ children, className }: { children: ReactNode; clas
         if (!input || input.checked) return;
         input.checked = true;
         show(input.value);
+        // a choice made without a click: the pointer's stroke (Cursor) fills with it
+        input.dispatchEvent(new Event("vp-pick", { bubbles: true }));
       }, 110);
     };
     const leave = () => clearTimeout(wait);
