@@ -468,11 +468,11 @@
     background: currentColor;
     opacity: 0.4;
   }
-  /* The pointer (components/ui/Cursor.tsx): with a mouse the system's cursor is hidden and this
-     takes its place, in one of two looks under review: the ball (data-v="ball", the default) or
-     the symbol (data-v="logo"). Pressing turns it into a negative of what is beneath: white, in
-     mix-blend-mode difference. The system's cursor stays over text fields (its caret), on touch
-     screens and in forced colours, and until the mouse first moves. */
+  /* The pointer (components/ui/Cursor.tsx): with a mouse the system's cursor is hidden and the
+     symbol takes its place, leaving a trail of fading Vs as it moves (.vp-trail). Pressing turns
+     it into a negative of what is beneath: white, in mix-blend-mode difference. The system's
+     cursor stays over text fields (its caret), on touch screens and in forced colours, and until
+     the mouse first moves. */
   html.vp-cur-on,
   html.vp-cur-on * {
     cursor: none !important;
@@ -511,78 +511,17 @@
     mix-blend-mode: difference;
   }
 
-  /* 1 · the ball: a 14 px dot, its centre the pointer, with a hairline rim for photos */
-  .vp-cur__ball {
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: none;
-    place-items: center;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    translate: -50% -50%;
-    background: var(--ink);
-    box-shadow: 0 0 0 1px var(--rim);
-    transition:
-      width 320ms var(--ease-enter),
-      height 320ms var(--ease-enter),
-      background-color 200ms var(--ease-move),
-      box-shadow 200ms var(--ease-move);
-  }
-  .vp-cur[data-v="ball"] .vp-cur__ball {
-    display: grid;
-  }
-  /* over something that can be done: a ring around the point where the click lands */
-  .vp-cur:is([data-k="act"], [data-k="on"]) .vp-cur__ball {
-    width: 44px;
-    height: 44px;
-    background: radial-gradient(circle, var(--ink) 0 2.5px, transparent 3px);
-    box-shadow:
-      inset 0 0 0 1.5px var(--ink),
-      inset 0 0 0 2.5px var(--rim),
-      0 0 0 1px var(--rim);
-  }
-  /* over a project's picture: a disc with the word */
-  .vp-cur[data-k="tag"] .vp-cur__ball {
-    width: 88px;
-    height: 88px;
-  }
-  .vp-cur__word {
-    color: var(--rim);
-    white-space: nowrap;
-    opacity: 0;
-    transition: opacity 160ms var(--ease-move);
-  }
-  .vp-cur[data-k="tag"]:not([data-neg]) .vp-cur__word {
-    opacity: 1;
-    transition-delay: 140ms;
-  }
-  .vp-cur[data-neg] .vp-cur__ball {
-    width: 84px;
-    height: 84px;
-    background: #fff;
-    box-shadow: none;
-  }
-  .vp-cur[data-neg][data-k="tag"] .vp-cur__ball {
-    width: 112px;
-    height: 112px;
-  }
-
-  /* 2 · the symbol: the V 20 px tall, the tip of its first stroke the pointer's tip */
+  /* the symbol: the V 20 px tall, the tip of its first stroke the pointer's tip */
   .vp-cur__logo {
     position: absolute;
     left: 0;
     top: 0;
-    display: none;
+    display: block;
     width: 31.7px; /* the symbol's 269.655 × 170 at 20 px */
     height: 20px;
     overflow: visible;
     transform-origin: 0 0;
     transition: scale 320ms var(--ease-enter);
-  }
-  .vp-cur[data-v="logo"] .vp-cur__logo {
-    display: block;
   }
   .vp-cur__logo polygon {
     vector-effect: non-scaling-stroke;
@@ -628,7 +567,7 @@
     position: absolute;
     left: 31.65px;
     top: 0;
-    display: none;
+    display: flex;
     align-items: center;
     height: 34px;
     padding: 0 calc(19.93px + 0.55rem) 0 calc(19.93px + 0.3rem);
@@ -637,9 +576,6 @@
     background: var(--ink);
     clip-path: polygon(0 0, 0 0, 19.93px 100%, 19.93px 100%);
     transition: clip-path 420ms var(--ease-move);
-  }
-  .vp-cur[data-v="logo"] .vp-cur__tag {
-    display: flex;
   }
   .vp-cur[data-k="tag"]:not([data-neg]) .vp-cur__tag {
     clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
@@ -652,6 +588,37 @@
   }
   .vp-cur[data-flip][data-k="tag"]:not([data-neg]) .vp-cur__tag {
     clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
+  }
+  /* the trail: the symbol where the pointer was a moment ago, smaller and fainter the older it
+     is, only while it moves (placed and faded by Cursor, frame by frame) */
+  .vp-trail {
+    --ink: var(--color-navy);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 99;
+    pointer-events: none;
+    transition: opacity 160ms var(--ease-move);
+  }
+  .vp-trail[data-dark] {
+    --ink: var(--color-paper);
+  }
+  .vp-trail[data-hide] {
+    opacity: 0;
+  }
+  .vp-trail__v {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 31.7px;
+    height: 20px;
+    overflow: visible;
+    transform-origin: 0 0;
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .vp-trail__v polygon {
+    fill: var(--ink);
   }
   /* a square control for icon-only buttons (previous / next) */
   .vp-iconbtn {

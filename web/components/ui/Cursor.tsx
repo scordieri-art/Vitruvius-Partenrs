@@ -12,22 +12,14 @@ const TYPING =
   'input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"],[type="submit"],[type="reset"],[type="file"],[type="color"],[type="image"]),textarea,[contenteditable]:not([contenteditable="false"]),iframe';
 const ACTION =
   'a[href],button,label,summary,select,input,[role="button"],[role="link"],[role="tab"],[role="radio"],[role="checkbox"],[role="switch"],[role="option"],[role="menuitem"]';
-const CHOSEN =
-  '[aria-current]:not([aria-current="false"]),[aria-pressed="true"],[aria-selected="true"],[aria-checked="true"],[aria-expanded="true"],:checked';
+const CHOSEN = '[aria-current]:not([aria-current="false"]),[aria-pressed="true"],[aria-selected="true"],[aria-checked="true"],[aria-expanded="true"],:checked';
 
 type Kind = "off" | "rest" | "act" | "on" | "tag";
-type Look = "ball" | "logo";
 
-/** the two looks under review: ?cursore=pallina (the default) or ?cursore=logo, kept for the visit */
-function chosenLook(): Look {
-  try {
-    const q = new URLSearchParams(location.search).get("cursore");
-    if (q === "logo" || q === "pallina") sessionStorage.setItem("vp-cursore", q);
-    return (q ?? sessionStorage.getItem("vp-cursore")) === "logo" ? "logo" : "ball";
-  } catch {
-    return "ball";
-  }
-}
+/** the trail: how many Vs, how many frames apart, how faint the nearest */
+const TRAIL = 7;
+const STEP = 2;
+const TRAIL_ALPHA = 0.55;
 
 /** a click's negative lasts at least this long, so a quick click shows it too */
 const NEGATIVE_MIN = 420;
@@ -44,17 +36,15 @@ function tone(c: string): [number, number] | null {
 }
 
 /**
- * The pointer. With a mouse the system's cursor is hidden and this takes its place, exactly where
- * the mouse is, in one of two looks under review:
- * - the ball (data-v="ball"): a navy dot whose centre is the pointer; over something that can be
- *   done a ring around a point; over a project's picture a disc with the word of its data-cursor
- *   («Apri»);
- * - the symbol (data-v="logo"): the V, the tip of its first stroke the pointer's tip; over an action
- *   larger and in outline (as a planned phase), solid over what is chosen or current; over a
- *   picture the second mass gives way to the word, on a tag cut on the slope.
- * Pressing turns either into a negative of what is beneath (white, mix-blend-mode: difference),
- * larger, for at least NEGATIVE_MIN even on a quick click. Over navy it is paper; a hairline rim
- * keeps it visible on photos.
+ * The pointer. With a mouse the system's cursor is hidden and the symbol takes its place, exactly
+ * where the mouse is: the V, the tip of its first stroke the pointer's tip; over an action larger
+ * and in outline (as a planned phase), solid over what is chosen or current; over a project's
+ * picture the second mass gives way to the word of its data-cursor («Apri»), on a tag cut on the
+ * slope. As it moves it leaves a trail: the V where the pointer was a few frames ago, smaller and
+ * fainter the older, gone when it stops (none with reduced motion). Pressing turns it into a
+ * negative of what is beneath (white, mix-blend-mode: difference), larger, for at least
+ * NEGATIVE_MIN even on a quick click. Over navy it is paper; a hairline rim keeps it visible on
+ * photos.
  *
  * The system's cursor stays over text fields (its caret), on touch screens and in forced colours,
  * and until the mouse first moves (if scripts fail, nothing is hidden). For the eye only: links and
@@ -63,24 +53,33 @@ function tone(c: string): [number, number] | null {
  */
 export function Cursor() {
   const root = useRef<HTMLDivElement>(null);
-  const word = useRef<HTMLSpanElement>(null);
   const tag = useRef<HTMLSpanElement>(null);
+  const trail = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = root.current;
-    const inBall = word.current;
     const onTag = tag.current;
-    if (!el || !inBall || !onTag) return;
+    const tr = trail.current;
+    if (!el || !onTag || !tr) return;
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches || matchMedia("(forced-colors: active)").matches) return;
-    const look = chosenLook();
-    el.dataset.v = look;
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
     const html = document.documentElement;
+    const ghosts = Array.from(tr.children) as SVGSVGElement[];
+    // where the pointer was, newest first, one entry a frame
+    const past: [number, number][] = [];
 
-    let px = 0, py = 0, raf = 0, probe = false, shown = false;
-    let kind: Kind = "off", text = "", wide = 0;
+    let px = 0,
+      py = 0,
+      raf = 0,
+      probe = false,
+      shown = false;
+    let kind: Kind = "off",
+      text = "",
+      wide = 0;
     let target: Element | null = null;
     let seen: Element | null | undefined;
-    let pressedAt = 0, lift = 0;
+    let pressedAt = 0,
+      lift = 0;
     let later: number[] = [];
 
     // dark beneath (a navy section, a navy button): the pointer turns paper, its rim navy
@@ -93,7 +92,8 @@ export function Cursor() {
     };
 
     const read = (t: Element | null) => {
-      let k: Kind = "off", w = "";
+      let k: Kind = "off",
+        w = "";
       // off the page's content: over a text field, outside the window, on the page's scrollbar
       if (t && t !== html && !t.closest(TYPING) && px < html.clientWidth && py < html.clientHeight) {
         k = "rest";
@@ -110,17 +110,39 @@ export function Cursor() {
         }
       }
       // beside a word it stays navy, as the label it is: beneath is a photo, not its card's colour
-      if (t && k !== "off") el.toggleAttribute("data-dark", k !== "tag" && dark(t));
+      if (t && k !== "off") {
+        const d = k !== "tag" && dark(t);
+        el.toggleAttribute("data-dark", d);
+        tr.toggleAttribute("data-dark", d);
+      }
       // the word stays while the tag closes, so it folds away with it
       if (w && w !== text) {
         text = w;
-        inBall.textContent = w;
         onTag.textContent = w;
-        wide = look === "logo" ? onTag.offsetWidth : 0;
+        wide = onTag.offsetWidth;
       }
       if (k === kind) return;
       kind = k;
       el.dataset.k = k;
+      // the trail only behind the bare symbol: not beside the word, not off the page
+      tr.toggleAttribute("data-hide", k === "off" || k === "tag");
+    };
+
+    // the trail: each V at where the pointer was i·STEP frames ago, fading in with the distance
+    // so that a still pointer has none; it keeps going until the last V has caught up
+    const drawTrail = () => {
+      past.unshift([px, py]);
+      if (past.length > TRAIL * STEP + 1) past.length = TRAIL * STEP + 1;
+      let moving = false;
+      ghosts.forEach((g, i) => {
+        const [x, y] = past[Math.min((i + 1) * STEP, past.length - 1)];
+        const d = Math.hypot(px - x, py - y);
+        if (d > 0.5) moving = true;
+        const a = TRAIL_ALPHA * (1 - i / TRAIL) * Math.min(1, d / 14);
+        g.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${(1 - (i + 1) * 0.07).toFixed(2)})`;
+        g.style.opacity = a.toFixed(3);
+      });
+      return moving;
     };
 
     const frame = () => {
@@ -134,8 +156,9 @@ export function Cursor() {
         read(target);
       }
       el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
-      // the symbol's tag, near the right edge, opens on the stroke's other side
-      if (look === "logo") el.toggleAttribute("data-flip", kind === "tag" && px + 32 + wide > html.clientWidth - 12);
+      // the tag, near the right edge, opens on the stroke's other side
+      el.toggleAttribute("data-flip", kind === "tag" && px + 32 + wide > html.clientWidth - 12);
+      if (!still.matches && drawTrail()) raf = requestAnimationFrame(frame);
     };
     // again: what is under the pointer may have changed beneath it (a scroll, a choice, a new page)
     const ask = (again = false) => {
@@ -183,7 +206,12 @@ export function Cursor() {
     const release = () => {
       if (!el.hasAttribute("data-neg")) return;
       clearTimeout(lift);
-      lift = window.setTimeout(() => delete el.dataset.neg, Math.max(0, NEGATIVE_MIN - (performance.now() - pressedAt)));
+      lift = window.setTimeout(
+        () => {
+          delete el.dataset.neg;
+        },
+        Math.max(0, NEGATIVE_MIN - (performance.now() - pressedAt)),
+      );
     };
     // after a click the state may change (pressed, chosen, a new page)
     const clicked = () => {
@@ -224,17 +252,24 @@ export function Cursor() {
   }, []);
 
   return (
-    <div ref={root} className="vp-cur" aria-hidden="true">
-      <span className="vp-cur__ball">
-        <span ref={word} className="vp-cur__word t-small" />
-      </span>
-      <svg className="vp-cur__logo" viewBox={SYMBOL_VIEWBOX} focusable="false">
-        <polygon className="vp-cur__rim" points={PRIMARY} />
-        <polygon className="vp-cur__rim vp-cur__b" points={SECONDARY} />
-        <polygon className="vp-cur__a" points={PRIMARY} />
-        <polygon className="vp-cur__a vp-cur__b" points={SECONDARY} />
-      </svg>
-      <span ref={tag} className="vp-cur__tag t-small" />
-    </div>
+    <>
+      <div ref={trail} className="vp-trail" aria-hidden="true">
+        {Array.from({ length: TRAIL }, (_, i) => (
+          <svg key={i} className="vp-trail__v" viewBox={SYMBOL_VIEWBOX} focusable="false">
+            <polygon points={PRIMARY} />
+            <polygon points={SECONDARY} />
+          </svg>
+        ))}
+      </div>
+      <div ref={root} className="vp-cur" aria-hidden="true">
+        <svg className="vp-cur__logo" viewBox={SYMBOL_VIEWBOX} focusable="false">
+          <polygon className="vp-cur__rim" points={PRIMARY} />
+          <polygon className="vp-cur__rim vp-cur__b" points={SECONDARY} />
+          <polygon className="vp-cur__a" points={PRIMARY} />
+          <polygon className="vp-cur__a vp-cur__b" points={SECONDARY} />
+        </svg>
+        <span ref={tag} className="vp-cur__tag t-small" />
+      </div>
+    </>
   );
 }
