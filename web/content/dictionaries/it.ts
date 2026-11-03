@@ -293,6 +293,8 @@ const it = {
         stops: "Tappe della mappa",
         project: "Il progetto",
         hint: "Scegli un luogo sulla mappa per raggiungerlo, o scorri per visitarli in ordine.",
+        caption: "Le sedi e le operazioni pubblicate dal gruppo; in luce le loro regioni. Cartografia: Natural Earth.",
+        back: "Tutta l’Italia",
       },
     },
   },

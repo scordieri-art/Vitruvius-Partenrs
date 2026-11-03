@@ -78,7 +78,7 @@ export function chapterSteps(lang: Locale, t: Dictionary): ChapterStep[] {
       rail: c.italy,
       caption: (
         <div className="vp-gl__card">
-          <p className="t-body-l">{m.caption}</p>
+          <p className="t-body-l">{c.caption}</p>
           <p className="t-label mt-5">{c.hint}</p>
         </div>
       ),
