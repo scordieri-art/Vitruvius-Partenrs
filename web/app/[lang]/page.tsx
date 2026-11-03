@@ -189,16 +189,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Where the group works: Italy drawn in the brand's marks (WebGL). On a desktop a chapter of
-          its own, the camera travelling over the field from the offices to each operation; on
-          phones and tablets the field over the slab, a touch flies to a place; without WebGL,
-          motion or scripts, the slab with its list */}
+      {/* Where the group works: on a desktop a chapter of its own, the camera travelling over the
+          model from the offices to each operation (WebGL); elsewhere the model with its list */}
       <section data-theme="navy" aria-labelledby="where-title" className="vp-where mt-[var(--section-y)]">
         <WhereChapter
           pins={mapPins(lang)}
           steps={chapterSteps(lang, t)}
           stopsLabel={t.projectsPage.map.chapter.stops}
-          back={{ italy: t.projectsPage.map.chapter.back, all: t.projectsPage.map.chapter.all }}
           head={
             <>
               <SectionLabel n={4} className="mb-5">

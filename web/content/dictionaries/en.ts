@@ -296,8 +296,6 @@ const en: Dictionary = {
         stops: "Map stops",
         project: "The project",
         hint: "Choose a place on the map to go there, or scroll to visit them in order.",
-        caption: "The group’s offices and published operations, their regions lit up. Cartography: Natural Earth.",
-        back: "All of Italy",
       },
     },
   },

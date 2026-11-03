@@ -1102,15 +1102,17 @@
     }
   }
   /* its rod: from the mark's head up to the flag, as long as the flag has had to rise to keep
-     clear of the others (--lift, WhereChapter): a hairline of light, like the coast */
+     clear of the others (--lift, WhereChapter); navy with a light edge, it reads on the white
+     board and on the navy regions */
   .vp-gl__flag::before {
     content: "";
     position: absolute;
-    left: -0.5px;
+    left: -0.75px;
     bottom: 0;
-    width: 1px;
+    width: 1.5px;
     height: calc(0.55rem + var(--lift, 0px));
-    background: linear-gradient(rgb(255 255 255 / 0.85), rgb(255 255 255 / 0.25));
+    background: var(--color-navy);
+    box-shadow: 0 0 0 1px var(--color-white);
     transform-origin: bottom;
     transition: height 380ms var(--ease-move);
   }
@@ -1131,14 +1133,11 @@
     translate: calc(-100% + 0.4rem) 0;
   }
   .vp-gl__tag:hover {
-    color: var(--color-navy);
-    background: var(--color-white);
+    color: var(--color-white);
+    background: var(--color-navy);
     box-shadow:
       inset 0 0 0 1px var(--color-white),
       0 0.8rem 1.6rem -0.5rem rgb(0 0 0 / 0.55);
-  }
-  .vp-gl__tag:hover .vp-map__note {
-    color: color-mix(in srgb, var(--color-navy) 70%, var(--color-white));
   }
   .vp-gl__flag:has(.vp-gl__tag:hover) {
     z-index: 1;
@@ -1155,14 +1154,9 @@
     font-size: 0.75rem;
     line-height: 1;
     letter-spacing: 0.01em;
-    /* glass over the field: the marks behind it blur, a hairline of light round it */
-    color: var(--color-white);
-    background: rgb(10 35 66 / 0.55);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    box-shadow:
-      inset 0 0 0 1px rgb(255 255 255 / 0.3),
-      0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 0.45);
+    color: var(--color-navy);
+    background: var(--color-white);
+    box-shadow: 0 0.6rem 1.4rem -0.5rem rgb(0 0 0 / 0.45);
     transition:
       color var(--dur-ui) var(--ease-move),
       background-color var(--dur-ui) var(--ease-move),
@@ -1172,9 +1166,6 @@
   }
   .vp-gl__tag .vp-mark {
     height: 0.7rem;
-  }
-  .vp-gl__tag .vp-map__note {
-    color: rgb(255 255 255 / 0.62);
   }
   .vp-gl__city > span {
     position: absolute;
@@ -1198,53 +1189,6 @@
   }
   .vp-gl__city[data-high] > span {
     color: color-mix(in srgb, var(--color-white) 72%, var(--color-navy));
-  }
-  /* phones and tablets (WhereChapter, CompactMap): the field drawn over the slab's stage; the
-     slab fades once the field is in, the labels are the chapter's */
-  .vp-gl-c {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    opacity: 0;
-    transition: opacity 900ms var(--ease-enter);
-  }
-  .vp-gl-c[data-on] {
-    opacity: 1;
-  }
-  .vp-map__stage[data-gl="on"] .vp-map__plane {
-    opacity: 0;
-    transition: opacity 600ms var(--ease-move);
-  }
-  .vp-gl-c__canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-  .vp-gl-c__labels {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-  /* the whole of Italy's one flag: centred over the places, its rod in the middle */
-  .vp-gl-c__group .vp-gl__tag {
-    translate: -50% 0;
-  }
-  .vp-gl-c__back {
-    position: absolute;
-    left: 0.5rem;
-    top: 0.5rem;
-    z-index: 2;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-height: 44px;
-    padding: 0 0.95rem;
-    color: var(--color-white);
-    background: rgb(10 35 66 / 0.6);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.28);
-    animation: vp-gl-flag 500ms var(--ease-enter) both;
   }
   /* the captions: one stop at a time, on a navy card with the corner cut on the slope */
   .vp-gl__steps {
@@ -1278,11 +1222,7 @@
     --c: 1.4rem;
     padding: 1.6rem 2.2rem 1.8rem 1.8rem;
     color: var(--fg);
-    /* glass: the field goes on behind it, blurred, a hairline of light round it */
-    background: rgb(10 35 66 / 0.64);
-    -webkit-backdrop-filter: blur(16px) saturate(1.15);
-    backdrop-filter: blur(16px) saturate(1.15);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.1);
+    background: var(--color-navy);
     clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% calc(var(--c) / var(--slope)), 100% 100%, 0 100%);
   }
   .vp-gl__card--list {
@@ -1309,9 +1249,7 @@
     display: flex;
     gap: 1.5rem;
     padding: 0.35rem 1.1rem 0.35rem calc(1.1rem + var(--c));
-    background: rgb(10 35 66 / 0.74);
-    -webkit-backdrop-filter: blur(18px);
-    backdrop-filter: blur(18px);
+    background: var(--color-navy);
     clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%);
   }
   .vp-gl__tick {
