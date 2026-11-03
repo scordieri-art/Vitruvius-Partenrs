@@ -469,7 +469,7 @@
     opacity: 0.4;
   }
   /* The pointer (components/ui/Cursor.tsx): with a mouse the system's cursor is hidden and the
-     symbol takes its place, leaving a trail of fading Vs as it moves (.vp-trail). Pressing turns
+     symbol takes its place, drawing a pencil line behind its tip as it moves (.vp-trail). Pressing turns
      it into a negative of what is beneath: white, in mix-blend-mode difference. The system's
      cursor stays over text fields (its caret), on touch screens and in forced colours, and until
      the mouse first moves. */
@@ -589,36 +589,14 @@
   .vp-cur[data-flip][data-k="tag"]:not([data-neg]) .vp-cur__tag {
     clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
   }
-  /* the trail: the symbol where the pointer was a moment ago, smaller and fainter the older it
-     is, only while it moves (placed and faded by Cursor, frame by frame) */
+  /* the pencil line behind the pointer's tip: a canvas over the whole window, drawn by Cursor */
   .vp-trail {
-    --ink: var(--color-navy);
     position: fixed;
-    left: 0;
-    top: 0;
+    inset: 0;
     z-index: 99;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
-    transition: opacity 160ms var(--ease-move);
-  }
-  .vp-trail[data-dark] {
-    --ink: var(--color-paper);
-  }
-  .vp-trail[data-hide] {
-    opacity: 0;
-  }
-  .vp-trail__v {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 31.7px;
-    height: 20px;
-    overflow: visible;
-    transform-origin: 0 0;
-    opacity: 0;
-    will-change: transform, opacity;
-  }
-  .vp-trail__v polygon {
-    fill: var(--ink);
   }
   /* a square control for icon-only buttons (previous / next) */
   .vp-iconbtn {

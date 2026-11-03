@@ -16,10 +16,10 @@ const CHOSEN = '[aria-current]:not([aria-current="false"]),[aria-pressed="true"]
 
 type Kind = "off" | "rest" | "act" | "on" | "tag";
 
-/** the trail: how many Vs, how many frames apart, how faint the nearest */
-const TRAIL = 7;
-const STEP = 2;
-const TRAIL_ALPHA = 0.55;
+/** the pencil line: how long a point of it lasts (ms), its width and darkness when fresh */
+const LINE_LIFE = 650;
+const LINE_WIDTH = 1.7;
+const LINE_ALPHA = 0.85;
 
 /** a click's negative lasts at least this long, so a quick click shows it too */
 const NEGATIVE_MIN = 420;
@@ -40,8 +40,9 @@ function tone(c: string): [number, number] | null {
  * where the mouse is: the V, the tip of its first stroke the pointer's tip; over an action larger
  * and in outline (as a planned phase), solid over what is chosen or current; over a project's
  * picture the second mass gives way to the word of its data-cursor («Apri»), on a tag cut on the
- * slope. As it moves it leaves a trail: the V where the pointer was a few frames ago, smaller and
- * fainter the older, gone when it stops (none with reduced motion). Pressing turns it into a
+ * slope. As it moves it draws behind its tip a line, as a pencil would: thin, darker where it is
+ * fresh and thinner where the hand went fast, fading from its tail in LINE_LIFE, so a still pointer
+ * has none (no line with reduced motion). Pressing turns it into a
  * negative of what is beneath (white, mix-blend-mode: difference), larger, for at least
  * NEGATIVE_MIN even on a quick click. Over navy it is paper; a hairline rim keeps it visible on
  * photos.
@@ -54,7 +55,7 @@ function tone(c: string): [number, number] | null {
 export function Cursor() {
   const root = useRef<HTMLDivElement>(null);
   const tag = useRef<HTMLSpanElement>(null);
-  const trail = useRef<HTMLDivElement>(null);
+  const trail = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const el = root.current;
@@ -64,9 +65,19 @@ export function Cursor() {
     if (!matchMedia("(hover: hover) and (pointer: fine)").matches || matchMedia("(forced-colors: active)").matches) return;
     const still = matchMedia("(prefers-reduced-motion: reduce)");
     const html = document.documentElement;
-    const ghosts = Array.from(tr.children) as SVGSVGElement[];
-    // where the pointer was, newest first, one entry a frame
-    const past: [number, number][] = [];
+    const pen = tr.getContext("2d");
+    if (!pen) return;
+    // where the pointer has been, oldest first, with when and how fast
+    const line: { x: number; y: number; t: number; v: number }[] = [];
+    let ink = "10, 35, 66";
+    let lineRaf = 0;
+    const fit = () => {
+      const r = devicePixelRatio || 1;
+      tr.width = Math.round(innerWidth * r);
+      tr.height = Math.round(innerHeight * r);
+      pen.setTransform(r, 0, 0, r, 0, 0);
+    };
+    fit();
 
     let px = 0,
       py = 0,
@@ -113,7 +124,7 @@ export function Cursor() {
       if (t && k !== "off") {
         const d = k !== "tag" && dark(t);
         el.toggleAttribute("data-dark", d);
-        tr.toggleAttribute("data-dark", d);
+        ink = d ? "250, 250, 249" : "10, 35, 66";
       }
       // the word stays while the tag closes, so it folds away with it
       if (w && w !== text) {
@@ -124,25 +135,44 @@ export function Cursor() {
       if (k === kind) return;
       kind = k;
       el.dataset.k = k;
-      // the trail only behind the bare symbol: not beside the word, not off the page
-      tr.toggleAttribute("data-hide", k === "off" || k === "tag");
+      // the line only behind the bare symbol: not beside the word, not off the page
+      if (k === "off" || k === "tag") line.length = 0;
     };
 
-    // the trail: each V at where the pointer was i·STEP frames ago, fading in with the distance
-    // so that a still pointer has none; it keeps going until the last V has caught up
-    const drawTrail = () => {
-      past.unshift([px, py]);
-      if (past.length > TRAIL * STEP + 1) past.length = TRAIL * STEP + 1;
-      let moving = false;
-      ghosts.forEach((g, i) => {
-        const [x, y] = past[Math.min((i + 1) * STEP, past.length - 1)];
-        const d = Math.hypot(px - x, py - y);
-        if (d > 0.5) moving = true;
-        const a = TRAIL_ALPHA * (1 - i / TRAIL) * Math.min(1, d / 14);
-        g.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0) scale(${(1 - (i + 1) * 0.07).toFixed(2)})`;
-        g.style.opacity = a.toFixed(3);
-      });
-      return moving;
+    // the pencil: each stretch of the path drawn by its age (fainter, thinner) and by the hand's
+    // speed (a fast stroke is lighter); it redraws until the last point has faded
+    const draw = () => {
+      lineRaf = 0;
+      const now = performance.now();
+      while (line.length && now - line[0].t > LINE_LIFE) line.shift();
+      pen.clearRect(0, 0, innerWidth, innerHeight);
+      if (line.length < 2) {
+        line.length = Math.min(line.length, 1);
+        return;
+      }
+      pen.lineCap = "round";
+      pen.lineJoin = "round";
+      for (let i = 1; i < line.length; i++) {
+        const a = line[i - 1],
+          b = line[i];
+        const life = 1 - (now - b.t) / LINE_LIFE;
+        const press = 1 / (1 + b.v * 0.25);
+        pen.strokeStyle = `rgba(${ink}, ${(LINE_ALPHA * life * (0.55 + 0.45 * press)).toFixed(3)})`;
+        pen.lineWidth = 0.35 + LINE_WIDTH * life * (0.6 + 0.4 * press);
+        pen.beginPath();
+        pen.moveTo(a.x, a.y);
+        pen.lineTo(b.x, b.y);
+        pen.stroke();
+      }
+      lineRaf = requestAnimationFrame(draw);
+    };
+    const trace = (t: number) => {
+      if (still.matches || kind === "off" || kind === "tag") return;
+      const last = line[line.length - 1];
+      const d = last ? Math.hypot(px - last.x, py - last.y) : 0;
+      if (last && d < 0.5) return;
+      line.push({ x: px, y: py, t, v: last ? d / Math.max(1, t - last.t) : 0 });
+      if (!lineRaf) lineRaf = requestAnimationFrame(draw);
     };
 
     const frame = () => {
@@ -158,7 +188,6 @@ export function Cursor() {
       el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
       // the tag, near the right edge, opens on the stroke's other side
       el.toggleAttribute("data-flip", kind === "tag" && px + 32 + wide > html.clientWidth - 12);
-      if (!still.matches && drawTrail()) raf = requestAnimationFrame(frame);
     };
     // again: what is under the pointer may have changed beneath it (a scroll, a choice, a new page)
     const ask = (again = false) => {
@@ -188,6 +217,7 @@ export function Cursor() {
       target = e.target as Element;
       show(true);
       ask();
+      trace(e.timeStamp);
     };
     const leave = () => {
       target = null;
@@ -227,6 +257,7 @@ export function Cursor() {
     addEventListener("pointercancel", release, { passive: true });
     addEventListener("blur", release);
     addEventListener("scroll", scrolled, { passive: true });
+    addEventListener("resize", fit, { passive: true });
     addEventListener("popstate", back);
     html.addEventListener("pointerleave", leave);
     document.addEventListener("click", clicked, true);
@@ -234,6 +265,8 @@ export function Cursor() {
     document.addEventListener("vp-pick", picked, true);
     return () => {
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(lineRaf);
+      removeEventListener("resize", fit);
       clearTimeout(lift);
       later.forEach(clearTimeout);
       html.classList.remove("vp-cur-on");
@@ -253,14 +286,7 @@ export function Cursor() {
 
   return (
     <>
-      <div ref={trail} className="vp-trail" aria-hidden="true">
-        {Array.from({ length: TRAIL }, (_, i) => (
-          <svg key={i} className="vp-trail__v" viewBox={SYMBOL_VIEWBOX} focusable="false">
-            <polygon points={PRIMARY} />
-            <polygon points={SECONDARY} />
-          </svg>
-        ))}
-      </div>
+      <canvas ref={trail} className="vp-trail" aria-hidden="true" />
       <div ref={root} className="vp-cur" aria-hidden="true">
         <svg className="vp-cur__logo" viewBox={SYMBOL_VIEWBOX} focusable="false">
           <polygon className="vp-cur__rim" points={PRIMARY} />
