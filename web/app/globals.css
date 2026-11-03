@@ -1215,13 +1215,10 @@
     opacity: 0;
     transition: opacity 600ms var(--ease-move);
   }
-  /* the stage is narrower than the screen: the field dissolves at its edges instead of being cut */
   .vp-gl-c__canvas {
     display: block;
     width: 100%;
     height: 100%;
-    mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent), linear-gradient(transparent, #000 7%, #000 93%, transparent);
-    mask-composite: intersect;
   }
   .vp-gl-c__labels {
     position: absolute;
