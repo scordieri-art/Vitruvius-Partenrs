@@ -468,13 +468,24 @@
     background: currentColor;
     opacity: 0.4;
   }
-  /* Beside the pointer (components/ui/Cursor.tsx): the symbol's primary stroke, 22 px tall, its
-     tip 18 px below and right of the pointer's. In outline over an action, solid over what is
-     chosen or current and while pressed; on a click the second mass joins it (.vp-cur__arm). Over
-     a picture it grows to 34 px and opens a tag with the word where the second mass would be. Navy
-     with a paper rim, so it reads on a photo too; paper with a navy rim over navy. */
-  .vp-cur,
-  .vp-cur__arm {
+  /* The pointer (components/ui/Cursor.tsx): with a mouse the system's cursor is hidden and this
+     takes its place, in one of two looks under review: the ball (data-v="ball", the default) or
+     the symbol (data-v="logo"). Pressing turns it into a negative of what is beneath: white, in
+     mix-blend-mode difference. The system's cursor stays over text fields (its caret), on touch
+     screens and in forced colours, and until the mouse first moves. */
+  html.vp-cur-on,
+  html.vp-cur-on * {
+    cursor: none !important;
+  }
+  html.vp-cur-on
+    :is(
+      input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="file"], [type="color"], [type="image"]),
+      textarea,
+      [contenteditable]:not([contenteditable="false"])
+    ) {
+    cursor: text !important;
+  }
+  .vp-cur {
     --ink: var(--color-navy);
     --rim: var(--color-paper);
     position: fixed;
@@ -482,80 +493,142 @@
     top: 0;
     z-index: 100;
     pointer-events: none;
+    will-change: transform;
+    transition: opacity 160ms var(--ease-move);
   }
-  .vp-cur[data-dark],
-  .vp-cur__arm[data-dark] {
+  .vp-cur:not([data-k]),
+  .vp-cur[data-k="off"] {
+    opacity: 0;
+  }
+  .vp-cur[data-dark] {
     --ink: var(--color-paper);
     --rim: var(--color-navy);
   }
-  .vp-cur {
-    will-change: transform;
+  /* the negative: white in difference, so what is beneath shows inverted, as on a film */
+  .vp-cur[data-neg] {
+    --ink: #fff;
+    --rim: transparent;
+    mix-blend-mode: difference;
   }
-  .vp-cur__mark,
-  .vp-cur__arm {
-    /* the whole symbol's frame (269.655 × 170) at 22 px: the second mass lands in it */
-    width: 34.9px;
-    height: 22px;
-    overflow: visible;
-    transform-origin: 0 0;
-  }
-  .vp-cur__mark {
+
+  /* 1 · the ball: a 14 px dot, its centre the pointer, with a hairline rim for photos */
+  .vp-cur__ball {
     position: absolute;
     left: 0;
     top: 0;
-    opacity: 0;
-    scale: 0;
+    display: none;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    translate: -50% -50%;
+    background: var(--ink);
+    box-shadow: 0 0 0 1px var(--rim);
     transition:
-      scale 340ms var(--ease-enter),
-      opacity 200ms var(--ease-move);
+      width 320ms var(--ease-enter),
+      height 320ms var(--ease-enter),
+      background-color 200ms var(--ease-move),
+      box-shadow 200ms var(--ease-move);
   }
-  .vp-cur:is([data-k="act"], [data-k="on"]) .vp-cur__mark {
+  .vp-cur[data-v="ball"] .vp-cur__ball {
+    display: grid;
+  }
+  /* over something that can be done: a ring around the point where the click lands */
+  .vp-cur:is([data-k="act"], [data-k="on"]) .vp-cur__ball {
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle, var(--ink) 0 2.5px, transparent 3px);
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      inset 0 0 0 2.5px var(--rim),
+      0 0 0 1px var(--rim);
+  }
+  /* over a project's picture: a disc with the word */
+  .vp-cur[data-k="tag"] .vp-cur__ball {
+    width: 88px;
+    height: 88px;
+  }
+  .vp-cur__word {
+    color: var(--rim);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 160ms var(--ease-move);
+  }
+  .vp-cur[data-k="tag"]:not([data-neg]) .vp-cur__word {
     opacity: 1;
-    scale: 1;
+    transition-delay: 140ms;
   }
-  .vp-cur[data-k="tag"] .vp-cur__mark {
-    opacity: 1;
-    scale: 1.5455; /* 34 px, the tag's height */
+  .vp-cur[data-neg] .vp-cur__ball {
+    width: 84px;
+    height: 84px;
+    background: #fff;
+    box-shadow: none;
   }
-  .vp-cur polygon,
-  .vp-cur__arm polygon {
+  .vp-cur[data-neg][data-k="tag"] .vp-cur__ball {
+    width: 112px;
+    height: 112px;
+  }
+
+  /* 2 · the symbol: the V 20 px tall, the tip of its first stroke the pointer's tip */
+  .vp-cur__logo {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: none;
+    width: 31.7px; /* the symbol's 269.655 × 170 at 20 px */
+    height: 20px;
+    overflow: visible;
+    transform-origin: 0 0;
+    transition: scale 320ms var(--ease-enter);
+  }
+  .vp-cur[data-v="logo"] .vp-cur__logo {
+    display: block;
+  }
+  .vp-cur__logo polygon {
     vector-effect: non-scaling-stroke;
     stroke-linejoin: round;
+    transition:
+      fill 200ms var(--ease-move),
+      opacity 200ms var(--ease-move);
   }
   .vp-cur__rim {
     fill: var(--rim);
     stroke: var(--rim);
-    stroke-width: 3.5px;
-    transition: fill 200ms var(--ease-move);
+    stroke-width: 3px;
   }
   .vp-cur__a {
     fill: var(--ink);
     stroke: var(--ink);
-    stroke-width: 1.5px;
-    transition: fill 200ms var(--ease-move);
+    stroke-width: 1.25px;
   }
-  /* what can be done: the outline (as a planned phase); chosen, pressed, done: solid */
-  .vp-cur[data-k="act"]:not([data-press], [data-done]) .vp-cur__rim {
+  /* over an action larger and in outline (what can be done); chosen or current: solid */
+  .vp-cur:is([data-k="act"], [data-k="on"]) .vp-cur__logo {
+    scale: 1.25;
+  }
+  .vp-cur[data-k="act"]:not([data-neg]) .vp-cur__rim {
     fill: transparent;
-    stroke-width: 4.5px;
+    stroke-width: 4px;
   }
-  .vp-cur[data-k="act"]:not([data-press], [data-done]) .vp-cur__a {
+  .vp-cur[data-k="act"]:not([data-neg]) .vp-cur__a {
     fill: transparent;
   }
-  .vp-cur__arm polygon {
-    fill: var(--ink);
-    stroke: var(--rim);
-    stroke-width: 3.5px;
-    paint-order: stroke;
+  /* over a picture: the first stroke at 34 px, the second mass gives way to the word */
+  .vp-cur[data-k="tag"] .vp-cur__logo {
+    scale: 1.7;
+  }
+  .vp-cur[data-k="tag"] .vp-cur__b {
     opacity: 0;
   }
-  /* the word, on a tag cut on the slope where the second mass would be: at 34 px the slope runs
+  .vp-cur[data-neg] .vp-cur__logo {
+    scale: 2.6;
+  }
+  /* the word, on a tag cut on the slope where the second mass was: at 34 px the slope runs
      19.93 px and the symbol's gap is 12.90 px */
   .vp-cur__tag {
     position: absolute;
     left: 31.65px;
     top: 0;
-    display: flex;
+    display: none;
     align-items: center;
     height: 34px;
     padding: 0 calc(19.93px + 0.55rem) 0 calc(19.93px + 0.3rem);
@@ -565,7 +638,10 @@
     clip-path: polygon(0 0, 0 0, 19.93px 100%, 19.93px 100%);
     transition: clip-path 420ms var(--ease-move);
   }
-  .vp-cur[data-k="tag"] .vp-cur__tag {
+  .vp-cur[data-v="logo"] .vp-cur__tag {
+    display: flex;
+  }
+  .vp-cur[data-k="tag"]:not([data-neg]) .vp-cur__tag {
     clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
   }
   /* near the right edge it opens on the stroke's other side, the same gap along the slope */
@@ -574,7 +650,7 @@
     right: -7.03px;
     clip-path: polygon(calc(100% - 19.93px) 0, calc(100% - 19.93px) 0, 100% 100%, 100% 100%);
   }
-  .vp-cur[data-flip][data-k="tag"] .vp-cur__tag {
+  .vp-cur[data-flip][data-k="tag"]:not([data-neg]) .vp-cur__tag {
     clip-path: polygon(0 0, calc(100% - 19.93px) 0, 100% 100%, 19.93px 100%);
   }
   /* a square control for icon-only buttons (previous / next) */
