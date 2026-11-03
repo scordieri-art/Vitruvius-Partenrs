@@ -1,42 +1,60 @@
 import earcut from "earcut";
 
 /**
- * «Dove operiamo» in WebGL: Italy drawn in the brand's own marks. On the navy page the land is a
- * field of small strokes of the symbol, one every few km, the way a halftone draws a picture:
- * the neighbouring countries barely there, Italy in a pale grain, the regions where the group
- * works lit up, the lakes left empty, a fine line along the coast. Every place stands as the
- * brand mark, rising from a pool of light: solid for an office, in outline for an operation. A
- * camera travels over the field as the page scrolls; where it stops, the ground around the
- * place it shows brightens, and a light follows the pointer over it, the marks under it swelling
- * and brightening. When the chapter comes into view the field prints itself from the offices
- * outwards.
+ * «Dove operiamo» in WebGL: a plaster model of Italy with its real relief. A white board with the
+ * graticule lies on the dark table of the navy page; on it the land is sculpted from the heights
+ * of the open terrain data (public/map/rilievo.png), the Alps, the Apennines and the islands
+ * standing up in a raking light, the vertical scale raised as on a model. The neighbouring
+ * countries are a shade lighter than Italy, the regions where the group works are painted navy,
+ * the lakes left flat. Every place stands as the brand mark on the ground: solid for an office, in
+ * outline for an operation. When the chapter comes into view the relief rises from the flat
+ * board, then the marks stand up one after another; a camera travels over the model as the page
+ * scrolls, or flies to a place when one is chosen (aim).
  *
- * Plain WebGL 1 (instanced arrays for the field), two small shaders, no library but earcut. The
- * cartography is the file the slab uses (public/map/italia.svg, Natural Earth), read here once
- * and rasterised onto a grid. Units are the sheet's: km, x east, y south; in the scene y is up
- * and the sheet's y is z.
+ * Plain WebGL 1, one shader, no library but earcut (triangulation of the marks). The cartography
+ * is the file the slab uses (public/map/italia.svg, Natural Earth), read here once and painted
+ * onto the heights' grid to colour the land. Units are the sheet's: km, x east, y south; in the
+ * scene y is up and the sheet's y is z.
  */
 
 type RGB = readonly [number, number, number];
 type Ring = number[];
 const rgb = (h: string): RGB => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
 
+// the white model on the navy page
 const C = {
   navy: rgb("#0a2342"),
-  paper: rgb("#fafaf9"),
+  sheet: rgb("#ffffff"),
+  sheetEdge: rgb("#d9dfe5"),
+  grat: rgb("#e3e8ec"),
+  nb: rgb("#eef1f4"),
+  it: rgb("#e2e7ec"),
+  region: rgb("#c4ced8"),
+  coast: rgb("#aebac6"),
+  // the regions of the group: navy, a touch lifted so the light can model their relief
+  op: rgb("#163a63"),
+  opEdge: rgb("#ffffff"),
+  lakeHigh: rgb("#1d3859"),
   mark: rgb("#ffffff"),
+  shadow: rgb("#020a16"),
 };
+
+/** The board's thickness, km; the relief's vertical scale (a model's: the land is not this steep). */
+export const H = { sheet: 16, exag: 6 } as const;
 
 /**
  * A camera stop: what it looks at (sheet km), how much of the sheet fits the screen's height,
  * from where, and how far right the subject sits (a lens shift, -1 to 1). With `fit`, the whole
  * sheet is framed between those two fractions of the screen's width, whatever its proportions.
- * `pool`: how brightly the ground lights up around what it looks at (0: not at all).
  */
-export type Shot = { x: number; z: number; size: number; elev: number; azim: number; shift: number; fit?: [number, number]; pool?: number };
-/** A place on the field: the mark that stands there. */
-export type MarkSpec = { key: string; x: number; z: number; y: number; kind: "office" | "project"; side: number };
+export type Shot = { x: number; z: number; size: number; elev: number; azim: number; shift: number; fit?: [number, number] };
+/** A place on the model: the mark that stands there. */
+export type MarkSpec = { key: string; x: number; z: number; kind: "office" | "project"; side: number };
 export type Project = (x: number, y: number, z: number) => [number, number, boolean];
+/** The ground's height at a point of the sheet, km, as the model stands now. */
+export type Ground = (x: number, z: number) => number;
+/** The heights: one sample every `step` km over the sheet, metres (from public/map/rilievo.png). */
+export type Relief = { w: number; h: number; step: number; m: Float32Array };
 export type Scene = {
   /** where the scroll is: t from 0 (first stop) to n - 1, and how far the section has come in (0–1) */
   set(t: number, enter: number): void;
@@ -44,14 +62,26 @@ export type Scene = {
   rise(keys: string[], stagger?: number): void;
   /** one place lit, the others dimmed; null: all alike */
   light(keys: string[] | null): void;
-  /** where the pointer is over the canvas, CSS px (the light follows it); null: gone */
-  pointer(x: number | null, y?: number): void;
   /** the camera taken to a shot of its own, over `ms`, whatever the scroll; null: back to the scroll's */
   aim(shot: Shot | null, ms?: number): void;
   visible(on: boolean): void;
   resize(): void;
   destroy(): void;
 };
+
+/** The heights in the PNG: red the high byte, green the low one, metres plus 500. */
+export function readRelief(img: HTMLImageElement, step: number): Relief | null {
+  const cv = document.createElement("canvas");
+  cv.width = img.naturalWidth;
+  cv.height = img.naturalHeight;
+  const ctx = cv.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return null;
+  ctx.drawImage(img, 0, 0);
+  const d = ctx.getImageData(0, 0, cv.width, cv.height).data;
+  const m = new Float32Array(cv.width * cv.height);
+  for (let i = 0; i < m.length; i++) m[i] = d[i * 4] * 256 + d[i * 4 + 1] - 500;
+  return { w: cv.width, h: cv.height, step, m };
+}
 
 // ---------------------------------------------------------------- the map file
 
@@ -77,66 +107,7 @@ const rings = (d: string | undefined): Ring[] =>
     })
     .filter((r) => r.length >= 6);
 
-// ---------------------------------------------------------------- the field of marks
-
-/** km between two marks of the field; every other row is shifted by half of it */
-const STEP = 4.5;
-/** the classes of ground a mark stands on, as the shader reads them */
-const NB = 1, IT = 2, OP = 3;
-
-/**
- * The marks of the field: the grid over the sheet, each sample classed by the land under it
- * (painted onto a canvas, one pixel per sample: a neighbour, Italy, a region where the group
- * works; lakes cut out), and how far it lies from `origin`, 0 to 1, for the field to print
- * itself from there. Four floats a mark: x, z, class, distance.
- */
-function field(P: Record<string, string>, sheet: { x: number; y: number; w: number; h: number }, areas: string[], origin: [number, number]) {
-  const cols = Math.ceil(sheet.w / STEP), rows = Math.ceil(sheet.h / STEP);
-  const W = cols * 2; // two pixels per column: a shifted row samples the second
-  const cv = document.createElement("canvas");
-  cv.width = W;
-  cv.height = rows;
-  const ctx = cv.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return new Float32Array(0);
-  const paint = (ids: string[], cut: string[]) => {
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, W, rows);
-    ctx.setTransform(2 / STEP, 0, 0, 1 / STEP, (-sheet.x * 2) / STEP, -sheet.y / STEP);
-    ctx.fillStyle = "#fff";
-    for (const id of ids) if (P[id]) ctx.fill(new Path2D(P[id]));
-    ctx.globalCompositeOperation = "destination-out";
-    for (const id of cut) if (P[id]) ctx.fill(new Path2D(P[id]));
-    ctx.globalCompositeOperation = "source-over";
-    return ctx.getImageData(0, 0, W, rows).data;
-  };
-  const nb = paint(["neighbours"], ["lakes"]);
-  const it = paint(["italy"], ["lakes"]);
-  const op = paint(
-    areas.map((a) => `r-${a}`),
-    ["lakes", ...areas.map((a) => `lakes-${a}`)],
-  );
-  const out: number[] = [];
-  let far = 1;
-  for (let j = 0; j < rows; j++)
-    for (let i = 0; i < cols; i++) {
-      const q = 2 * i + (j % 2);
-      const k = (j * W + q) * 4 + 3;
-      const cls = op[k] > 127 ? OP : it[k] > 127 ? IT : nb[k] > 127 ? NB : 0;
-      if (!cls) continue;
-      const x = sheet.x + (q + 0.5) * (STEP / 2), z = sheet.y + (j + 0.5) * STEP;
-      const d = Math.hypot(x - origin[0], z - origin[1]);
-      far = Math.max(far, d);
-      out.push(x, z, cls, d);
-    }
-  for (let i = 3; i < out.length; i += 4) out[i] /= far;
-  return new Float32Array(out);
-}
-
-/** The mark of the field, one unit tall, centred, flat on the ground: the symbol's stroke seen from above, north up. */
-const MW = 93.793 / 170, MS = 99.655 / 170, MC = (MW + MS) / 2;
-const CORNERS = new Float32Array([-MC, -0.5, -MC + MW, -0.5, MC, 0.5, -MC, -0.5, MC, 0.5, MC - MW, 0.5]);
-
-// ---------------------------------------------------------------- solids and lines
+// ---------------------------------------------------------------- geometry
 
 const area = (r: Ring) => {
   let s = 0;
@@ -146,6 +117,26 @@ const area = (r: Ring) => {
   }
   return s / 2;
 };
+
+/** Outward unit normals of a ring: per edge, or per vertex (the mean of its two edges) for a smooth wall. */
+function normals(r: Ring, smooth: boolean) {
+  const n = r.length / 2;
+  const s = area(r) > 0 ? 1 : -1;
+  const e: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const dx = r[2 * j] - r[2 * i], dz = r[2 * j + 1] - r[2 * i + 1], l = Math.hypot(dx, dz) || 1;
+    e.push((s * dz) / l, (-s * dx) / l);
+  }
+  if (!smooth) return e;
+  const v: number[] = [];
+  for (let i = 0; i < n; i++) {
+    const h = (i + n - 1) % n;
+    const x = e[2 * h] + e[2 * i], z = e[2 * h + 1] + e[2 * i + 1], l = Math.hypot(x, z) || 1;
+    v.push(x / l, z / l);
+  }
+  return v;
+}
 
 /** Interleaved vertices: position, normal, colour with alpha. */
 class Buf {
@@ -158,26 +149,168 @@ class Buf {
   }
 }
 
-function lines(b: Buf, rs: Ring[], y: number, c: RGB, al: number, closed: boolean) {
+/** The board: its top just under the relief, its walls down to y0. */
+function board(b: Buf, r: Ring, y0: number, y1: number) {
+  for (const i of earcut(r)) b.v(r[2 * i], y1, r[2 * i + 1], 0, 1, 0, C.sheet);
+  const nn = normals(r, false);
+  const n = r.length / 2;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    const ax = r[2 * i], az = r[2 * i + 1], bx = r[2 * j], bz = r[2 * j + 1], nx = nn[2 * i], nz = nn[2 * i + 1];
+    b.v(ax, y0, az, nx, 0, nz, C.sheetEdge);
+    b.v(bx, y0, bz, nx, 0, nz, C.sheetEdge);
+    b.v(bx, y1, bz, nx, 0, nz, C.sheetEdge);
+    b.v(ax, y0, az, nx, 0, nz, C.sheetEdge);
+    b.v(bx, y1, bz, nx, 0, nz, C.sheetEdge);
+    b.v(ax, y1, az, nx, 0, nz, C.sheetEdge);
+  }
+}
+
+/** Lines over the model: each vertex at the height of the ground under it (`y` for flat ones). */
+function lines(b: Buf, rs: Ring[], y: (x: number, z: number) => number, c: RGB, closed: boolean, al = 1) {
   for (const r of rs) {
     const n = r.length / 2;
     for (let i = 0; i < n - (closed ? 0 : 1); i++) {
       const j = (i + 1) % n;
-      b.v(r[2 * i], y, r[2 * i + 1], 0, 1, 0, c, al);
-      b.v(r[2 * j], y, r[2 * j + 1], 0, 1, 0, c, al);
+      b.v(r[2 * i], y(r[2 * i], r[2 * i + 1]), r[2 * i + 1], 0, 1, 0, c, al);
+      b.v(r[2 * j], y(r[2 * j], r[2 * j + 1]), r[2 * j + 1], 0, 1, 0, c, al);
     }
   }
 }
 
-/** A pool of light on the ground, one unit wide: bright at the centre, nothing at the rim. */
-function pool(b: Buf, al: number) {
-  const n = 40;
+/** A soft shadow along a ring: a band reaching out w km, from alpha a0 at the wall to nothing, shifted by (dx, dz) away from the light. */
+function shade(b: Buf, r: Ring, y: number, w: number, a0: number, dx = 0, dz = 0) {
+  const nn = normals(r, true);
+  const n = r.length / 2;
+  const out = (i: number): [number, number] => [r[2 * i] + nn[2 * i] * w + dx, r[2 * i + 1] + nn[2 * i + 1] * w + dz];
   for (let i = 0; i < n; i++) {
-    const a0 = (i / n) * Math.PI * 2, a1 = ((i + 1) / n) * Math.PI * 2;
-    b.v(0, 0, 0, 0, 1, 0, C.mark, al);
-    b.v(Math.cos(a0), 0, Math.sin(a0), 0, 1, 0, C.mark, 0);
-    b.v(Math.cos(a1), 0, Math.sin(a1), 0, 1, 0, C.mark, 0);
+    const j = (i + 1) % n;
+    const [ox, oz] = out(i), [px, pz] = out(j);
+    const ix = r[2 * i] + dx * 0.4, iz = r[2 * i + 1] + dz * 0.4, jx = r[2 * j] + dx * 0.4, jz = r[2 * j + 1] + dz * 0.4;
+    b.v(ix, y, iz, 0, 1, 0, C.shadow, a0);
+    b.v(jx, y, jz, 0, 1, 0, C.shadow, a0);
+    b.v(px, y, pz, 0, 1, 0, C.shadow, 0);
+    b.v(ix, y, iz, 0, 1, 0, C.shadow, a0);
+    b.v(px, y, pz, 0, 1, 0, C.shadow, 0);
+    b.v(ox, y, oz, 0, 1, 0, C.shadow, 0);
   }
+}
+
+// the ground's classes, as painted from the map file onto the heights' grid
+const SEA = 0, NB = 1, IT = 2, OP = 3, LAKE = 4, OPLAKE = 5;
+
+/**
+ * The relief as one mesh over the sheet: a vertex every `k` samples of the heights, coloured by
+ * the land under it (painted from the map file: a neighbour, Italy, a region of the group, a
+ * lake; the sea flat at zero), its normal from the slopes around it. Indexed, 16-bit when it fits.
+ */
+function terrain(R: Relief, P: Record<string, string>, areas: string[], sheet: { x: number; y: number }, k: number) {
+  const W = Math.floor((R.w - 1) / k) + 1, Hh = Math.floor((R.h - 1) / k) + 1;
+  // the classes, one pixel per vertex
+  const cv = document.createElement("canvas");
+  cv.width = W;
+  cv.height = Hh;
+  const ctx = cv.getContext("2d", { willReadFrequently: true })!;
+  const s = R.step * k;
+  const paint = (ids: string[]) => {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, W, Hh);
+    // a vertex sits on its sample's centre: half a step in from the sheet's corner
+    ctx.setTransform(1 / s, 0, 0, 1 / s, -(sheet.x + R.step / 2) / s + 0.5, -(sheet.y + R.step / 2) / s + 0.5);
+    ctx.fillStyle = "#fff";
+    for (const id of ids) if (P[id]) ctx.fill(new Path2D(P[id]));
+    return ctx.getImageData(0, 0, W, Hh).data;
+  };
+  const nb = paint(["neighbours"]);
+  const it = paint(["italy"]);
+  const op = paint(areas.map((a) => `r-${a}`));
+  const lk = paint(["lakes"]);
+  const olk = paint(areas.map((a) => `lakes-${a}`));
+  const cls = new Uint8Array(W * Hh);
+  for (let i = 0; i < cls.length; i++) {
+    const a = (d: Uint8ClampedArray) => d[i * 4 + 3] > 127;
+    cls[i] = a(olk) ? OPLAKE : a(op) ? OP : a(lk) && (a(it) || a(nb)) ? LAKE : a(it) ? IT : a(nb) ? NB : SEA;
+  }
+  // heights, km on the model: the sea and the lakes flat; smoothed twice (1-2-1 each way), so
+  // the relief reads as cast plaster, not as the samples' steps
+  let y = new Float32Array(W * Hh);
+  for (let j = 0; j < Hh; j++)
+    for (let i = 0; i < W; i++) {
+      const c = cls[j * W + i];
+      y[j * W + i] = c === SEA || c === LAKE || c === OPLAKE ? 0 : Math.max(0.05, (R.m[j * k * R.w + i * k] / 1000) * H.exag);
+    }
+  const flat = (v: number) => cls[v] === SEA || cls[v] === LAKE || cls[v] === OPLAKE;
+  for (let pass = 0; pass < 2; pass++)
+    for (const dir of [1, W]) {
+      const o = new Float32Array(y);
+      for (let v = 0; v < y.length; v++) {
+        if (flat(v)) continue;
+        const a = v - dir >= 0 ? y[v - dir] : y[v], b = v + dir < y.length ? y[v + dir] : y[v];
+        o[v] = Math.max(0.05, (a + 2 * y[v] + b) / 4);
+      }
+      y = o;
+    }
+  const pos = new Float32Array(W * Hh * 10);
+  const at = (i: number, j: number) => y[Math.min(Hh - 1, Math.max(0, j)) * W + Math.min(W - 1, Math.max(0, i))];
+  for (let j = 0; j < Hh; j++)
+    for (let i = 0; i < W; i++) {
+      const v = j * W + i, o = v * 10;
+      const nx = (at(i - 1, j) - at(i + 1, j)) / (2 * s), nz = (at(i, j - 1) - at(i, j + 1)) / (2 * s), l = Math.hypot(nx, 1, nz);
+      // the colour comes from the map texture (cartography); the vertex carries white
+      pos.set([sheet.x + R.step / 2 + i * s, y[v], sheet.y + R.step / 2 + j * s, nx / l, 1 / l, nz / l, 1, 1, 1, 1], o);
+    }
+  const n = (W - 1) * (Hh - 1) * 6;
+  const idx = W * Hh > 65535 ? new Uint32Array(n) : new Uint16Array(n);
+  let q = 0;
+  for (let j = 0; j < Hh - 1; j++)
+    for (let i = 0; i < W - 1; i++) {
+      const a = j * W + i, b = a + 1, c = a + W, d = c + 1;
+      idx[q++] = a;
+      idx[q++] = c;
+      idx[q++] = b;
+      idx[q++] = b;
+      idx[q++] = c;
+      idx[q++] = d;
+    }
+  // the ground's height at any point, bilinear between the vertices
+  const ground: Ground = (x, z) => {
+    const fx = (x - sheet.x - R.step / 2) / s, fz = (z - sheet.y - R.step / 2) / s;
+    const i = Math.floor(fx), j = Math.floor(fz), u = fx - i, w = fz - j;
+    return (at(i, j) * (1 - u) + at(i + 1, j) * u) * (1 - w) + (at(i, j + 1) * (1 - u) + at(i + 1, j + 1) * u) * w;
+  };
+  return { pos, idx, ground };
+}
+
+/**
+ * The cartography laid on the relief: the land's colours painted from the map file onto a canvas,
+ * `res` km a pixel (sea white, the neighbours and Italy in two pale greys, the group's regions
+ * navy, the lakes flat), sampled per pixel so the borders stay clean however close the camera.
+ */
+function mapTexture(P: Record<string, string>, areas: string[], sheet: { x: number; y: number; w: number; h: number }, res: number) {
+  const cv = document.createElement("canvas");
+  cv.width = Math.round(sheet.w / res);
+  cv.height = Math.round(sheet.h / res);
+  const ctx = cv.getContext("2d")!;
+  const hex = (c: RGB) => `rgb(${c.map((v) => Math.round(v * 255)).join(",")})`;
+  ctx.fillStyle = hex(C.sheet);
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(1 / res, 0, 0, 1 / res, -sheet.x / res, -sheet.y / res);
+  const fill = (ids: string[], c: RGB) => {
+    ctx.fillStyle = hex(c);
+    for (const id of ids) if (P[id]) ctx.fill(new Path2D(P[id]));
+  };
+  fill(["neighbours"], C.nb);
+  fill(["italy"], C.it);
+  fill(["lakes"], C.sheet);
+  fill(
+    areas.map((a) => `r-${a}`),
+    C.op,
+  );
+  fill(
+    areas.map((a) => `lakes-${a}`),
+    C.lakeHigh,
+  );
+  return cv;
 }
 
 // the brand's primary mass, one unit tall, standing on the midpoint of its foot: it leans on the slope (0.5862)
@@ -261,67 +394,9 @@ function model(x: number, y: number, z: number, sx: number, sy: number, sz: numb
 }
 const IDENTITY = model(0, 0, 0, 1, 1, 1);
 
-// ---------------------------------------------------------------- shaders
+// ---------------------------------------------------------------- shader
 
-const PRECISION = `
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-precision highp float;
-#else
-precision mediump float;
-#endif`;
-
-/** the field: a mark per instance, its strength from its ground, the print front, the pool of light and the distance */
-const FIELD_VS = `
-attribute vec2 aCorner;
-attribute vec4 aInst;
-uniform mat4 uVP;
-uniform vec3 uEye;
-uniform vec2 uFogR;
-uniform float uSize;
-uniform float uFront;
-uniform vec4 uPool;
-uniform vec4 uCursor;
-uniform vec4 uSheet;
-uniform float uZoom;
-varying float vA;
-void main() {
-  // the print front: a mark grows from a dot as it passes
-  float r = smoothstep(aInst.w - 0.06, aInst.w + 0.06, uFront);
-  // under the pointer's light a mark swells a little
-  float h = uCursor.w * (1.0 - smoothstep(0.0, uCursor.z, distance(aInst.xy, uCursor.xy)));
-  vec2 c = aInst.xy + aCorner * uSize * mix(0.2, 1.0, r) * (1.0 + h * 0.45);
-  vec3 p = vec3(c.x, 0.0, c.y);
-  float cls = aInst.z;
-  // seen whole, the lit regions and Italy carry more of their light (their marks are tiny then)
-  float far = smoothstep(300.0, 1200.0, uZoom);
-  float a = cls > 2.5 ? mix(0.3, 0.62, far) : (cls > 1.5 ? mix(0.15, 0.24, far) : 0.045);
-  // the ground around the place in view lights up, most near its middle
-  float d = distance(aInst.xy, uPool.xy) / uPool.z;
-  float lit = uPool.w * (1.0 - smoothstep(0.0, 1.0, d)) * (0.55 + 0.45 * (1.0 - smoothstep(0.0, 0.35, d)));
-  a += lit * (cls > 2.5 ? 0.62 : (cls > 1.5 ? 0.3 : 0.06));
-  a += h * (cls > 2.5 ? 0.55 : (cls > 1.5 ? 0.5 : 0.14));
-  // far away the field sinks into the navy; right under the camera it softens too, a depth of field
-  float de = distance(p, uEye);
-  a *= (1.0 - smoothstep(uFogR.x, uFogR.y, de)) * mix(0.35, 1.0, smoothstep(uFogR.x * 0.5, uFogR.x * 0.82, de));
-  // no edge to the sheet: the field fades out towards it
-  vec2 e = min(aInst.xy - uSheet.xy, uSheet.zw - aInst.xy);
-  a *= smoothstep(0.0, 90.0, min(e.x, e.y));
-  vA = a * r;
-  gl_Position = uVP * vec4(p, 1.0);
-}`;
-const FIELD_FS = `${PRECISION}
-varying float vA;
-uniform vec3 uCol;
-uniform vec3 uRes;
-void main() {
-  // the light falls off towards the edges of the frame
-  vec2 q = gl_FragCoord.xy / uRes.xy - 0.5;
-  q.x *= uRes.x / uRes.y;
-  gl_FragColor = vec4(uCol, vA * (1.0 - smoothstep(0.45, 1.2, length(q)) * uRes.z));
-}`;
-
-/** lines, pools and the standing marks */
-const SOLID_VS = `
+const VS = `
 attribute vec3 aPos;
 attribute vec3 aNor;
 attribute vec4 aCol;
@@ -329,89 +404,119 @@ uniform mat4 uVP;
 uniform mat4 uM;
 uniform vec3 uL;
 uniform float uLift;
+uniform float uRise;
+uniform vec4 uMapRect;
 varying vec4 vCol;
+varying float vS;
 varying vec3 vPos;
+varying vec2 vUV;
 void main() {
-  vec4 w = uM * vec4(aPos, 1.0);
-  vec3 n = normalize((uM * vec4(aNor, 0.0)).xyz);
-  // tops keep their colour exactly; faces turned from the light darken
-  float s = (0.56 + 0.44 * max(dot(n, uL), 0.0)) / (0.56 + 0.44 * uL.y);
-  vCol = vec4(aCol.rgb * min(s + uLift, 1.0), aCol.a);
+  // the relief rises from the board: heights above it scaled, the slopes with them
+  vec3 p = vec3(aPos.x, aPos.y > 0.0 ? aPos.y * uRise : aPos.y, aPos.z);
+  vec4 w = uM * vec4(p, 1.0);
+  vec3 n = normalize((uM * vec4(aNor.x * uRise, aNor.y, aNor.z * uRise, 0.0)).xyz);
+  // flat ground keeps its colour exactly; slopes turned from the light darken, those towards it brighten a little
+  vS = min((0.5 + 0.5 * max(dot(n, uL), 0.0)) / (0.5 + 0.5 * uL.y) + uLift, 1.12);
+  vCol = aCol;
   vPos = w.xyz;
+  vUV = (w.xz - uMapRect.xy) / uMapRect.zw;
   gl_Position = uVP * w;
 }`;
-const SOLID_FS = `${PRECISION}
+const FS = `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
 varying vec4 vCol;
+varying float vS;
 varying vec3 vPos;
+varying vec2 vUV;
 uniform vec3 uEye;
 uniform vec3 uFog;
 uniform vec2 uFogR;
 uniform vec3 uRes;
 uniform float uDim;
-uniform float uAlpha;
+uniform float uUseMap;
+uniform sampler2D uMap;
 void main() {
-  vec3 c = mix(vCol.rgb, uFog, uDim);
-  // far away and towards the edges of the frame everything sinks into the navy: a solid by its
-  // colour, a line or a pool of light by its strength
+  // the relief takes its colour from the map laid on it, everything else from its vertices
+  vec3 base = mix(vCol.rgb, texture2D(uMap, clamp(vUV, 0.0, 1.0)).rgb, uUseMap);
+  vec3 c = mix(min(base * vS, vec3(1.0)), uFog, uDim);
+  // far away the model sinks into the navy, and the light falls off towards the edges of the frame
+  c = mix(c, uFog, smoothstep(uFogR.x, uFogR.y, distance(vPos, uEye)));
   vec2 q = gl_FragCoord.xy / uRes.xy - 0.5;
   q.x *= uRes.x / uRes.y;
-  float f = max(smoothstep(uFogR.x, uFogR.y, distance(vPos, uEye)), smoothstep(0.45, 1.2, length(q)) * uRes.z);
-  gl_FragColor = vec4(mix(c, uFog, f), vCol.a * uAlpha * (vCol.a < 1.0 ? 1.0 - f : 1.0));
+  c = mix(c, uFog, smoothstep(0.45, 1.2, length(q)) * uRes.z);
+  gl_FragColor = vec4(c, vCol.a);
 }`;
 
 // ---------------------------------------------------------------- scene
 
 const DEG = Math.PI / 180;
 const FOV = 30 * DEG;
-/** how long the field takes to print itself, ms */
-const PRINT = 2400;
+/** how long the relief takes to rise from the board, ms */
+const RAISE = 1800;
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 const ease = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
 
 export function createScene({
   canvas,
   svg,
+  relief,
   sheet,
   areas,
+  grid,
   marks,
   shots,
+  fine = true,
   onFrame,
   onLost,
 }: {
   canvas: HTMLCanvasElement;
   svg: string;
+  relief: Relief;
   /** the sheet, km: x, y (south), width, height */
   sheet: { x: number; y: number; w: number; h: number };
-  /** regions lit up, as named in the map file (r-<name>) */
+  /** regions painted navy, as named in the map file (r-<name>) */
   areas: string[];
+  /** graticule: x of each meridian, z of each parallel */
+  grid: { x: number[]; z: number[] };
   marks: MarkSpec[];
   shots: Shot[];
-  /** after each frame: place the HTML labels; mh is the marks' height, km */
-  onFrame: (project: Project, mh: number) => void;
+  /** every height sample a vertex (false: one in two, for a lighter mesh) */
+  fine?: boolean;
+  /** after each frame: place the HTML labels; mh is the marks' height, km; ground the land's height */
+  onFrame: (project: Project, mh: number, ground: Ground) => void;
   onLost: () => void;
 }): Scene | null {
   const gl = canvas.getContext("webgl", { antialias: true, alpha: false, depth: true, stencil: false, powerPreference: "default" });
   if (!gl) return null;
-  const inst = gl.getExtension("ANGLE_instanced_arrays");
-  if (!inst) return null;
+  const big = gl.getExtension("OES_element_index_uint");
 
-  // the field prints itself from the offices (their middle), else from the first place
-  const offices = marks.filter((m) => m.kind === "office");
-  const from = offices.length ? offices : marks.slice(0, 1);
-  const origin: [number, number] = from.length ? [from.reduce((s, m) => s + m.x, 0) / from.length, from.reduce((s, m) => s + m.z, 0) / from.length] : [0, 0];
+  // the model
   const P = paths(svg);
-  const F = field(P, sheet, areas, origin);
-  const count = F.length / 4;
+  const T = terrain(relief, P, areas, sheet, fine && big ? 1 : 2);
+  const x0 = sheet.x, x1 = sheet.x + sheet.w, z0 = sheet.y, z1 = sheet.y + sheet.h;
+  const edge: Ring = [x0, z0, x1, z0, x1, z1, x0, z1];
+  const solid = new Buf();
+  board(solid, edge, -H.sheet, -0.02);
 
-  // the lines: Italy's coast, the lit regions' edges, the other borders faint (the neighbours
-  // have none: cut at the sheet's edge, theirs would draw its frame)
+  // lines draped on the relief: the graticule on the sea, the borders and coasts over the land
   const line = new Buf();
-  lines(line, rings(P.regions), 0.02, C.paper, 0.08, false);
-  lines(line, rings(P.italy), 0.03, C.paper, 0.4, true);
-  lines(line, areas.flatMap((a) => rings(P[`r-${a}`])), 0.04, C.paper, 0.5, true);
+  const flatY = () => 0.03;
+  const onGround = (x: number, z: number) => T.ground(x, z) + 0.12;
+  lines(line, grid.x.map((x) => [x, z0, x, z1]), flatY, C.grat, false);
+  lines(line, grid.z.map((z) => [x0, z, x1, z]), flatY, C.grat, false);
+  lines(line, rings(P.regions), onGround, C.region, false);
+  lines(line, rings(P.italy), onGround, C.coast, true);
+  lines(line, areas.flatMap((a) => rings(P[`r-${a}`])), onGround, C.opEdge, true, 0.55);
 
-  const pools = new Buf();
-  pool(pools, 0.3);
+  // the board's soft shadow on the table
+  const soft = new Buf();
+  shade(soft, edge, -H.sheet - 0.2, 70, 0.55, 26, 34);
+  shade(soft, edge, -H.sheet - 0.1, 22, 0.35, 8, 10);
+
   const markSolid = new Buf();
   mark(markSolid, false, 0.26);
   const markFrame = new Buf();
@@ -424,78 +529,83 @@ export function createScene({
     gl.compileShader(s);
     return s;
   };
-  const program = (vs: string, fs: string) => {
-    const p = gl.createProgram()!;
-    gl.attachShader(p, compile(gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(p);
-    return gl.getProgramParameter(p, gl.LINK_STATUS) ? p : null;
+  const prog = gl.createProgram()!;
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, VS));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FS));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return null;
+  gl.useProgram(prog);
+  const at = { pos: gl.getAttribLocation(prog, "aPos"), nor: gl.getAttribLocation(prog, "aNor"), col: gl.getAttribLocation(prog, "aCol") };
+  const un = (n: string) => gl.getUniformLocation(prog, n);
+  const u = {
+    vp: un("uVP"),
+    m: un("uM"),
+    eye: un("uEye"),
+    l: un("uL"),
+    lift: un("uLift"),
+    rise: un("uRise"),
+    fog: un("uFog"),
+    fogR: un("uFogR"),
+    res: un("uRes"),
+    dim: un("uDim"),
+    mapRect: un("uMapRect"),
+    useMap: un("uUseMap"),
+    map: un("uMap"),
   };
-  const fieldProg = program(FIELD_VS, FIELD_FS);
-  const solidProg = program(SOLID_VS, SOLID_FS);
-  if (!fieldProg || !solidProg) return null;
-  const fa = { corner: gl.getAttribLocation(fieldProg, "aCorner"), inst: gl.getAttribLocation(fieldProg, "aInst") };
-  const sa = { pos: gl.getAttribLocation(solidProg, "aPos"), nor: gl.getAttribLocation(solidProg, "aNor"), col: gl.getAttribLocation(solidProg, "aCol") };
-  const fu = (n: string) => gl.getUniformLocation(fieldProg, n);
-  const su = (n: string) => gl.getUniformLocation(solidProg, n);
-  const U = {
-    f: { vp: fu("uVP"), eye: fu("uEye"), fogR: fu("uFogR"), size: fu("uSize"), front: fu("uFront"), pool: fu("uPool"), cursor: fu("uCursor"), col: fu("uCol"), res: fu("uRes"), sheet: fu("uSheet"), zoom: fu("uZoom") },
-    s: { vp: su("uVP"), m: su("uM"), l: su("uL"), lift: su("uLift"), eye: su("uEye"), fog: su("uFog"), fogR: su("uFogR"), res: su("uRes"), dim: su("uDim"), alpha: su("uAlpha") },
-  };
+  // the cartography as a texture (no mipmaps: its size is not a power of two)
+  const tex = gl.createTexture()!;
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mapTexture(P, areas, sheet, fine ? 0.75 : 1.25));
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.uniform1i(u.map, 0);
+  gl.uniform4f(u.mapRect, sheet.x, sheet.y, sheet.w, sheet.h);
+  gl.uniform1f(u.useMap, 0);
   const upload = (data: Float32Array) => {
     const buf = gl.createBuffer()!;
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     return buf;
   };
-  const solid = (b: Buf) => ({ buf: upload(new Float32Array(b.a)), n: b.n });
-  const G = { corners: upload(CORNERS), field: upload(F), line: solid(line), glow: solid(pools), markSolid: solid(markSolid), markFrame: solid(markFrame) };
-
-  // the light on the standing marks: high, from the front left, so the faces towards the camera stay bright
-  const Lx = -0.48, Ly = 0.78, Lz = 0.4, Ll = Math.hypot(Lx, Ly, Lz);
-  gl.useProgram(solidProg);
-  gl.uniform3f(U.s.l, Lx / Ll, Ly / Ll, Lz / Ll);
-  gl.uniform3f(U.s.fog, C.navy[0], C.navy[1], C.navy[2]);
-  gl.useProgram(fieldProg);
-  gl.uniform3f(U.f.col, C.paper[0], C.paper[1], C.paper[2]);
-  gl.uniform4f(U.f.sheet, sheet.x, sheet.y, sheet.x + sheet.w, sheet.y + sheet.h);
-  gl.clearColor(C.navy[0], C.navy[1], C.navy[2], 1);
-
-  const startSolid = () => {
-    gl.useProgram(solidProg);
-    gl.enableVertexAttribArray(sa.pos);
-    gl.enableVertexAttribArray(sa.nor);
-    gl.enableVertexAttribArray(sa.col);
-  };
-  const bindSolid = (g: { buf: WebGLBuffer }) => {
+  const geo = (b: Buf) => ({ buf: upload(new Float32Array(b.a)), n: b.n });
+  const G = { solid: geo(solid), line: geo(line), soft: geo(soft), markSolid: geo(markSolid), markFrame: geo(markFrame) };
+  const land = { buf: upload(T.pos), idx: gl.createBuffer()!, n: T.idx.length, type: T.idx instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT };
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, land.idx);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, T.idx, gl.STATIC_DRAW);
+  const bind = (g: { buf: WebGLBuffer }) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, g.buf);
-    gl.vertexAttribPointer(sa.pos, 3, gl.FLOAT, false, 40, 0);
-    gl.vertexAttribPointer(sa.nor, 3, gl.FLOAT, false, 40, 12);
-    gl.vertexAttribPointer(sa.col, 4, gl.FLOAT, false, 40, 24);
+    gl.vertexAttribPointer(at.pos, 3, gl.FLOAT, false, 40, 0);
+    gl.vertexAttribPointer(at.nor, 3, gl.FLOAT, false, 40, 12);
+    gl.vertexAttribPointer(at.col, 4, gl.FLOAT, false, 40, 24);
   };
+  gl.enableVertexAttribArray(at.pos);
+  gl.enableVertexAttribArray(at.nor);
+  gl.enableVertexAttribArray(at.col);
+  // the light: low, from the west and a little in front, raking across the relief so the slopes
+  // that face the camera stay bright and the ridges cast their side into shade
+  const Lx = -0.72, Ly = 0.52, Lz = 0.46, Ll = Math.hypot(Lx, Ly, Lz);
+  gl.uniform3f(u.l, Lx / Ll, Ly / Ll, Lz / Ll);
+  gl.uniform3f(u.fog, C.navy[0], C.navy[1], C.navy[2]);
+  gl.clearColor(C.navy[0], C.navy[1], C.navy[2], 1);
+  gl.enable(gl.DEPTH_TEST);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // state
   let t = 0, enter = 1, on = true, raf = 0, W = 1, Hh = 1;
-  let printed = -1; // when the field began to print itself (ms), -1 before
+  let raised = -1; // when the relief began to rise (ms), -1 before
   let lit: string[] | null = null;
-  // the pointer over the canvas (CSS px), and how bright its light is now (0–1)
-  let ptr: [number, number] | null = null;
-  let glow = 0;
   const up = new Map<string, { from: number; t0: number }>();
   const dims = new Map<string, number>(marks.map((m) => [m.key, 0]));
 
   // a framed stop: the sheet's width within its share of the screen (a margin for the perspective)
-  const resolve = (s: Shot): Shot => {
+  type View = Omit<Shot, "fit">;
+  const resolve = (s: Shot): View => {
     if (!s.fit) return s;
     const [l, r] = s.fit;
     return { ...s, size: Math.max(s.size, (sheet.w * Hh) / ((r - l) * W * 0.92)), shift: l + r - 1 };
   };
-  type View = Required<Omit<Shot, "fit">>;
-  const pin = (s: Shot): View => {
-    const r = resolve(s);
-    return { x: r.x, z: r.z, size: r.size, elev: r.elev, azim: r.azim, shift: r.shift, pool: s.pool ?? 0 };
-  };
-  /** between two views: the size on a log scale, the light dimmer on the way */
   const between = (a: View, b: View, s: number): View => ({
     x: lerp(a.x, b.x, s),
     z: lerp(a.z, b.z, s),
@@ -503,14 +613,13 @@ export function createScene({
     elev: lerp(a.elev, b.elev, s),
     azim: lerp(a.azim, b.azim, s),
     shift: lerp(a.shift, b.shift, s),
-    pool: lerp(a.pool, b.pool, s) * (1 - Math.sin(s * Math.PI) * 0.6),
   });
   const shotAt = (time: number): View => {
-    if (shots.length === 1) return pin(shots[0]);
+    if (shots.length === 1) return resolve(shots[0]);
     const k = Math.min(Math.floor(time), shots.length - 2);
     // each stop holds a little before the camera moves on
     const s = ease(Math.min(1, Math.max(0, (time - k - 0.12) / 0.76)));
-    return between(pin(shots[k]), pin(shots[k + 1]), s);
+    return between(resolve(shots[k]), resolve(shots[k + 1]), s);
   };
   // a shot of its own (aim): where the camera set off from, where it goes (null: back to the scroll's), since when
   let flight: { from: View; to: View | null; t0: number; ms: number } | null = null;
@@ -527,128 +636,97 @@ export function createScene({
       else if (!flight.to) flight = null;
     }
     last = sh;
-    // coming in, the field is seen from higher up, then settles on the slope
+    // the relief rising from the board (an ease out), flat before the chapter comes in; seen
+    // close, its vertical scale eases down, as a model's would to stay readable
+    const rk = raised < 0 ? 0 : Math.min(1, (now - raised) / RAISE);
+    const near = Math.min(1, Math.max(0, (sh.size - 220) / (1200 - 220)));
+    const rise = (0.02 + 0.98 * (1 - Math.pow(1 - rk, 3))) * (0.42 + 0.58 * near * near * (3 - 2 * near));
+    if (raised >= 0 && rk < 1) moving = true;
+    const ground: Ground = (x, z) => T.ground(x, z) * rise;
+
+    // coming in, the model is seen from higher up, then settles on the slope
     const elev = lerp(78, sh.elev, enter) * DEG, azim = sh.azim * DEG;
     const dist = sh.size / (2 * Math.tan(FOV / 2));
-    const eye = [sh.x + dist * Math.cos(elev) * Math.sin(azim), dist * Math.sin(elev), sh.z + dist * Math.cos(elev) * Math.cos(azim)];
+    const ty = ground(sh.x, sh.z) * 0.6;
+    const eye = [sh.x + dist * Math.cos(elev) * Math.sin(azim), ty + dist * Math.sin(elev), sh.z + dist * Math.cos(elev) * Math.cos(azim)];
     const vp = mul(perspective(FOV, W / Hh, dist * 0.05, dist * 8, sh.shift), view(eye, azim, elev));
-    const front = printed < 0 ? 0 : Math.min(1.12, ((now - printed) / PRINT) * 1.12);
-    if (printed >= 0 && front < 1.12) moving = true;
-    // the pointer's light: on the ground under it, through the camera as it stands now
-    glow = Math.abs((ptr ? 1 : 0) - glow) < 0.01 ? (ptr ? 1 : 0) : lerp(glow, ptr ? 1 : 0, 0.18);
-    if (glow !== (ptr ? 1 : 0)) moving = true;
-    let cur: [number, number] = [0, 0];
-    if (ptr) {
-      const cw = canvas.clientWidth || 1, ch = canvas.clientHeight || 1;
-      const nx = (ptr[0] / cw) * 2 - 1, ny = 1 - (ptr[1] / ch) * 2;
-      const F = 1 / Math.tan(FOV / 2);
-      const r = [Math.cos(azim), 0, -Math.sin(azim)];
-      const f = [-Math.sin(azim) * Math.cos(elev), -Math.sin(elev), -Math.cos(azim) * Math.cos(elev)];
-      const u = [r[1] * f[2] - r[2] * f[1], r[2] * f[0] - r[0] * f[2], r[0] * f[1] - r[1] * f[0]];
-      const kx = ((nx - sh.shift) * (W / Hh)) / F, ky = ny / F;
-      const d = [0, 1, 2].map((i) => r[i] * kx + u[i] * ky + f[i]);
-      if (d[1] < -1e-4) {
-        const l = -eye[1] / d[1];
-        cur = [eye[0] + d[0] * l, eye[2] + d[2] * l];
-      }
-    }
 
     gl.viewport(0, 0, W, Hh);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniformMatrix4fv(u.vp, false, vp);
+    gl.uniform3f(u.eye, eye[0], eye[1], eye[2]);
+    gl.uniform2f(u.fogR, dist * 0.95, dist * 2.7);
+    gl.uniform3f(u.res, W, Hh, 0.55);
+    gl.uniformMatrix4fv(u.m, false, IDENTITY);
+    gl.uniform1f(u.lift, 0);
+    gl.uniform1f(u.dim, 0);
+    gl.uniform1f(u.rise, rise);
+    bind(G.solid);
+    gl.drawArrays(gl.TRIANGLES, 0, G.solid.n);
+    // the relief, pushed a hair back so the lines draped on it always win
+    gl.enable(gl.POLYGON_OFFSET_FILL);
+    gl.polygonOffset(1, 1);
+    gl.uniform1f(u.useMap, 1);
+    bind(land);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, land.idx);
+    gl.drawElements(gl.TRIANGLES, land.n, land.type, 0);
+    gl.uniform1f(u.useMap, 0);
+    gl.disable(gl.POLYGON_OFFSET_FILL);
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.disable(gl.DEPTH_TEST);
-
-    // the field, a mark per instance
-    gl.useProgram(fieldProg);
-    gl.uniformMatrix4fv(U.f.vp, false, vp);
-    gl.uniform3f(U.f.eye, eye[0], eye[1], eye[2]);
-    gl.uniform2f(U.f.fogR, dist * 1.05, dist * 2.9);
-    gl.uniform1f(U.f.size, STEP * 0.56);
-    gl.uniform1f(U.f.front, front);
-    gl.uniform4f(U.f.pool, sh.x, sh.z, sh.size * 0.34, sh.pool);
-    gl.uniform4f(U.f.cursor, cur[0], cur[1], sh.size * 0.1, glow);
-    gl.uniform1f(U.f.zoom, sh.size);
-    gl.uniform3f(U.f.res, W, Hh, 0.6);
-    gl.bindBuffer(gl.ARRAY_BUFFER, G.corners);
-    gl.enableVertexAttribArray(fa.corner);
-    gl.vertexAttribPointer(fa.corner, 2, gl.FLOAT, false, 8, 0);
-    gl.bindBuffer(gl.ARRAY_BUFFER, G.field);
-    gl.enableVertexAttribArray(fa.inst);
-    gl.vertexAttribPointer(fa.inst, 4, gl.FLOAT, false, 16, 0);
-    inst.vertexAttribDivisorANGLE(fa.inst, 1);
-    inst.drawArraysInstancedANGLE(gl.TRIANGLES, 0, 6, count);
-    inst.vertexAttribDivisorANGLE(fa.inst, 0);
-    gl.disableVertexAttribArray(fa.inst);
-    gl.disableVertexAttribArray(fa.corner);
-
-    // the lines, then the places: a pool of light on the ground, the mark standing in it
-    startSolid();
-    gl.uniformMatrix4fv(U.s.vp, false, vp);
-    gl.uniform3f(U.s.eye, eye[0], eye[1], eye[2]);
-    gl.uniform2f(U.s.fogR, dist * 1.05, dist * 2.9);
-    gl.uniform3f(U.s.res, W, Hh, 0.6);
-    gl.uniformMatrix4fv(U.s.m, false, IDENTITY);
-    gl.uniform1f(U.s.lift, 0);
-    gl.uniform1f(U.s.dim, 0);
-    gl.uniform1f(U.s.alpha, Math.min(1, front * 1.4));
-    bindSolid(G.line);
+    bind(G.line);
     gl.drawArrays(gl.LINES, 0, G.line.n);
+    gl.disable(gl.BLEND);
 
     // the marks: a size that reads at every distance, rising from the ground one after another
     const mh = Math.min(48, Math.max(8, sh.size * 0.075));
-    const rise = marks.map((m) => {
+    gl.uniform1f(u.lift, 0.14);
+    gl.uniform1f(u.rise, 1);
+    for (const m of marks) {
       const r = up.get(m.key);
-      if (!r) return 0;
-      const p = Math.min(1, Math.max(0, (now - r.t0) / 1100));
-      if (p < 1) moving = true;
-      return lerp(r.from, 1, 1 - Math.pow(1 - p, 3));
-    });
-    const dim = marks.map((m) => {
+      let k = 0;
+      if (r) {
+        const p = Math.min(1, Math.max(0, (now - r.t0) / 1100));
+        k = lerp(r.from, 1, 1 - Math.pow(1 - p, 3));
+        if (p < 1) moving = true;
+      }
       // dim towards the target, smoothly
       const target = lit && !lit.includes(m.key) ? 0.62 : 0;
       const d0 = dims.get(m.key) ?? 0;
       const d = Math.abs(target - d0) < 0.01 ? target : lerp(d0, target, 0.16);
       if (d !== target) moving = true;
       dims.set(m.key, d);
-      return d;
-    });
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    bindSolid(G.glow);
-    marks.forEach((m, i) => {
-      if (rise[i] <= 0.001) return;
-      gl.uniform1f(U.s.alpha, rise[i] * (1 - dim[i] * 0.85));
-      gl.uniformMatrix4fv(U.s.m, false, model(m.x + m.side * mh * 0.62, m.y + 0.05, m.z, mh * 1.8, 1, mh * 1.8));
-      gl.drawArrays(gl.TRIANGLES, 0, G.glow.n);
-    });
-    gl.disable(gl.BLEND);
-    gl.enable(gl.DEPTH_TEST);
-    gl.uniform1f(U.s.alpha, 1);
-    gl.uniform1f(U.s.lift, 0.14);
-    marks.forEach((m, i) => {
-      if (rise[i] <= 0.001) return;
-      gl.uniform1f(U.s.dim, dim[i]);
-      gl.uniformMatrix4fv(U.s.m, false, model(m.x + m.side * mh * 0.62, m.y, m.z, mh, mh * rise[i], mh));
+      if (k <= 0.001) continue;
+      gl.uniform1f(u.dim, d);
+      const x = m.x + m.side * mh * 0.62;
+      gl.uniformMatrix4fv(u.m, false, model(x, ground(x, m.z), m.z, mh, mh * k, mh));
       const g = m.kind === "office" ? G.markSolid : G.markFrame;
-      bindSolid(g);
+      bind(g);
       gl.drawArrays(gl.TRIANGLES, 0, g.n);
-    });
-    gl.uniform1f(U.s.lift, 0);
-    gl.uniform1f(U.s.dim, 0);
-    // the next frame starts with the field's attributes alone
-    gl.disableVertexAttribArray(sa.pos);
-    gl.disableVertexAttribArray(sa.nor);
-    gl.disableVertexAttribArray(sa.col);
+    }
+    gl.uniform1f(u.lift, 0);
+    gl.uniform1f(u.dim, 0);
+    gl.uniformMatrix4fv(u.m, false, IDENTITY);
+
+    gl.enable(gl.BLEND);
+    gl.depthMask(false);
+    bind(G.soft);
+    gl.drawArrays(gl.TRIANGLES, 0, G.soft.n);
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
 
     const cw = canvas.clientWidth, ch = canvas.clientHeight;
-    onFrame((x, y, z) => {
-      const X = vp[0] * x + vp[4] * y + vp[8] * z + vp[12];
-      const Y = vp[1] * x + vp[5] * y + vp[9] * z + vp[13];
-      const Wc = vp[3] * x + vp[7] * y + vp[11] * z + vp[15];
-      if (Wc <= 0) return [0, 0, false];
-      const px = ((X / Wc) * 0.5 + 0.5) * cw, py = (0.5 - (Y / Wc) * 0.5) * ch;
-      return [px, py, px > -40 && px < cw + 40 && py > -40 && py < ch + 40];
-    }, mh);
+    onFrame(
+      (x, y, z) => {
+        const X = vp[0] * x + vp[4] * y + vp[8] * z + vp[12];
+        const Y = vp[1] * x + vp[5] * y + vp[9] * z + vp[13];
+        const Wc = vp[3] * x + vp[7] * y + vp[11] * z + vp[15];
+        if (Wc <= 0) return [0, 0, false];
+        const px = ((X / Wc) * 0.5 + 0.5) * cw, py = (0.5 - (Y / Wc) * 0.5) * ch;
+        return [px, py, px > -40 && px < cw + 40 && py > -40 && py < ch + 40];
+      },
+      mh,
+      ground,
+    );
     if (moving) ask();
   };
   const ask = () => {
@@ -677,9 +755,9 @@ export function createScene({
 
   return {
     set(nt, ne) {
-      // the field prints itself once the chapter is a quarter in
-      if (printed < 0 && ne > 0.25) printed = performance.now();
-      if (nt === t && ne === enter && printed >= 0) return;
+      // the relief rises once the chapter is a quarter in
+      if (raised < 0 && ne > 0.25) raised = performance.now();
+      if (nt === t && ne === enter && raised >= 0) return;
       t = nt;
       enter = ne;
       ask();
@@ -694,13 +772,9 @@ export function createScene({
       lit = keys;
       ask();
     },
-    pointer(x, y = 0) {
-      ptr = x === null ? null : [x, y];
-      ask();
-    },
     aim(shot, ms = 1300) {
       const from = last ?? shotAt(t);
-      flight = { from, to: shot ? pin(shot) : null, t0: performance.now(), ms };
+      flight = { from, to: shot ? resolve(shot) : null, t0: performance.now(), ms };
       ask();
     },
     visible(v) {
@@ -717,11 +791,11 @@ export function createScene({
       raf = 0;
       on = false;
       canvas.removeEventListener("webglcontextlost", lost);
-      gl.deleteBuffer(G.corners);
-      gl.deleteBuffer(G.field);
-      for (const g of [G.line, G.glow, G.markSolid, G.markFrame]) gl.deleteBuffer(g.buf);
-      gl.deleteProgram(fieldProg);
-      gl.deleteProgram(solidProg);
+      for (const g of Object.values(G)) gl.deleteBuffer(g.buf);
+      gl.deleteBuffer(land.buf);
+      gl.deleteBuffer(land.idx);
+      gl.deleteTexture(tex);
+      gl.deleteProgram(prog);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     },
   };

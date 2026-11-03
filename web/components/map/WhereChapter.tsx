@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type RefObject, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
 import map from "@/content/geo/map.json";
 import { Mark } from "@/components/marks/Mark";
 import { useScrollTime } from "@/lib/useScrollTime";
-import { placeXY, SHEET } from "./geo";
+import { LATS, LONS, placeXY, projectKm, SHEET } from "./geo";
 import type { MapPin } from "./ItalyMap";
 import type { MarkSpec, Scene, Shot } from "./gl/scene";
 
@@ -13,8 +13,6 @@ import type { MarkSpec, Scene, Shot } from "./gl/scene";
 export type ChapterStep = { key: string; focus: string[]; rail: string; caption: ReactNode };
 type Gl = "wait" | "on" | "off";
 
-// the field is flat: every place and every printed city stands on the ground
-const GROUND = 0;
 // the brand slope as the camera's: the model seen at 59.6°, the places at 30.4° (90° − 59.6°)
 const SLOPE = 59.6;
 const MEDIA = "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
@@ -40,13 +38,27 @@ function layoutPlaces(pins: MapPin[]) {
   const marks: MarkSpec[] = places.map((p) => {
     const near = places.filter((q) => Math.hypot(q.x - p.x, q.z - p.z) < 8);
     const k = near.indexOf(p);
-    return { key: p.key, x: p.x, z: p.z, y: GROUND, kind: p.kind, side: near.length > 1 ? (k === 0 ? -1 : 1) : 0 };
+    return { key: p.key, x: p.x, z: p.z, kind: p.kind, side: near.length > 1 ? (k === 0 ? -1 : 1) : 0 };
   });
   const cities = Object.entries(map.cities)
     .filter(([, [x, y]]) => !places.some((p) => Math.hypot(p.x - (x as number), p.z - (y as number)) < 15))
     .map(([name, [x, y, r]]) => ({ name, x: x as number, z: y as number, high: areas.includes(r as string) }));
   return { places, areas, marks, cities };
 }
+
+/** The model's files: the cartography and the heights (decoded), loaded together, with the 3D code. */
+async function loadModel() {
+  const img = new Image();
+  const relief = new Promise<HTMLImageElement>((ok, fail) => {
+    img.onload = () => ok(img);
+    img.onerror = fail;
+  });
+  img.src = "/map/rilievo.png";
+  const [mod, svg, png] = await Promise.all([import("./gl/scene"), fetch("/map/italia.svg").then((r) => r.text()), relief]);
+  return { createScene: mod.createScene, svg, relief: mod.readRelief(png, 2.5) };
+}
+/** The graticule printed on the board, every two degrees. */
+const GRID = { x: LONS.map((lon) => projectKm(42, lon)[0]), z: LATS.map((lat) => projectKm(lat, 12.5)[1]) };
 
 /**
  * Where each flag stands so that none covers another, as the pins of the CSS slab: the flags
@@ -186,20 +198,27 @@ function CompactMap({ pins, host, back }: { pins: MapPin[]; host: RefObject<HTML
         if (t) sizes[i] = [t.offsetWidth, t.offsetHeight];
       });
     // the whole of Italy, upright in a portrait frame, with room above the north for the flags
-    const whole: Shot = { x: 30, z: -30, size: 1500, elev: SLOPE, azim: 0, shift: 0, pool: 0 };
+    const whole: Shot = { x: 30, z: -30, size: 1500, elev: SLOPE, azim: 0, shift: 0 };
     const start = async () => {
       try {
-        const [{ createScene }, svg] = await Promise.all([import("./gl/scene"), fetch("/map/italia.svg").then((r) => r.text())]);
-        if (dead) return;
+        const { createScene, svg, relief } = await loadModel();
+        if (dead || !relief) return;
         s = createScene({
           canvas: cv,
           svg,
+          relief,
           sheet: SHEET,
           areas,
+          grid: GRID,
           marks,
           shots: [whole],
-          onFrame: (project, mh) => {
-            const pts = marks.map((m) => project(m.x + m.side * mh * 0.62 - 0.586 * mh, m.y + mh, m.z));
+          // a lighter mesh on a phone
+          fine: false,
+          onFrame: (project, mh, ground) => {
+            const pts = marks.map((m) => {
+              const x = m.x + m.side * mh * 0.62;
+              return project(x - 0.586 * mh, ground(x, m.z) + mh, m.z);
+            });
             // the one flag of the whole of Italy: over the highest of the places, kept inside the frame
             const g = groupEl.current;
             if (g) {
@@ -225,7 +244,7 @@ function CompactMap({ pins, host, back }: { pins: MapPin[]; host: RefObject<HTML
             cities.forEach((c, i) => {
               const e = cityEls.current[i];
               if (!e) return;
-              const [x, y, ok] = project(c.x, GROUND + 0.2, c.z);
+              const [x, y, ok] = project(c.x, ground(c.x, c.z) + 0.2, c.z);
               e.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
               e.style.visibility = ok ? "" : "hidden";
             });
@@ -293,7 +312,7 @@ function CompactMap({ pins, host, back }: { pins: MapPin[]; host: RefObject<HTML
   // all the places in one frame, a margin round them
   const xs = places.map((p) => p.x), zs = places.map((p) => p.z);
   const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs));
-  const allShot: Shot = { x: (Math.min(...xs) + Math.max(...xs)) / 2, z: (Math.min(...zs) + Math.max(...zs)) / 2 + span * 0.12, size: Math.max(260, span * 2.5), elev: 50, azim: 0, shift: 0, pool: 0.7 };
+  const allShot: Shot = { x: (Math.min(...xs) + Math.max(...xs)) / 2, z: (Math.min(...zs) + Math.max(...zs)) / 2 + span * 0.12, size: Math.max(260, span * 2.5), elev: 50, azim: 0, shift: 0 };
   // the towns the whole of Italy's flag names, each once
   const towns = [...new Set(places.map((p) => p.label))].join(" · ");
 
@@ -301,7 +320,7 @@ function CompactMap({ pins, host, back }: { pins: MapPin[]; host: RefObject<HTML
   const fly = (to: string | null) => {
     const s = scene.current;
     const p = places.find((q) => q.key === to);
-    s?.aim(p ? { x: p.x, z: p.z, size: 230, elev: 48, azim: 0, shift: 0, pool: 1 } : to === "all" ? allShot : null);
+    s?.aim(p ? { x: p.x, z: p.z, size: 230, elev: 48, azim: 0, shift: 0 } : to === "all" ? allShot : null);
     s?.light(p ? [p.key] : null);
     setAt(to);
     host.current?.querySelectorAll<HTMLElement>(".vp-map__item").forEach((li) => li.toggleAttribute("data-picked", !!p && li.dataset.k === p.key));
@@ -390,7 +409,7 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
   // the stops: where the camera stands for each
   const shots: Shot[] = steps.map((s, i) => {
     const ps = places.filter((p) => s.focus.includes(p.key));
-    if (!ps.length) return { x: SHEET.x + SHEET.w / 2 + 40, z: SHEET.y + SHEET.h / 2 + 30, size: 1300, elev: SLOPE, azim: 0, shift: 0.4, fit: [0.51, 0.97], pool: 0 };
+    if (!ps.length) return { x: SHEET.x + SHEET.w / 2 + 40, z: SHEET.y + SHEET.h / 2 + 30, size: 1300, elev: SLOPE, azim: 0, shift: 0.4, fit: [0.51, 0.97] };
     const xs = ps.map((p) => p.x), zs = ps.map((p) => p.z);
     const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...zs) - Math.min(...zs));
     const all = i === n - 1;
@@ -401,8 +420,6 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
       elev: ps.length > 1 ? (all ? 50 : 42) : 90 - SLOPE,
       azim: all ? 0 : [0, -12, 14, -9, 16, -14][i % 6],
       shift: 0.26,
-      // the ground lights up around the places in view
-      pool: all ? 0.7 : 1,
     };
   });
 
@@ -441,18 +458,27 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
       });
     const start = async () => {
       try {
-        const [{ createScene }, svg] = await Promise.all([import("./gl/scene"), fetch("/map/italia.svg").then((r) => r.text())]);
+        const { createScene, svg, relief } = await loadModel();
         if (dead) return;
+        if (!relief) {
+          setGl("off");
+          return;
+        }
         s = createScene({
           canvas: cv,
           svg,
+          relief,
           sheet: SHEET,
           areas,
+          grid: GRID,
           marks,
           shots,
-          onFrame: (project, mh) => {
+          onFrame: (project, mh, ground) => {
             // at the top of each mark, over its leaning head; the flags laid out so none covers another
-            const pts = marks.map((m) => project(m.x + m.side * mh * 0.62 - 0.586 * mh, m.y + mh, m.z));
+            const pts = marks.map((m) => {
+              const x = m.x + m.side * mh * 0.62;
+              return project(x - 0.586 * mh, ground(x, m.z) + mh, m.z);
+            });
             if (sizes.some(([w]) => !w)) measure();
             const lays = layFlags(pts, sizes, layout.current, width);
             pts.forEach(([x, y, ok], i) => {
@@ -470,7 +496,7 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
             cities.forEach((c, i) => {
               const e = cityEls.current[i];
               if (!e) return;
-              const [x, y, ok] = project(c.x, GROUND + 0.2, c.z);
+              const [x, y, ok] = project(c.x, ground(c.x, c.z) + 0.2, c.z);
               e.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
               e.style.visibility = ok ? "" : "hidden";
             });
@@ -519,15 +545,6 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // the pointer's light over the field: the mouse's, while it is over the map and not on a caption or the rail
-  const onMove = (e: PointerEvent) => {
-    const cv = canvas.current;
-    if (!cv || e.pointerType === "touch") return;
-    if ((e.target as HTMLElement).closest(".vp-gl__steps, .vp-gl__rail")) return scene.current?.pointer(null);
-    const r = cv.getBoundingClientRect();
-    scene.current?.pointer(e.clientX - r.left, e.clientY - r.top);
-  };
-
   // the list of the last stop lights its place on the model
   const onOver = (e: SyntheticEvent) => {
     const k = (e.target as HTMLElement).closest<HTMLElement>("[data-k]")?.dataset.k;
@@ -536,7 +553,7 @@ function ChapterRun({ pins, steps, stopsLabel, gl, setGl }: { pins: MapPin[]; st
 
   return (
     <div ref={wrap} className="vp-gl__run" style={{ "--n": n } as CSSProperties}>
-      <div ref={stage} className="vp-gl__stage" onPointerMove={onMove} onPointerLeave={() => scene.current?.pointer(null)}>
+      <div ref={stage} className="vp-gl__stage">
         <canvas ref={canvas} className="vp-gl__canvas" aria-hidden="true" />
         {/* the labels on the model, once there is a model to stand on */}
         {gl === "on" ? (
