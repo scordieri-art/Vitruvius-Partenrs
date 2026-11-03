@@ -100,6 +100,14 @@ export function NewsCabinet({ cards, labels, countLabel, countOne }: { cards: Ne
     setPicked(c.href);
   };
 
+  // arriving at #rassegna (the home's «Tutta la rassegna stampa»): the press only. No scroll: the
+  // filters already show beneath the page's title, which says where the visitor has landed
+  useEffect(() => {
+    if (location.hash !== "#rassegna") return;
+    const id = requestAnimationFrame(() => setFilter("press"));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   // the picked card: once its drawer has opened, bring it into view and mark it for a moment
   useEffect(() => {
     if (!picked) return;

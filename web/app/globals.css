@@ -2461,12 +2461,6 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
   .vp-index__mark polygon {
     transition: fill 320ms var(--ease-move);
   }
-  .vp-index__text {
-    grid-area: title;
-    max-width: 46ch;
-    font-size: var(--t-body-l);
-    line-height: 1.35;
-  }
   .vp-index__meta {
     grid-area: meta;
   }
@@ -3245,6 +3239,148 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     from {
       opacity: 0;
       translate: 0 0.75rem;
+    }
+  }
+  /* Home «Ne hanno scritto» (components/home/Press.tsx): the outlets set large in a row, like
+     mastheads on a news stand, the headline of the one chosen beneath them. The chosen name fills
+     its mark and draws its rule from the left; the panels share one cell, so nothing below moves
+     when the choice changes */
+  .vp-rs {
+    display: grid;
+    gap: clamp(2.25rem, 4.5vw, 3.5rem);
+  }
+  .vp-rs__heads {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2em 1em;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: clamp(1.65rem, 0.6rem + 2.1vw, 2.6rem);
+    font-weight: 300;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+  }
+  /* on a wide screen the five names hold one line, spread across it like a masthead */
+  @media (min-width: 72rem) {
+    .vp-rs__heads {
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+  }
+  .vp-rs__head {
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3em;
+    min-height: 44px;
+    padding-block: 0.15em 0.3em;
+    white-space: nowrap;
+    /* the names not chosen step back (large text: still well above 3:1 on the paper) */
+    color: color-mix(in srgb, var(--fg) 58%, var(--bg));
+    cursor: pointer;
+    transition: color 350ms var(--ease-move);
+  }
+  .vp-rs__head:hover,
+  .vp-rs__head:has(:checked) {
+    color: var(--fg);
+  }
+  .vp-rs__head:has(:focus-visible) {
+    outline: 2px solid var(--fg);
+    outline-offset: 4px;
+  }
+  .vp-rs__mark {
+    flex: none;
+    height: 0.4em;
+  }
+  .vp-rs__mark polygon {
+    transition: fill 320ms var(--ease-move);
+  }
+  .vp-rs__head:has(:checked) .vp-rs__mark polygon {
+    fill: currentColor;
+  }
+  .vp-rs__name {
+    position: relative;
+  }
+  .vp-rs__name::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.1em;
+    height: 2px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 520ms var(--ease-move);
+  }
+  .vp-rs__head:has(:checked) .vp-rs__name::after {
+    transform: scaleX(1);
+  }
+  .vp-rs__stage {
+    display: grid;
+    padding-top: clamp(1.75rem, 3.5vw, 2.75rem);
+    border-top: 1px solid var(--line);
+  }
+  .vp-rs__panel {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.25s var(--ease-move),
+      visibility 0s linear 0.25s;
+  }
+  .vp-rs__quote {
+    max-width: 32ch;
+    font-size: clamp(1.4rem, 0.9rem + 1.8vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .vp-rs__aside {
+    margin-top: clamp(1rem, 2vw, 1.4rem);
+  }
+  .vp-rs__read {
+    display: inline-block;
+    margin-top: 0.6rem;
+  }
+  /* on a desktop the headline on the left, its source on the right, on the headline's last line */
+  @media (min-width: 64rem) {
+    .vp-rs__panel {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--col-gap);
+      align-items: end;
+    }
+    .vp-rs__quote {
+      grid-column: 1 / span 8;
+    }
+    .vp-rs__aside {
+      grid-column: 10 / span 3;
+      margin-top: 0;
+      text-align: right;
+    }
+  }
+  @keyframes vp-rs-rise {
+    from {
+      opacity: 0;
+      translate: 0 0.8rem;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* until it is seen: the names and the headline waiting transparent; then the names rise one
+       after another, the headline with the last */
+    html.js-motion .vp-rs:not([data-seen]) :is(.vp-rs__head, .vp-rs__stage) {
+      opacity: 0;
+    }
+    html.js-motion .vp-rs[data-seen] .vp-rs__head {
+      animation: vp-rs-rise 0.8s var(--ease-enter) calc(var(--r) * 80ms) both;
+    }
+    html.js-motion .vp-rs[data-seen] .vp-rs__stage {
+      animation: vp-rs-rise 0.8s var(--ease-enter) 0.4s both;
     }
   }
   .vp-count {

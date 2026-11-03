@@ -69,6 +69,10 @@ const it = {
     },
     press: {
       label: "Ne hanno scritto",
+      // the mastheads as a choice (components/home/Press.tsx), the whole review on the News page
+      pick: "Scegli una testata",
+      read: "Leggi l’articolo",
+      all: "Tutta la rassegna stampa",
     },
     numbers: {
       label: "In numeri",

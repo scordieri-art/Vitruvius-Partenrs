@@ -6,6 +6,7 @@ import { TLink } from "@/components/layout/PageTransition";
 import { Hero } from "@/components/home/Hero";
 import { Filiera } from "@/components/home/Filiera";
 import { Figures, type Figure } from "@/components/home/Figures";
+import { Press } from "@/components/home/Press";
 import { HOME_IMG as IMG, homeSteps } from "@/content/home";
 import { OperationStack } from "@/components/home/OperationStack";
 import { ContactBand } from "@/components/home/ContactBand";
@@ -141,7 +142,7 @@ export default async function HomePage() {
         <Filiera steps={steps} externalNote={t.ui.externalNew} label={h.lines.title} />
       </section>
 
-      {/* Figures, one at a time beside their index, then the press as an index of articles */}
+      {/* Figures, one at a time beside their index, then the press: one headline at a time beneath its masthead */}
       <section data-theme="paper" aria-labelledby="numbers-title" className="pt-[var(--section-y)]">
         <div className="container-x">
           <div className="mb-[clamp(2.5rem,5vw,4.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
@@ -159,33 +160,18 @@ export default async function HomePage() {
         </div>
 
         <div className="container-x mt-[clamp(4.5rem,9vw,8rem)]">
-          <SectionLabel n={3} as="h2" id="press-title" className="mb-[clamp(1.5rem,3vw,2.5rem)]">
-            {h.press.label}
-          </SectionLabel>
-          <ul className="vp-index" aria-labelledby="press-title">
-            {press.map((x) => (
-              <li key={x.outlet}>
-                <a href={x.url} target="_blank" rel="noopener noreferrer" className="vp-index__row">
-                  <span className="vp-index__lead">
-                    <Mark kind="outline" className="vp-index__mark" />
-                    {x.outlet}
-                  </span>
-                  {x.title ? (
-                    <span className="vp-index__text" lang="it">
-                      «{x.title}»
-                    </span>
-                  ) : null}
-                  <span className="vp-index__meta t-label">
-                    {x.project} · {x.iso ? <time dateTime={x.iso}>{x.date}</time> : x.date}
-                  </span>
-                  <span className="vp-index__go" aria-hidden="true">
-                    ↗
-                  </span>
-                  <span className="sr-only"> ({t.ui.externalNew})</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <div className="mb-[clamp(2rem,4vw,3.5rem)] flex flex-wrap items-end justify-between gap-x-10 gap-y-3">
+            <SectionLabel n={3} as="h2" id="press-title">
+              {h.press.label}
+            </SectionLabel>
+            {/* the whole review is the News page's, filtered to the press */}
+            <p className="t-label">
+              <TLink href={`${href(lang, "news")}#rassegna`} className="vp-ulink">
+                {h.press.all} →
+              </TLink>
+            </p>
+          </div>
+          <Press items={press} legend={h.press.pick} name="testate" read={h.press.read} opens={t.ui.externalNew} />
         </div>
       </section>
 

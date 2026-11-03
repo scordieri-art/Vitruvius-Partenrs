@@ -75,6 +75,9 @@ const en: Dictionary = {
     },
     press: {
       label: "In the press",
+      pick: "Choose an outlet",
+      read: "Read the article",
+      all: "All press coverage",
     },
     numbers: {
       label: "In figures",
