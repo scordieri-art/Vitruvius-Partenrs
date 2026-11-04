@@ -504,11 +504,17 @@
     --ink: var(--color-paper);
     --rim: var(--color-navy);
   }
-  /* the negative: white in difference, so what is beneath shows inverted, as on a film */
+  /* the negative: in difference, so what is beneath shows inverted, as on a film. On a light
+     ground the colour is the paper less the navy (250 − 10, 250 − 35, 249 − 66): over the paper
+     the symbol comes out Vitruvius navy, not black, and navy text under it turns light. On a dark
+     ground it is white, and the navy beneath turns light. */
   .vp-cur[data-neg] {
-    --ink: #fff;
+    --ink: rgb(240 215 183);
     --rim: transparent;
     mix-blend-mode: difference;
+  }
+  .vp-cur[data-neg][data-dark] {
+    --ink: #fff;
   }
 
   /* the symbol: the V 20 px tall, the tip of its first stroke the pointer's tip */
