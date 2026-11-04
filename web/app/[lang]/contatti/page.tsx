@@ -5,7 +5,6 @@ import { TLink } from "@/components/layout/PageTransition";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
-import { Mark } from "@/components/marks/Mark";
 import { MapSlab, lightRules } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
 import { company } from "@/content/site";
@@ -20,10 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const mid = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
-const maps = (street: string, postal: string) =>
-  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Vitruvius & Partners ${street} ${postal}`)}`;
+const maps = (street: string, postal: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Vitruvius & Partners ${street} ${postal}`)}`;
 
-/** Contact: the direct lines first, then the two offices, the form, the company details. */
+/** Contact: the direct lines first, then the two offices, the form in steps, the company details. */
 export default async function ContactPage() {
   const { lang, t } = await getDictionary();
   const c = t.contactPage;
@@ -34,16 +32,12 @@ export default async function ContactPage() {
       {/* Opening: the sentence, the action, the direct lines */}
       <section data-theme="paper" aria-labelledby="contact-title" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))] pb-[clamp(4rem,8vw,7rem)]">
         <div className="container-x">
-          <p className="vp-rise t-label mb-8">
-            {c.label}
-          </p>
-          <h1 id="contact-title" className="t-xl max-w-[14ch]">
+          <p className="vp-rise t-label mb-8">{c.label}</p>
+          <h1 id="contact-title" className="t-xl max-w-[17ch] [text-wrap:balance]">
             <Rise>{c.title}</Rise>
           </h1>
           <div className="grid-12 mt-10 gap-y-8 lg:mt-14 lg:items-end">
-            <p className="vp-rise vp-rise--late t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5">
-              {c.lead}
-            </p>
+            <p className="vp-rise vp-rise--late t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5">{c.lead}</p>
             <div className="vp-rise vp-rise--later col-span-4 lg:col-span-6 lg:col-start-7 lg:justify-self-end">
               <JumpLink to="write" primary>
                 {c.write}
@@ -102,13 +96,20 @@ export default async function ContactPage() {
               ))}
             </div>
             <div className="col-span-4 lg:col-span-6 lg:col-start-7 lg:self-center">
-              <MapSlab places={offices} frame={{ lat: mid(offices.map((o) => o.lat)), lon: mid(offices.map((o) => o.lon)), scale: 2.3 }} zoomTargets zoomScale={4.2} width={560} className="max-w-[36rem] lg:mr-0" />
+              <MapSlab
+                places={offices}
+                frame={{ lat: mid(offices.map((o) => o.lat)), lon: mid(offices.map((o) => o.lon)), scale: 2.3 }}
+                zoomTargets
+                zoomScale={4.2}
+                width={560}
+                className="max-w-[36rem] lg:mr-0"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Form */}
+      {/* Form: on the left what to expect and the direct lines, on the right the form on a paper card */}
       <section data-theme="navy" aria-labelledby="write" className="py-[var(--section-y)]">
         <div className="container-x grid-12 gap-y-12">
           <div className="col-span-4 lg:col-span-4">
@@ -116,31 +117,32 @@ export default async function ContactPage() {
             <h2 id="write" className="t-l" data-reveal="lines">
               {c.write}
             </h2>
-            <p className="t-body mt-6 max-w-[34ch] text-[var(--fg-2)]">
+            <p className="t-body-l mt-6 max-w-[30ch] text-[var(--fg-2)]">{c.writeLead}</p>
+            <div className="mt-12 border-t border-[var(--line)] pt-6 lg:mt-16">
+              <h3 className="t-label">{c.direct}</h3>
+              <ul className="mt-4 grid gap-3">
+                <li>
+                  <a className="vp-ulink t-body" href={`mailto:${company.email}`}>
+                    {company.email}
+                  </a>
+                </li>
+                {company.offices.map((o) => (
+                  <li key={o.key} className="t-body t-num">
+                    <a className="vp-ulink" href={o.phoneHref}>
+                      {o.phone}
+                    </a>
+                    <span className="text-[var(--fg-2)]"> · {o.city}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p className="t-small mt-10 max-w-[34ch] text-[var(--fg-2)]">
               {c.careersNote}{" "}
               <TLink href={href(lang, "careers")} className="vp-ulink text-[var(--fg)]">
                 {t.meta.titles.careers}
               </TLink>
               {c.careersNoteEnd}
             </p>
-            {/* who answers: four published facts, the same ones the About page sources */}
-            <div className="mt-12 lg:mt-16">
-              <h3 className="t-label mb-4">{c.proofs.label}</h3>
-              <dl className="grid grid-cols-2 gap-x-[var(--col-gap)] border-t border-[var(--line)] lg:grid-cols-1">
-                {c.proofs.items.map((p) => (
-                  <div key={p.value} className="border-b border-[var(--line)] py-4">
-                    <dt className="flex items-baseline gap-2.5">
-                      <Mark className="text-[var(--fg)]" />
-                      <span className="t-s t-num leading-none">{p.value}</span>
-                    </dt>
-                    <dd className="t-small mt-2 text-[var(--fg-2)]">{p.label}</dd>
-                  </div>
-                ))}
-              </dl>
-              <TLink href={href(lang, "about", undefined, "credentials")} className="vp-ulink t-small mt-4 inline-block text-[var(--fg)]">
-                {t.home.numbers.source}
-              </TLink>
-            </div>
           </div>
           <div className="col-span-4 lg:col-span-7 lg:col-start-6">
             <ContactForm labels={c.form} />

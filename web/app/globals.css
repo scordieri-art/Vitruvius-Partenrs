@@ -4519,3 +4519,140 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
     --k: 0;
   }
 }
+
+/* The contact form as a card (components/forms/ContactForm.tsx): paper on the navy section, in
+   numbered steps (a CSS counter, so the numbers follow the steps the topic shows), the topics as
+   tiles, every field a visible box with its label above, consent and sending closing the card.
+   Outside the layers on purpose: it restyles the shared fields (Fields.tsx) for this form only,
+   over the utility classes they carry. */
+.vp-form {
+  /* the paper theme in full: inside a navy section nothing of navy's colours may carry over */
+  --bg: var(--color-paper);
+  --surface: var(--color-white);
+  --fg: var(--color-navy);
+  --fg-2: color-mix(in srgb, var(--color-navy) 72%, var(--color-paper));
+  --line: var(--color-hairline);
+  --focus: var(--color-navy);
+  background: var(--bg);
+  color: var(--fg);
+  counter-reset: vp-step;
+  gap: clamp(2.25rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 4vw, 3.25rem);
+  --box: color-mix(in srgb, var(--color-navy) 26%, var(--color-paper));
+}
+.vp-form .vp-step {
+  display: grid;
+  gap: 1.5rem;
+}
+.vp-form .vp-step__head,
+.vp-form .vp-choice > legend {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  width: 100%;
+  margin: 0 0 1.5rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--t-body-l);
+  line-height: 1.3;
+  color: var(--fg);
+}
+.vp-form .vp-step > .vp-step__head {
+  margin-bottom: 0;
+}
+.vp-form .vp-step__head::before,
+.vp-form .vp-choice > legend::before {
+  counter-increment: vp-step;
+  content: counter(vp-step, decimal-leading-zero);
+  min-width: 1.6rem;
+  font-size: var(--t-label);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-2);
+}
+/* the topics: tiles, the chosen one filled navy with its mark solid */
+.vp-form .vp-choice__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: 0.5rem;
+  border: 0;
+}
+.vp-form .vp-choice__item {
+  min-height: 3.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--box);
+  background: var(--color-white);
+  color: var(--fg);
+  transition:
+    background-color var(--dur-ui) var(--ease-move),
+    border-color var(--dur-ui) var(--ease-move),
+    color var(--dur-ui) var(--ease-move);
+}
+.vp-form .vp-choice__item > .t-body-l {
+  font-size: var(--t-body);
+}
+.vp-form .vp-choice__item:hover {
+  border-color: var(--color-navy);
+}
+.vp-form .vp-choice__item:has(input:checked) {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+  color: var(--color-white);
+}
+.vp-form .vp-choice[data-invalid] .vp-choice__item {
+  border-color: var(--color-navy);
+}
+/* fields: a box with its label above */
+.vp-form .vp-field > label,
+.vp-form .vp-field > .t-label:first-child {
+  margin-bottom: 0.55rem;
+  color: var(--fg);
+}
+.vp-form .vp-input {
+  min-height: 3.25rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--box);
+  background: var(--color-white);
+  font-size: var(--t-body);
+  line-height: 1.45;
+}
+.vp-form .vp-select .vp-input {
+  padding-right: 2.5rem;
+}
+.vp-form .vp-select::after {
+  right: 1.1rem;
+}
+.vp-form textarea.vp-input {
+  min-height: 9rem;
+}
+.vp-form .vp-input::placeholder {
+  color: color-mix(in srgb, var(--color-navy) 52%, var(--color-white));
+}
+.vp-form .vp-input:hover {
+  border-color: color-mix(in srgb, var(--color-navy) 55%, var(--color-paper));
+}
+.vp-form .vp-input:focus-visible {
+  border-color: var(--color-navy);
+  outline: 2px solid var(--color-navy);
+  outline-offset: 0;
+}
+.vp-form .vp-input[aria-invalid="true"] {
+  border-color: var(--color-navy);
+  box-shadow: inset 4px 0 0 var(--color-navy);
+}
+.vp-form .vp-field > .t-label:not(:first-child) {
+  color: var(--fg-2);
+}
+.vp-form .vp-filerow {
+  min-height: 3.25rem;
+  margin-top: 0;
+  padding: 0.8rem 1rem;
+  border: 1px dashed var(--box);
+  background: var(--color-white);
+}
+/* the close: consent, then sending beside the note on required fields */
+.vp-form__end {
+  display: grid;
+  gap: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--line);
+}

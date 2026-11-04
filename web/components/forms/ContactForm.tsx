@@ -1,8 +1,23 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { sendContact, type FormState } from "@/lib/actions";
-import { Choice, Consent, ErrorSummary, Field, Files, firstInvalid, focusField, Honeypot, MailFallback, Select, Sent, Submit, useLiveErrors, useSubmitKeepingValues } from "./Fields";
+import {
+  Choice,
+  Consent,
+  ErrorSummary,
+  Field,
+  Files,
+  firstInvalid,
+  focusField,
+  Honeypot,
+  MailFallback,
+  Select,
+  Sent,
+  Submit,
+  useLiveErrors,
+  useSubmitKeepingValues,
+} from "./Fields";
 import { company } from "@/content/site";
 import { EMAIL, PHONE } from "./patterns";
 
@@ -51,7 +66,25 @@ type Labels = {
   photosChosen: string;
   invalidPhotos: string;
   messageProperty: string;
+  stepProperty: string;
+  stepYou: string;
+  stepMessage: string;
+  messageHint: string;
+  messageHintProperty: string;
+  requiredNote: string;
 };
+
+/** One step of the form: a numbered heading (the number from a CSS counter, so it follows the steps shown) and its fields. */
+function Step({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <div role="group" aria-labelledby={id} className="vp-step">
+      <p id={id} className="vp-step__head">
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
 
 const noopSubscribe = () => () => {};
 /** ?topic=property preselects a topic (the home's "Let's talk about your property" links here) */
@@ -61,7 +94,9 @@ const topicFromUrl = (): Topic | "" => {
 };
 
 /**
- * Contact: first what the message is about, then only the fields that topic needs.
+ * Contact: first what the message is about, then only the fields that topic needs, in numbered
+ * steps on a paper card (topic, the property if that is the topic, the visitor's details, the
+ * message), then consent and sending.
  * A property offer asks for city, type, size, condition and optional photographs,
  * so the group receives it already labelled and complete.
  * A failed attempt lists what to correct above the form and takes the focus to the first field;
@@ -78,8 +113,7 @@ export function ContactForm({ labels }: { labels: Labels }) {
   const errors = live.errors;
   // the confirmation stays until the visitor asks for a new form
   const [dismissed, setDismissed] = useState<number | undefined>();
-  const msg = (k?: string) =>
-    k === "email" ? labels.invalidEmail : k === "phone" ? labels.invalidPhone : k === "file" ? labels.invalidPhotos : k ? labels.required : undefined;
+  const msg = (k?: string) => (k === "email" ? labels.invalidEmail : k === "phone" ? labels.invalidPhone : k === "file" ? labels.invalidPhotos : k ? labels.required : undefined);
   const property = topic === "property";
   const onSubmit = useSubmitKeepingValues(action);
 
@@ -142,7 +176,8 @@ export function ContactForm({ labels }: { labels: Labels }) {
       onInput={live.onInput}
       onBlur={live.onBlur}
       noValidate
-      className="relative grid gap-10"
+      data-theme="paper"
+      className="vp-form relative grid"
     >
       <Honeypot />
       <ErrorSummary title={labels.error} items={wrong} />
@@ -157,57 +192,66 @@ export function ContactForm({ labels }: { labels: Labels }) {
       />
 
       {property ? (
-        <div className="vp-reveal-group grid gap-10">
-          <div className="grid gap-10 sm:grid-cols-2">
+        <Step id="c-step-property" title={labels.stepProperty}>
+          <div className="grid gap-6 sm:grid-cols-2">
             <Field id="c-city" name="city" label={labels.city} autoComplete="address-level2" required error={msg(errors?.city)} />
-            <Select
-              id="c-type"
-              name="type"
-              label={labels.type}
-              placeholder={labels.choose}
-              options={options(labels.types)}
-              required
-              error={msg(errors?.type)}
-            />
+            <Select id="c-type" name="type" label={labels.type} placeholder={labels.choose} options={options(labels.types)} required error={msg(errors?.type)} />
           </div>
-          <div className="grid gap-10 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Field id="c-area" name="area" label={labels.area} inputMode="numeric" pattern="[0-9 .]*" />
             <Select id="c-condition" name="condition" label={labels.condition} placeholder={labels.choose} options={options(labels.conditions)} />
           </div>
-        </div>
+        </Step>
       ) : null}
 
-      <div className="grid gap-10 sm:grid-cols-2">
-        <Field id="c-name" name="name" label={labels.name} autoComplete="name" required error={msg(errors?.name)} />
-        <Field id="c-email" name="email" type="email" label={labels.email} autoComplete="email" pattern={EMAIL} required error={msg(errors?.email)} />
-      </div>
-      {property || topic === "invest" ? (
-        <Field id="c-phone" name="phone" type="tel" label={labels.phone} autoComplete="tel" pattern={PHONE} hint={labels.phoneHint} error={msg(errors?.phone)} />
-      ) : null}
-      <Field id="c-message" name="message" textarea label={property ? labels.messageProperty : labels.message} required error={msg(errors?.message)} />
-      {property ? (
-        <Files
-          id="c-photos"
-          name="photos"
-          label={labels.photos}
-          button={labels.photosButton}
-          hint={labels.photosHint}
-          accept="image/jpeg,image/png,image/webp"
-          chosenLabel={(n) => (n === 1 ? labels.photosChosenOne : labels.photosChosen.replace("{n}", String(n)))}
-          empty={labels.noPhotos}
-          error={msg(errors?.photos)}
+      <Step id="c-step-you" title={labels.stepYou}>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Field id="c-name" name="name" label={labels.name} autoComplete="name" required error={msg(errors?.name)} />
+          <Field id="c-email" name="email" type="email" label={labels.email} autoComplete="email" pattern={EMAIL} required error={msg(errors?.email)} />
+        </div>
+        {property || topic === "invest" ? (
+          <Field id="c-phone" name="phone" type="tel" label={labels.phone} autoComplete="tel" pattern={PHONE} hint={labels.phoneHint} error={msg(errors?.phone)} />
+        ) : null}
+      </Step>
+
+      <Step id="c-step-message" title={labels.stepMessage}>
+        <Field
+          id="c-message"
+          name="message"
+          textarea
+          label={property ? labels.messageProperty : labels.message}
+          placeholder={property ? labels.messageHintProperty : labels.messageHint}
+          required
+          error={msg(errors?.message)}
         />
-      ) : null}
-      <Consent id="c-consent" label={labels.consent} error={msg(errors?.consent)} />
-      <div className="flex flex-wrap items-center justify-between gap-6">
-        <Submit pending={pending} label={labels.submit} pendingLabel={labels.sending} />
-        <p ref={status} tabIndex={-1} role="status" aria-live="polite" className="t-small outline-none">
-          {state.failed ? labels.failed : ""}
-          {state.failed ? " " : null}
-          {state.failed ? (
-            <MailFallback form={form} to={company.email} subject={labels.mailSubject} label={labels.mailFallback} note={property ? labels.mailNote : undefined} />
-          ) : null}
-        </p>
+        {property ? (
+          <Files
+            id="c-photos"
+            name="photos"
+            label={labels.photos}
+            button={labels.photosButton}
+            hint={labels.photosHint}
+            accept="image/jpeg,image/png,image/webp"
+            chosenLabel={(n) => (n === 1 ? labels.photosChosenOne : labels.photosChosen.replace("{n}", String(n)))}
+            empty={labels.noPhotos}
+            error={msg(errors?.photos)}
+          />
+        ) : null}
+      </Step>
+
+      <div className="vp-form__end">
+        <Consent id="c-consent" label={labels.consent} error={msg(errors?.consent)} />
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <Submit pending={pending} label={labels.submit} pendingLabel={labels.sending} />
+          <p className="t-label ml-auto">{labels.requiredNote}</p>
+          <p ref={status} tabIndex={-1} role="status" aria-live="polite" className="t-small w-full outline-none">
+            {state.failed ? labels.failed : ""}
+            {state.failed ? " " : null}
+            {state.failed ? (
+              <MailFallback form={form} to={company.email} subject={labels.mailSubject} label={labels.mailFallback} note={property ? labels.mailNote : undefined} />
+            ) : null}
+          </p>
+        </div>
       </div>
     </form>
   );

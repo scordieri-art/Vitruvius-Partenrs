@@ -395,10 +395,13 @@ const it = {
   },
   contactPage: {
     label: "Contatti",
-    title: "Due sedi, una sola risposta.",
-    lead: "Scrivici per informazioni sui servizi del gruppo.",
+    title: "Ogni progetto comincia da una conversazione.",
+    lead: "Un immobile da proporre, un investimento da valutare, una collaborazione da avviare: raccontacelo.",
     offices: "Sedi",
     write: "Scrivici",
+    // beside the form: what to expect, and the direct lines for who prefers them
+    writeLead: "Scegli l’argomento: il modulo ti chiede solo ciò che serve per risponderti.",
+    direct: "Oppure direttamente",
     email: "Email",
     phone: "Telefono",
     name: "Ragione sociale",
@@ -469,6 +472,13 @@ const it = {
       photosChosen: "{n} foto scelte",
       invalidPhotos: "Fino a 5 immagini JPG, PNG o WEBP, 5 MB in totale",
       messageProperty: "Descrivi l’immobile",
+      // the form in steps (numbered by the page)
+      stepProperty: "L’immobile",
+      stepYou: "I tuoi recapiti",
+      stepMessage: "Il messaggio",
+      messageHint: "Raccontaci in poche righe di cosa si tratta",
+      messageHintProperty: "Zona, piani, stato di occupazione, tempi: quello che sai",
+      requiredNote: "I campi con * sono obbligatori.",
     },
     proofs: {
       label: "Dall’altra parte",
