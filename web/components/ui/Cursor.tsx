@@ -18,8 +18,14 @@ type Kind = "off" | "rest" | "act" | "on" | "tag";
 
 /** the pencil line: how long a point of it lasts (ms), its width and darkness when fresh */
 const LINE_LIFE = 650;
-const LINE_WIDTH = 1.7;
-const LINE_ALPHA = 0.85;
+const LINE_WIDTH = 1.5;
+const LINE_ALPHA = 0.8;
+/** how much of the way to the mouse the symbol goes each frame: enough to keep up, little enough
+ *  to smooth the hand's tremor (and the steps of the mouse's own reports) */
+const FOLLOW = 0.3;
+/** leaving an action for bare page waits this long, so crossing the gap between two links does not
+ *  make the symbol shrink and grow again */
+const SETTLE = 180;
 
 /** a click's negative lasts at least this long, so a quick click shows it too */
 const NEGATIVE_MIN = 420;
@@ -36,13 +42,15 @@ function tone(c: string): [number, number] | null {
 }
 
 /**
- * The pointer. With a mouse the system's cursor is hidden and the symbol takes its place, exactly
- * where the mouse is: the V, the tip of its first stroke the pointer's tip; over an action larger
+ * The pointer. With a mouse the system's cursor is hidden and the symbol takes its place, easing
+ * after the mouse a few frames behind (FOLLOW), so it moves steadily without the hand's tremor:
+ * the V, the tip of its first stroke the pointer's tip; over an action larger
  * and in outline (as a planned phase), solid over what is chosen or current; over a project's
  * picture the second mass gives way to the word of its data-cursor («Apri»), on a tag cut on the
- * slope. As it moves it draws behind its tip a line, as a pencil would: thin, darker where it is
- * fresh and thinner where the hand went fast, fading from its tail in LINE_LIFE, so a still pointer
- * has none (no line with reduced motion). Pressing turns it into a
+ * slope; leaving an action waits SETTLE, so the gap between two links does not make it pulse. As
+ * it moves it draws behind its tip a line, as a pencil would: one smooth, even curve along the
+ * symbol's path, thinner and fainter with age, fading from its tail in LINE_LIFE, so a still
+ * pointer has none (no line, and no easing, with reduced motion). Pressing turns it into a
  * negative of what is beneath (white, mix-blend-mode: difference), larger, for at least
  * NEGATIVE_MIN even on a quick click. Over navy it is paper; a hairline rim keeps it visible on
  * photos.
@@ -67,8 +75,8 @@ export function Cursor() {
     const html = document.documentElement;
     const pen = tr.getContext("2d");
     if (!pen) return;
-    // where the pointer has been, oldest first, with when and how fast
-    const line: { x: number; y: number; t: number; v: number }[] = [];
+    // where the symbol has been, oldest first, and when
+    const line: { x: number; y: number; t: number }[] = [];
     let ink = "10, 35, 66";
     let lineRaf = 0;
     const fit = () => {
@@ -81,6 +89,9 @@ export function Cursor() {
 
     let px = 0,
       py = 0,
+      x = 0,
+      y = 0,
+      settle = 0,
       raf = 0,
       probe = false,
       shown = false;
@@ -132,46 +143,56 @@ export function Cursor() {
         onTag.textContent = w;
         wide = onTag.offsetWidth;
       }
+      clearTimeout(settle);
       if (k === kind) return;
-      kind = k;
-      el.dataset.k = k;
-      // the line only behind the bare symbol: not beside the word, not off the page
-      if (k === "off" || k === "tag") line.length = 0;
+      // appearing: where the mouse is, not where the symbol was last seen
+      if (kind === "off") {
+        x = px;
+        y = py;
+      }
+      const apply = () => {
+        kind = k;
+        el.dataset.k = k;
+        // the line only behind the bare symbol: not beside the word, not off the page
+        if (k === "off" || k === "tag") line.length = 0;
+      };
+      if (k === "rest" && (kind === "act" || kind === "on")) settle = window.setTimeout(apply, SETTLE);
+      else apply();
     };
 
-    // the pencil: each stretch of the path drawn by its age (fainter, thinner) and by the hand's
-    // speed (a fast stroke is lighter); it redraws until the last point has faded
+    // the pencil: one smooth curve through the points (each stretch a quadratic between the
+    // midpoints, its point the control), thinner and fainter with age only, so the line is even
     const draw = () => {
       lineRaf = 0;
       const now = performance.now();
       while (line.length && now - line[0].t > LINE_LIFE) line.shift();
       pen.clearRect(0, 0, innerWidth, innerHeight);
-      if (line.length < 2) {
-        line.length = Math.min(line.length, 1);
+      if (line.length < 3) {
+        if (line.length) lineRaf = requestAnimationFrame(draw);
         return;
       }
       pen.lineCap = "round";
       pen.lineJoin = "round";
-      for (let i = 1; i < line.length; i++) {
+      for (let i = 1; i < line.length - 1; i++) {
         const a = line[i - 1],
-          b = line[i];
-        const life = 1 - (now - b.t) / LINE_LIFE;
-        const press = 1 / (1 + b.v * 0.25);
-        pen.strokeStyle = `rgba(${ink}, ${(LINE_ALPHA * life * (0.55 + 0.45 * press)).toFixed(3)})`;
-        pen.lineWidth = 0.35 + LINE_WIDTH * life * (0.6 + 0.4 * press);
+          b = line[i],
+          c = line[i + 1];
+        const life = Math.max(0, 1 - (now - b.t) / LINE_LIFE);
+        pen.strokeStyle = `rgba(${ink}, ${(LINE_ALPHA * life).toFixed(3)})`;
+        pen.lineWidth = 0.3 + LINE_WIDTH * Math.sqrt(life);
         pen.beginPath();
-        pen.moveTo(a.x, a.y);
-        pen.lineTo(b.x, b.y);
+        pen.moveTo((a.x + b.x) / 2, (a.y + b.y) / 2);
+        pen.quadraticCurveTo(b.x, b.y, (b.x + c.x) / 2, (b.y + c.y) / 2);
         pen.stroke();
       }
       lineRaf = requestAnimationFrame(draw);
     };
-    const trace = (t: number) => {
+    // a point where the symbol now is, if it has moved
+    const trace = () => {
       if (still.matches || kind === "off" || kind === "tag") return;
       const last = line[line.length - 1];
-      const d = last ? Math.hypot(px - last.x, py - last.y) : 0;
-      if (last && d < 0.5) return;
-      line.push({ x: px, y: py, t, v: last ? d / Math.max(1, t - last.t) : 0 });
+      if (last && Math.hypot(x - last.x, y - last.y) < 0.75) return;
+      line.push({ x, y, t: performance.now() });
       if (!lineRaf) lineRaf = requestAnimationFrame(draw);
     };
 
@@ -185,9 +206,19 @@ export function Cursor() {
         seen = target;
         read(target);
       }
-      el.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+      // the symbol eases after the mouse, a few frames behind at most: steady, no tremor
+      const k = still.matches || kind === "off" ? 1 : FOLLOW;
+      x += (px - x) * k;
+      y += (py - y) * k;
+      if (Math.abs(px - x) + Math.abs(py - y) < 0.1) {
+        x = px;
+        y = py;
+      }
+      el.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0)`;
+      trace();
       // the tag, near the right edge, opens on the stroke's other side
-      el.toggleAttribute("data-flip", kind === "tag" && px + 32 + wide > html.clientWidth - 12);
+      el.toggleAttribute("data-flip", kind === "tag" && x + 32 + wide > html.clientWidth - 12);
+      if (x !== px || y !== py) raf = requestAnimationFrame(frame);
     };
     // again: what is under the pointer may have changed beneath it (a scroll, a choice, a new page)
     const ask = (again = false) => {
@@ -217,7 +248,6 @@ export function Cursor() {
       target = e.target as Element;
       show(true);
       ask();
-      trace(e.timeStamp);
     };
     const leave = () => {
       target = null;
@@ -265,6 +295,7 @@ export function Cursor() {
     document.addEventListener("vp-pick", picked, true);
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(settle);
       cancelAnimationFrame(lineRaf);
       removeEventListener("resize", fit);
       clearTimeout(lift);
