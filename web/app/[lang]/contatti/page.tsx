@@ -5,6 +5,7 @@ import { TLink } from "@/components/layout/PageTransition";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Cta } from "@/components/ui/Cta";
 import { JumpLink } from "@/components/ui/JumpLink";
+import { ContactLines } from "@/components/ui/ContactLines";
 import { MapSlab, lightRules } from "@/components/map/ItalyMap";
 import { mapPins } from "@/components/map/mapPlaces";
 import { company } from "@/content/site";
@@ -29,44 +30,31 @@ export default async function ContactPage() {
 
   return (
     <RevealScope>
-      {/* Opening: the sentence, the action, the direct lines */}
-      <section data-theme="paper" aria-labelledby="contact-title" className="pt-[calc(var(--header-h)+clamp(4rem,12vh,8rem))] pb-[clamp(4rem,8vw,7rem)]">
+      {/* Opening: the page's name set large, one line, then the direct lines as large rows */}
+      <section data-theme="paper" aria-labelledby="contact-title" className="pt-[calc(var(--header-h)+clamp(3.5rem,10vh,7rem))] pb-[clamp(4rem,8vw,7rem)]">
         <div className="container-x">
-          <p className="vp-rise t-label mb-8">{c.label}</p>
-          <h1 id="contact-title" className="t-xl max-w-[17ch] [text-wrap:balance]">
-            <Rise>{c.title}</Rise>
-          </h1>
-          <div className="grid-12 mt-10 gap-y-8 lg:mt-14 lg:items-end">
-            <p className="vp-rise vp-rise--late t-body-l col-span-4 max-w-[40ch] text-[var(--fg-2)] lg:col-span-5">{c.lead}</p>
-            <div className="vp-rise vp-rise--later col-span-4 lg:col-span-6 lg:col-start-7 lg:justify-self-end">
+          <div className="flex flex-wrap items-end justify-between gap-x-12 gap-y-8">
+            <h1 id="contact-title" className="vp-talk">
+              <Rise>{c.title}</Rise>
+            </h1>
+            <div className="vp-rise vp-rise--late grid max-w-[26rem] gap-6 pb-[0.6em] lg:justify-items-end lg:text-right">
+              <p className="t-body-l text-[var(--fg-2)]">{c.lead}</p>
               <JumpLink to="write" primary>
                 {c.write}
               </JumpLink>
             </div>
           </div>
-
-          <dl className="mt-[clamp(3.5rem,7vw,6rem)] grid gap-x-[var(--col-gap)] gap-y-8 border-t border-[var(--line)] pt-8 md:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1fr)]">
-            <div className="min-w-0 md:col-span-2 xl:col-span-1">
-              <dt className="t-label">{c.email}</dt>
-              <dd className="t-s mt-2">
-                <a className="vp-ulink" href={`mailto:${company.email}`}>
-                  {company.email}
-                </a>
-              </dd>
-            </div>
-            {company.offices.map((o) => (
-              <div key={o.key} className="min-w-0">
-                <dt className="t-label">
-                  {c.phone} · {o.city}
-                </dt>
-                <dd className="t-s t-num mt-2">
-                  <a className="vp-ulink" href={o.phoneHref}>
-                    {o.phone}
-                  </a>
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="vp-rise vp-rise--later mt-[clamp(3rem,6vw,5rem)]">
+            <ContactLines
+              copy={c.lines.copy}
+              copied={c.lines.copied}
+              copyValue={company.email}
+              lines={[
+                { key: "email", label: c.email, value: company.email, href: `mailto:${company.email}`, action: c.lines.write },
+                ...company.offices.map((o) => ({ key: o.key, label: `${c.phone} · ${o.city}`, value: o.phone, href: o.phoneHref, action: c.lines.call, num: true })),
+              ]}
+            />
+          </div>
         </div>
       </section>
 

@@ -397,8 +397,9 @@ const en: Dictionary = {
   },
   contactPage: {
     label: "Contact",
-    title: "Every project begins with a conversation.",
-    lead: "A property to offer, an investment to weigh, a partnership to start: tell us about it.",
+    title: "Contact.",
+    lead: "A property, an investment, a partnership.",
+    lines: { write: "Write", call: "Call", copy: "Copy", copied: "Copied" },
     offices: "Offices",
     write: "Write to us",
     writeLead: "Choose a topic: the form asks only for what we need to answer you.",

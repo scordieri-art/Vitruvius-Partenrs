@@ -395,8 +395,10 @@ const it = {
   },
   contactPage: {
     label: "Contatti",
-    title: "Ogni progetto comincia da una conversazione.",
-    lead: "Un immobile da proporre, un investimento da valutare, una collaborazione da avviare: raccontacelo.",
+    title: "Contatti.",
+    lead: "Un immobile, un investimento, una collaborazione.",
+    // the direct lines, as large rows: what each does
+    lines: { write: "Scrivi", call: "Chiama", copy: "Copia", copied: "Copiato" },
     offices: "Sedi",
     write: "Scrivici",
     // beside the form: what to expect, and the direct lines for who prefers them

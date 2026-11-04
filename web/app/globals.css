@@ -4656,3 +4656,143 @@ html.js-motion .vp-chron__readout:not([data-on]) .vp-chron__mark polygon {
   padding-top: 1.75rem;
   border-top: 1px solid var(--line);
 }
+
+/* Contact's opening (contatti/page.tsx): one word set as large as the page allows */
+.vp-talk {
+  font-size: clamp(4.25rem, 1.5rem + 11.5vw, 13.5rem);
+  font-weight: 300;
+  line-height: 0.88;
+  letter-spacing: -0.055em;
+}
+/* the direct lines (components/ui/ContactLines.tsx): large rows; passing over one fills it with
+   navy from the left, its leading edge on the symbol's slope, the text turning white where it passes */
+.vp-lines {
+  border-top: 1px solid var(--line);
+}
+.vp-lines__row {
+  --run: 2.4rem;
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+  isolation: isolate;
+}
+.vp-lines__row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-navy);
+  clip-path: polygon(0 0, calc(0% - var(--run)) 0, 0 100%, 0 100%);
+  transition: clip-path 620ms var(--ease-move);
+}
+.vp-lines__row:hover::before,
+.vp-lines__row:focus-within::before {
+  clip-path: polygon(0 0, 100% 0, calc(100% + var(--run)) 100%, 0 100%);
+}
+.vp-lines__link {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "label go"
+    "value value";
+  align-items: baseline;
+  gap: 0.35rem 1.5rem;
+  padding: clamp(1.1rem, 2.2vw, 1.75rem) 0;
+  color: var(--fg);
+  transition:
+    color 420ms var(--ease-move),
+    padding 520ms var(--ease-move);
+}
+@media (min-width: 64rem) {
+  .vp-lines__link {
+    grid-template-columns: minmax(12rem, 3fr) 9fr auto;
+    grid-template-areas: "label value go";
+  }
+}
+.vp-lines__label {
+  grid-area: label;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--fg-2);
+  transition: color 420ms var(--ease-move);
+}
+.vp-lines__mark {
+  height: 0.8rem;
+}
+.vp-lines__mark polygon {
+  transition: fill 320ms var(--ease-move);
+}
+.vp-lines__value {
+  grid-area: value;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.45rem, 0.9rem + 2.6vw, 3.4rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+.vp-lines__go {
+  grid-area: go;
+  white-space: nowrap;
+}
+.vp-lines__arrow {
+  display: inline-block;
+  transition: translate 420ms var(--ease-move);
+}
+.vp-lines__copy {
+  align-self: center;
+  margin-left: 1rem;
+  padding: 0.55rem 0.9rem;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  color: var(--fg);
+  white-space: nowrap;
+  transition:
+    color 420ms var(--ease-move),
+    border-color 420ms var(--ease-move);
+}
+.vp-lines__copy:focus-visible,
+.vp-lines__link:focus-visible {
+  outline: 2px solid var(--color-white);
+  outline-offset: -6px;
+}
+.vp-lines__row:is(:hover, :focus-within) :is(.vp-lines__link, .vp-lines__label, .vp-lines__copy) {
+  color: var(--color-white);
+}
+.vp-lines__row:is(:hover, :focus-within) .vp-lines__copy {
+  border-color: color-mix(in srgb, var(--color-white) 45%, transparent);
+}
+.vp-lines__row:is(:hover, :focus-within) .vp-lines__link {
+  padding-inline: clamp(1rem, 2vw, 1.75rem);
+}
+.vp-lines__row:is(:hover, :focus-within) .vp-lines__mark polygon {
+  fill: currentColor;
+}
+.vp-lines__row:is(:hover, :focus-within) .vp-lines__arrow {
+  translate: 0.35rem 0;
+}
+.vp-lines__row:is(:hover, :focus-within):has(.vp-lines__copy) {
+  padding-right: clamp(1rem, 2vw, 1.75rem);
+}
+.vp-lines__row:is(:hover, :focus-within):has(.vp-lines__copy) .vp-lines__link {
+  padding-right: 0;
+}
+/* on a phone the address takes the whole width, the copy button under it */
+@media (max-width: 40rem) {
+  .vp-lines__row {
+    flex-wrap: wrap;
+  }
+  .vp-lines__link {
+    flex-basis: 100%;
+  }
+  .vp-lines__copy {
+    margin: -0.35rem 0 1.1rem;
+  }
+  .vp-lines__value {
+    font-size: clamp(1.25rem, 0.5rem + 3.6vw, 1.6rem);
+  }
+}
